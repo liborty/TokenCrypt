@@ -22,7 +22,7 @@ If your token(s) consist of several parts, perhaps separated by a dash,
 it is best to split them into individual files, each containing only the hexadecimal characters.
 
 In a Linux pipe, the hexadecimal token files (*.hex) are first converted to binary, 
-which halves them in length. Then the binary encryptor is applied.
+which halves them in length. Then the binary encryptor `symcrypt.c` is applied.
 Decryption is a simple inverse of this process. 
 
 It is possible to naively encrypt/decrypt directly the hexadecimal files/tokens
@@ -49,9 +49,10 @@ mv symcrypt some/bin/directory/in-your-path
 
 cd directory/with/your/hextokens 
  
-establish the largest ot typical size of your token files, e.g.:  
-`stat -c%s myfile.hex`  
-`binkeygen size > keyfile`  
+establish the largest or typical size of your token files and generate a key of
+that size, e.g.:  
+size=$( `stat -c%s myfile.hex` )  
+`binkeygen $size > keyfile`  
 Hide the keyfile somewhere safe and secure but note its path as you will need it.
   
 `hexecrypt keyfile` or just `hexecrypt`  
