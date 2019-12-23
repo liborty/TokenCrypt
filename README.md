@@ -32,36 +32,41 @@ in security. In fact, it is probably a pessimisation of security as well.
 ### symcrypt.c ###
 
 Symcrypt is a general utility to encrypt/decrypt any files.
-It is a stand-alone program written in C. It takes keyfile, infile and outfile as arguments. 
+It is a stand-alone program written in C. It takes keyfile, infile and outfile as arguments.
+Invoking `symcrypt` without any arguments gives you help information.
 
 Outfile and infile can be omitted, in which case stdout and stdin are used. 
 This form is particularly convenient for use in a Unix/Linux pipe. 
 For the same reason, the program operates silently. Error messages are sent to stderr.
 
-Invoking `symcrypt` with no arguments gives you help information.
-
 **Installation:** 
 
 Download or clone this directory, cd into it and then:
-
+```bash
 clang (or gcc) symcrypt.c -o symcrypt  
-chmod 700 symcrypt  
-mv symcrypt some/bin/directory/in-your-path
+chmod 700 symcrypt binkeygen hexecrypt hexdcrypt 
+mv symcrypt binkeygen hexecrypt hexdcrypt some/bin/directory/in-your-path
+```
 
 **Operation:**
 
 cd directory/with/your/hextokens 
  
-establish the largest or typical size of your token files and generate a key of
-that size, e.g.:  
-size=$( `stat -c%s myfile.hex` )  
-`binkeygen $size > keyfile`  
+Establish the largest or typical size of your token files (does not have to be exact) and generate a key of
+that size, e.g.: 
+```bash 
+size=$( stat -c%s myfile.hex ); binkeygen $size > key.bin
+```
+Binkeygen is just a one-liner script: `</dev/urandom head -c $1`  
 Hide the keyfile somewhere safe and secure but note its path as you will need it.
   
 `hexecrypt keyfile` or just `hexecrypt`  
-Calling hexecrypt without the keyfile argument will automatically generate 
-a new keyfile of a fixed predetermined length (8192 bits). 
-The default length can easily be changed in the hexecrypt bash script.
+Normal usage is to supply the full path to your existing keyfile. 
+Calling hexecrypt without an argument will automatically generate 
+a new keyfile of a fixed predetermined length (8192 bits) and use it. 
+As a precaution against overwriting an existing key, if key.bin is present in the
+current directory, it will use that one instead of generating a new one.
+The default length can be easily changed in the hexecrypt bash script.
   
 In any case, all `*.hex` files will be encrypted into `*.scr` files and can 
 now be deleted (at your own risk). It is strongly recommended that you test your
