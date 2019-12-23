@@ -1,0 +1,20 @@
+#!/bin/bash
+# hexadecimal decryption
+# hexdcrypt decrypts all *.scr binary encrypted files in the current directory 
+# into their corresponding decrypted *.hex files
+# expects one binary keyfile argument, e.g. key.bin
+# keygen will generate a suitable key.bin file for both encrypting and decrypting
+# to hex encode any file, use: xxd -p file > hexfile
+# to revert back: xxd -p -r hexfile > file
+
+if [ $# -ne 1 ]; then
+	printf "${0##*/} needs key-file argument\n" 1>&2 
+	exit 2
+fi
+
+for file in ./*.scr; do
+    [ -f "$file" ] || continue
+    let count+=1
+	 symcrypt $1 $file | xxd -p > ${file%.scr}.hex 
+done
+printf "${0##*/} decrypted  $count files\n" 

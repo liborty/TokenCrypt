@@ -1,0 +1,31 @@
+#!/bin/bash
+# hexadecimal encryption/decryption
+# hexecrypt encrypts all *.hex files in the current directory, such as various
+# internet security tokens, into corresponding encrypted binary files *.scr
+# expects one binary keyfile argument, e.g. key.bin (to be kept secure)
+# if the argument and ./key.bin are missing, 
+# new key.bin will be generated in the current directory
+# also keygen can generate a suitable keyfile of any given length 
+# to hex encode any file, use: 'xxd -p file > hexfile'
+# to revert back: 'xxd -p -r hexfile > file'
+
+case $# in
+	0)
+		keyfile='key.bin'
+		if ! [ -f "$keyfile" ]; then 
+			binkeygen 1024 > $keyfile
+			printf "${0##*/} generated 8192 bit $keyfile, use it for decrypting\n"
+		fi;; 
+	1)
+		keyfile=$1;;
+	*) 
+		printf "$0: takes none or one keyfile argument\n" 1>&2 
+		exit 2;;
+esac
+
+for file in ./*.hex; do
+    [ -f "$file" ] || continue
+    let count+=1
+    xxd -p -r $file | symcrypt $keyfile > ${file%.hex}.scr 
+done
+printf "${0##*/} encrypted  $count files\n" 

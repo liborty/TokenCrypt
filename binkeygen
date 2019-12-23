@@ -1,0 +1,6 @@
+#!/bin/bash
+if [ $# -ne 1 ]; then
+	printf "$0: needs file size argument, e.g. obtained by 'stat -c%s myfile'\n" 1>&2 
+	exit 2
+fi
+</dev/urandom head -c $1
