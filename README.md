@@ -23,7 +23,7 @@ it is best to split them into individual files, each containing only the hexadec
 
 In a Linux pipe, the hexadecimal token files (*.hex) are first converted to binary, 
 which halves them in length. Then the binary encryptor `symcrypt.c` is applied.
-Decryption is a simple inverse of this process. 
+Decryption is a simple inverse of this process. See `hexecrypt` and `hexdcrypt`.
 
 It is possible to naively encrypt/decrypt directly the hexadecimal files/tokens
 but this is sub-optimal, as the encrypted files are twice as long without any gains
@@ -31,11 +31,14 @@ in security. In fact, it is probably a pessimisation of security as well.
 
 ### symcrypt.c ###
 
-Stand-alone program written in C which takes keyfile, infile and outfile as arguments. 
+Symcrypt is a general utility to encrypt/decrypt any files.
+It is a stand-alone program written in C. It takes keyfile, infile and outfile as arguments. 
+
 Outfile and infile can be omitted, in which case stdout and stdin are used. 
 This form is particularly convenient for use in a Unix/Linux pipe. 
 For the same reason, the program operates silently. Error messages are sent to stderr.
-Symcrypt is a general utility to encrypt/decrypt any files.
+
+Invoking `symcrypt` with no arguments gives you help information.
 
 **Installation:** 
 
