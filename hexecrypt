@@ -9,6 +9,15 @@
 # to hex encode any file, use: 'xxd -p file > hexfile'
 # to revert back: 'xxd -p -r hexfile > file'
 
+noext() {
+	local c=$( ls -1 *."$1" 2>/dev/null | wc -l )
+if [ $c -eq 0 ]; then return 0; else return 1; fi }
+
+if $( noext hex ); then
+	printf "${0##*/} quitting, no .hex files here in $(pwd)\n" 
+	exit 2
+fi
+
 case $# in
 	0)
 		keyfile='key.bin'
@@ -23,16 +32,13 @@ case $# in
 			exit 2
 		fi;;
 	*) 
-		printf "$0: quitting, too many arguments, takes none or one keyfile argument\n" 1>&2 
+		printf "${0##*/} quitting, too many arguments, takes none or one keyfile argument\n" 1>&2 
 		exit 2;;
 esac
 
-[ -f './*.hex' ] || 
 for file in ./*.hex; do
     [ -f "$file" ] || continue
     let count+=1
     xxd -p -r $file | symcrypt $keyfile > ${file%.hex}.scr 
 done
-if [ -z "$count" ]; then printf "${0##*/}: quitting, no .hex files found in $(pwd)\n"
-else printf "${0##*/} encrypted  $count files\n"
-fi
+printf "${0##*/} encrypted $count files\n"
