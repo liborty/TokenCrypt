@@ -1,0 +1,31 @@
+#!/bin/bash
+# hexadecimal encryption-decryption test
+# hexecrypt encrypts all *.hex files in the current directory
+# hexdcrypt decrypts back all *.scr binary encrypted files in the current directory
+
+noext() {
+	local c=$( ls -1 *."$1" 2>/dev/null | wc -l )
+if [ $c -eq 0 ]; then return 0; else return 1; fi }
+
+if $( noext hex ); then
+	printf "${0##*/} quitting, no .hex files here in $(pwd)\n" 
+	exit 2
+fi
+
+[ -d tests ] || mkdir tests
+cp *.hex tests
+printf "${0##*/} saved your untouched *.hex files in tests directory\n"
+if [ -f key.bin ]; then 
+	printf "${0##*/} saved your existing key.bin in tests directory, generating new one\n"
+fi
+
+hexecrypt
+hexdcrypt key.bin
+
+printf "${0##*/} found these differences:\n"
+for file in ./*.hex; do
+    [ -f "$file" ] || continue
+    let count+=1
+ 	 diff $file tests/$file 
+done
+printf "${0##*/} tested $count files\n"
