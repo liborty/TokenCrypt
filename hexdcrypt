@@ -11,10 +11,17 @@ if [ $# -ne 1 ]; then
 	printf "${0##*/} needs key-file argument\n" 1>&2 
 	exit 2
 fi
+if ! [ -f "$1" ]; then
+	printf "${0##*/}: quitting, keyfile '$1' not found\n"
+	exit 2
+fi
 
 for file in ./*.scr; do
     [ -f "$file" ] || continue
     let count+=1
-	 symcrypt $1 $file | xxd -p > ${file%.scr}.hex 
+	symcrypt $1 $file | xxd -p > ${file%.scr}.hex 
 done
-printf "${0##*/} decrypted  $count files\n" 
+
+if [ -z "$count" ]; then printf "${0##*/}: quitting, no .scr files found in $(pwd)\n"
+else printf "${0##*/} decrypted  $count files\n"
+fi

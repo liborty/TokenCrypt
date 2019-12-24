@@ -18,9 +18,12 @@ case $# in
 		fi;; 
 	1)
 		keyfile=$1
-        [ -f "$keyfile" ] || printf "${0##*/}: quitting, keyfile '$keyfile' not found\n"; exit 2;;
+        if ! [ -f "$keyfile" ]; then
+			printf "${0##*/}: quitting, keyfile '$keyfile' not found\n"
+			exit 2
+		fi;;
 	*) 
-		printf "$0: takes none or one keyfile argument\n" 1>&2 
+		printf "$0: quitting, too many arguments, takes none or one keyfile argument\n" 1>&2 
 		exit 2;;
 esac
 
