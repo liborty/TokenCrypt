@@ -1,0 +1,14 @@
+#!/bin/bash
+# invoke as: 
+# installs TokenCrypt utilities in /usr/local/bin
+COMPILER=$( which clang )
+[ -n "$COMPILER" ] || COMPILER=$( which gcc )
+if [ -z "$COMPILER" ]; then 
+	printf "${0##*/} quitting, no C compiler. Install clang or gcc?\n" 
+	exit 2
+fi
+$COMPILER symcrypt.c -o symcrypt
+PROGS='symcrypt hexecrypt hexdcrypt difftest binkeygen'
+chmod 755 $PROGS
+cp $PROGS /usr/local/bin
+printf "Installed TokenCrypt utilities in /usr/local/bin\n"

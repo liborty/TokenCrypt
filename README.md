@@ -41,13 +41,10 @@ For the same reason, the program operates silently. Error messages are sent to s
 
 ### Installation
 
-Download or clone this directory, cd into it and then:
+Download or clone this directory, cd into it and then: `sudo ./install`  
+Installs system-wide in /usr/local/bin. 
 
-```bash
-clang (or gcc) symcrypt.c -o symcrypt  
-chmod 700 symcrypt binkeygen hexecrypt hexdcrypt difftest
-mv symcrypt binkeygen hexecrypt hexdcrypt difftest some/bin/directory/inyour-path
-```
+Uninstall with: `sudo ./uninstall`
 
 ### Operation
 
