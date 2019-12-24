@@ -29,24 +29,26 @@ It is possible to naively encrypt/decrypt directly the hexadecimal files/tokens
 but this is sub-optimal, as the encrypted files are twice as long without any gains
 in security. In fact, it is probably a pessimisation of security as well.
 
+### Installation
+
+Requires a C compiler, either clang or gcc.
+
+Download or clone this directory, cd into it and then: `sudo ./install`  
+Compiles and installs system-wide in /usr/local/bin. 
+
+Uninstall with: `sudo ./uninstall`
+
 ### Symcrypt
 
 Symcrypt is a general utility to encrypt/decrypt any files.
 It is a stand-alone program written in C. It takes keyfile, infile and outfile as arguments.
-Invoking `symcrypt` without any arguments gives you help information.
+Invoking `symcrypt` without any arguments gives help information.
 
 Outfile and infile can be omitted, in which case stdout and stdin are used. 
 This form is particularly convenient for use in a Unix/Linux pipe. 
 For the same reason, the program operates silently. Error messages are sent to stderr.
 
-### Installation
-
-Download or clone this directory, cd into it and then: `sudo ./install`  
-Installs system-wide in /usr/local/bin. 
-
-Uninstall with: `sudo ./uninstall`
-
-### Operation
+### Tokens Encryption
 
 ```bash
 cd directory/with/your/hextokens
