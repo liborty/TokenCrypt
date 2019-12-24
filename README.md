@@ -89,4 +89,4 @@ This default behaviour is also a precaution against overwriting an existing key.
 
 `hexdcrypt keyfile`
 
-decrypts, recreating all the original `*.hex` files. Be careful that you do not overwrite your originals using a wrong key, save them first and delete the originals and the reconstructed version only after the successful comparison test, keeping just the encrypted version. It is probably a good idea to backup your original tokens first somewhere else as well.
+decrypts, recreating all the original `*.hex` files. Be careful that you do not overwrite your originals using a wrong key, save them first and delete the originals and the reconstructed versions only after a successful comparison test, keeping just the encrypted versions. It is probably a good idea to first backup your original tokens somewhere else as well.

@@ -17,15 +17,19 @@ case $# in
 			printf "${0##*/} generated 8192 bit $keyfile, use it for decrypting\n"
 		fi;; 
 	1)
-		keyfile=$1;;
+		keyfile=$1
+        [ -f "$keyfile" ] || printf "${0##*/}: quitting, keyfile '$keyfile' not found\n"; exit 2;;
 	*) 
 		printf "$0: takes none or one keyfile argument\n" 1>&2 
 		exit 2;;
 esac
 
+[ -f './*.hex' ] || 
 for file in ./*.hex; do
     [ -f "$file" ] || continue
     let count+=1
     xxd -p -r $file | symcrypt $keyfile > ${file%.hex}.scr 
 done
-printf "${0##*/} encrypted  $count files\n" 
+if [ -z "$count" ]; then printf "${0##*/}: quitting, no .hex files found in $(pwd)\n"
+else printf "${0##*/} encrypted  $count files\n"
+fi
