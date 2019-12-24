@@ -55,12 +55,12 @@ mv symcrypt binkeygen hexecrypt hexdcrypt some/bin/directory/inyour-path
 cd directory/with/your/hextokens
 ```
 
-Establish the largest or typical size of your token files (does not have to be exact) and generate a key of
-that size, e.g.: 
+Establish the typical size of your token files (does not have to be exact) and generate a key of approximately half that size, e.g.: 
 ```bash 
-size=$( stat -c%s myfile.hex ); binkeygen $size > key.bin
+size=$(( $(stat -c%s myfile.hex )/2 + 1 ))
+binkeygen $size > key.bin
 ```
-Binkeygen is just a one-liner script:  `</dev/urandom head -c $1`  
+Binkeygen is just a one-liner script:  `</dev/urandom head -c $1` 
 Hide the keyfile somewhere safe and secure (perhaps a USB pen?) and note its path as you will need it.
   
 `hexecrypt keyfile`
