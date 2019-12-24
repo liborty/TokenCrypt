@@ -1,7 +1,8 @@
 # TokenCrypt
+**A simple utility to encrypt and decrypt multiple security tokens or any files.
+High security without onerous complications.**
 
-A simple utility to encrypt and decrypt multiple security tokens, or any files.
-Tested under Linux. High security without onerous complications.
+25th December 2019, © 2019 Libor Spacek
 
 ### Outline
 
@@ -31,9 +32,9 @@ in security. In fact, it is probably a pessimisation of security as well.
 
 ### Installation
 
-Requires a C compiler, either clang or gcc.
+This software was tested under Linux. Installation needs just a C compiler, either clang or gcc.
 
-Download or clone this directory, cd into it and then: `sudo ./install`  
+Download or clone this directory, cd into it and then: **`sudo ./install`**  
 Compiles and installs system-wide in /usr/local/bin. 
 
 Uninstall with: `sudo ./uninstall`
@@ -62,7 +63,7 @@ binkeygen $size > key.bin
 Binkeygen is just a one-liner script:  `</dev/urandom head -c $1` 
 Hide the keyfile somewhere safe and secure (perhaps a USB pen?) and note its path as you will need it.
   
-`hexecrypt keyfile`
+**`hexecrypt keyfile`**
   
 The normal usage is to supply the full path to your existing keyfile.
  
@@ -77,7 +78,7 @@ In particular, if you lose your keyfile, you will not be able to decrypt and thu
 deleted originals will be lost too! This general peril of encryption can never 
 be over emphasised. You have been warned.
 
-`hexecrypt`
+**`hexecrypt`**
 
 Calling hexecrypt without the keyfile argument will automatically generate 
 new keyfile of a fixed predetermined length (currently 8192 bits) and use it.
@@ -85,7 +86,7 @@ The key length can be easily changed in the hexecrypt bash script.
 When key.bin is already present in the current directory, it will be used instead.
 This default behaviour is also a precaution against overwriting an existing key.
 
-`hexdcrypt keyfile`
+**`hexdcrypt keyfile`**
 
 decrypts, recreating all the original `*.hex` files. 
 Be careful that you do not overwrite your originals using a wrong key, 
@@ -94,7 +95,7 @@ only after a successful comparison test (difftest),
 keeping just the encrypted versions.
 It is probably a good idea to first backup your original tokens somewhere else as well.
 
-`difftest`
+**`difftest`**
 
 Saves the existing key.bin and all `*.hex` files from the current directory to 
 tests subdirectory, which it creates if necessary.
@@ -107,7 +108,7 @@ the current directory and restore the original `*.hex` files from the tests dire
 
 ### Final Remarks
 
-All the above programs will exit with an error message if files with 
+All of the above programs will exit with an error message if files with 
 relevant extensions are not present in the current directory. 
 
-Similarly, if the keyfile can not be found, when it is needed.
+Similarly, when a keyfile is needed but is not specified or can not be found.
