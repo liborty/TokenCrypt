@@ -45,8 +45,8 @@ Download or clone this directory, cd into it and then:
 
 ```bash
 clang (or gcc) symcrypt.c -o symcrypt  
-chmod 700 symcrypt binkeygen hexecrypt hexdcrypt 
-mv symcrypt binkeygen hexecrypt hexdcrypt some/bin/directory/inyour-path
+chmod 700 symcrypt binkeygen hexecrypt hexdcrypt difftest
+mv symcrypt binkeygen hexecrypt hexdcrypt difftest some/bin/directory/inyour-path
 ```
 
 ### Operation
@@ -68,16 +68,15 @@ Hide the keyfile somewhere safe and secure (perhaps a USB pen?) and note its pat
 The normal usage is to supply the full path to your existing keyfile.
  
 All `*.hex` files in the current directory will be encrypted into `*.scr` files and
-can then be manually deleted (at your own risk). It is strongly recommended that you test your ability to use this utility safely and confidently, converting in both directions and comparing to the original with:
+can then be manually deleted (at your own risk). It is strongly recommended 
+that you test your ability to use this utility safely and confidently, 
+converting in both directions and comparing to the original. 
+Provided script `difftest` does all that automatically.
+Be sure that `difftest` did not report any differences before you start deleting any files. 
 
-```bash
-diff original.hex reconstructed.hex
-```
-
-before you start deleting any files. 
-In particular, if you lose your keyfile, you will not be able to decrypt and thus any
-deleted originals will be lost too! 
-This general peril of encryption can never be over emphasised. You had been warned.
+In particular, if you lose your keyfile, you will not be able to decrypt and thus all
+deleted originals will be lost too! This general peril of encryption can never 
+be over emphasised. You have been warned.
 
 `hexecrypt`
 
@@ -89,4 +88,27 @@ This default behaviour is also a precaution against overwriting an existing key.
 
 `hexdcrypt keyfile`
 
-decrypts, recreating all the original `*.hex` files. Be careful that you do not overwrite your originals using a wrong key, save them first and delete the originals and the reconstructed versions only after a successful comparison test, keeping just the encrypted versions. It is probably a good idea to first backup your original tokens somewhere else as well.
+decrypts, recreating all the original `*.hex` files. 
+Be careful that you do not overwrite your originals using a wrong key, 
+save them first and delete the originals and the reconstructed versions 
+only after a successful comparison test (difftest),
+keeping just the encrypted versions.
+It is probably a good idea to first backup your original tokens somewhere else as well.
+
+`difftest`
+
+Saves the existing key.bin and all `*.hex` files from the current directory to 
+tests subdirectory, which it creates if necessary.
+
+Then it encrypts and decrypts again all the `*.hex` files and compares the results
+against the original files saved in tests directory. Finally, it reports how many files
+had been tested. If it reports any differences, then something has gone wrong. 
+In that case the safe course of action is to delete all `*.hex` and `*.scr` files from
+the current directory and restore the original `*.hex` files from the tests directory.
+
+### Final Remarks
+
+All the above programs will exit with an error message if files with 
+relevant extensions are not present in the current directory. 
+
+Similarly, if the keyfile can not be found, when it is needed.
