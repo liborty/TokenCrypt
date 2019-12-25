@@ -17,7 +17,7 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git commit symcrypt -m "action: symcrypt binary" 
+        git commit -a -m "action: symcrypt binary" 
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
