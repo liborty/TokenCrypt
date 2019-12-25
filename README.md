@@ -39,16 +39,6 @@ Compiles and installs system-wide in /usr/local/bin.
 
 Uninstall with: `sudo ./uninstall`
 
-### Symcrypt
-
-Symcrypt is a general utility to encrypt/decrypt any files.
-It is a stand-alone program written in C. It takes keyfile, infile and outfile as arguments.
-Invoking `symcrypt` without any arguments gives help information.
-
-Outfile and infile can be omitted, in which case stdout and stdin are used. 
-This form is particularly convenient for use in a Unix/Linux pipe. 
-For the same reason, the program operates silently. Error messages are sent to stderr.
-
 ### Tokens Encryption
 
 ```bash
@@ -128,6 +118,19 @@ encrypted  using `symcrypt` and written to a local dirname-ecr.
 
 is the inverse of `ecrypt`. The restored (copies of) the original files are 
 written into dirname-org.
+
+**`symcrypt`**
+
+is a general utility to encrypt/decrypt any files.
+It is a stand-alone program written in C. It takes keyfile, infile and outfile as arguments.
+Invoking `symcrypt` without any arguments gives help information.
+
+Outfile and infile can be omitted, in which case stdout and stdin are used. 
+This form is particularly convenient for use in a Unix/Linux pipe. 
+For the same reason, the program operates silently. Error messages are sent to stderr.
+
+Symcrypt is invoked by most of the TokenCrypt utilities above to 
+carry out the actual encryption and decryption.
 
 ### Final Remarks
 
