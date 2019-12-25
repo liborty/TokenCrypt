@@ -39,6 +39,8 @@ Compiles and installs system-wide in /usr/local/bin.
 
 Uninstall with: `sudo ./uninstall`
 
+If you are running a typical Linux, you can skip the compilation and use the binary `symcrypt` from this repository.
+
 ### Tokens Encryption
 
 ```bash
