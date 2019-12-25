@@ -2,7 +2,7 @@
 **A simple utility to encrypt and decrypt multiple security tokens or any files.
 High security without onerous complications.**
 
-25th December 2019, © 2019 Libor Spacek
+25th December 2019, © Libor Spacek
 
 ### Outline
 
@@ -105,6 +105,29 @@ against the original files saved in tests directory. Finally, it reports how man
 had been tested. If it reports any differences, then something has gone wrong. 
 In that case the safe course of action is to delete all `*.hex` and `*.scr` files from
 the current directory and restore the original `*.hex` files from the tests directory.
+
+### General Encryption
+
+You may have files, perhaps whole databases, of security tokens which mix up the 
+hexadecimal data with other kinds of data. While this is perhaps not the best practice,
+it may well arise and may involve much work to separate them. 
+In these circumstances reach for `ecrypt` and `dcrypt` utilities. 
+You will not get the 50% compression as above but it will be convenient.
+
+Indeed, these two utilities can be used quite indiscriminately on whole directories of 
+all kinds of files and data, as general purpose archival programs.
+
+**`ecrypt`**
+
+takes two arguments, the keyfile as above and a path to a directory. 
+When the keyfile is missing, the program exits with an error message.
+All files in the supplied dirname will be compressed using `lzma`,
+encrypted  using `symcrypt` and written to a local dirname-ecr.
+
+**`dcrypt`**
+
+is the inverse of `ecrypt`. The restored (copies of) the original files are 
+written into dirname-org.
 
 ### Final Remarks
 

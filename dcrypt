@@ -1,0 +1,30 @@
+#!/bin/bash
+# decrypts all files in the specified directory 'dirname'
+# into corresponding original files in local directory 'orgdirname' 
+# expects also a keyfile argument, e.g. key.bin (to be kept secure)
+# note that 'keygen' can generate a suitable keyfile of any given length 
+
+case $# in
+	0|1)
+		printf "${0##*/} quitting, requires keyfile and dirname arguments\n";; 
+	2)
+      if ! [ -f "$1" ]; then
+		printf "${0##*/}: quitting, keyfile $1 not found\n"
+		printf "note that 'keygen' can generate a keyfile of any length\n"
+		exit 2; fi
+		if ! [ -d "$2" ]; then
+		printf "${0##*/}: quitting, dirname $2 not found\n"
+		exit 2; fi;;
+	*) 
+		printf "${0##*/} quitting, too many arguments, needs keyfile and directory\n" 
+		exit 2;;
+esac
+# output directory
+OD=${2##*/}-org 
+if ! [ -d "$OD" ]; then mkdir $OD; fi
+for file in $2/*; do
+    [ -f "$file" ] || continue
+    let count+=1
+    symcrypt $1 $file | lzma -d -c > $OD/${file##*/}
+done
+printf "${0##*/}: decrypted $count files into ./$OD/}\n"
