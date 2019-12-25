@@ -131,10 +131,3 @@ For the same reason, the program operates silently. Error messages are sent to s
 
 Symcrypt is invoked by most of the TokenCrypt utilities above to 
 carry out the actual encryption and decryption.
-
-### Final Remarks
-
-All of the above programs will exit with an error message if files with 
-relevant extensions are not present in the current directory. 
-
-Similarly, when a keyfile is needed but is not specified or can not be found.
