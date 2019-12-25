@@ -11,4 +11,12 @@ jobs:
     - uses: actions/checkout@v1
     - name: compile
       run: clang symcrypt.c -o symcrypt
-  
+     - name: Commit files
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git commit -m "action: symcrypt binary" -a
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
