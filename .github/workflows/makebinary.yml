@@ -10,7 +10,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: compile
-      run: clang symcrypt.c -o symcrypt
+      run: |
+        clang symcrypt.c -o symcrypt
+        strip symcrypt
     - name: Commit files
       run: |
         git config --local user.email "action@github.com"
