@@ -1,0 +1,31 @@
+#!/bin/bash
+# general encryption-decryption test
+# ecrypt encrypts all files in the given directory
+# dcrypt decrypts back all the encrypted files
+
+case $# in
+	0)
+		printf "${0##*/} quitting, requires a directory argument\n"
+		exit 2;; 
+	1)
+  		if ! [ -d "$1" ]; then
+		printf "${0##*/}: quitting, dirname $1 not found\n"
+		exit 2; fi;;
+	*) 
+		printf "${0##*/} quitting, too many arguments, needs just a directory\n" 
+		exit 2;;
+esac
+
+binkeygen 2048 > testkey.bin
+printf "${0##*/} generated testkey.bin\n"
+
+ecrypt testkey.bin $1
+dcrypt testkey.bin ./${1##*/}-ecr
+
+printf "${0##*/} found these differences:\n"
+for file in $1/*; do
+    [ -f "$file" ] || continue
+    let count+=1
+ 	 diff $file ./${1##*/}-ecr-org/${file##*/} 
+done
+printf "${0##*/} tested $count files\n"

@@ -6,7 +6,7 @@ High security without onerous complications.**
 
 25th December 2019, © Libor Spacek
 
-### Outline
+## Outline
 
 Internet security tokens are usually 32,64 or more hexadecimal characters. 
 They are increasingly used to facilitate secure access to various 
@@ -32,18 +32,23 @@ It is possible to naively encrypt/decrypt directly the hexadecimal files/tokens
 but this is sub-optimal, as the encrypted files are twice as long without any gains
 in security. In fact, it is probably a pessimisation of security as well.
 
-### Installation
+## Installation
 
-This software was tested under Linux. Installation needs just a C compiler, either clang or gcc.
+This software was tested under Linux. 
+Installation from source needs just a C compiler, either clang or gcc.
 
 Download or clone this directory, cd into it and then: **`sudo ./install`**  
 Compiles and installs system-wide in /usr/local/bin. 
 
 Uninstall with: `sudo ./uninstall`
 
-If you are running a typical Linux, you can skip the compilation and use the binary `symcrypt` from this repository.
+Alternatively, if you are using a typical Linux, you can skip the compilation step
+and use the pre-compiled binary `symcrypt` included in this repository. To do that, 
+either comment out the compilation in the install script, or just move manually 
+all the executables from here to your own bin directory that is in your path 
+(does not require `sudo` priviledges).
 
-### Tokens Encryption
+## Tokens Encryption
 
 ```bash
 cd directory/with/your/hextokens
@@ -65,8 +70,8 @@ All `*.hex` files in the current directory will be encrypted into `*.scr` files 
 can then be manually deleted (at your own risk). It is strongly recommended 
 that you test your ability to use this utility safely and confidently, 
 converting in both directions and comparing to the original. 
-Provided script `difftest` does all that automatically.
-Be sure that `difftest` did not report any differences before you start deleting any files. 
+Provided script `hextest` does all that automatically.
+Be sure that `hextest` did not report any differences before you start deleting any files. 
 
 In particular, if you lose your keyfile, you will not be able to decrypt and thus all
 deleted originals will be lost too! This general peril of encryption can never 
@@ -89,18 +94,7 @@ only after a successful comparison test (difftest),
 keeping just the encrypted versions.
 It is probably a good idea to first backup your original tokens somewhere else as well.
 
-**`difftest`**
-
-Saves the existing key.bin and all `*.hex` files from the current directory to 
-tests subdirectory, which it creates if necessary.
-
-Then it encrypts and decrypts again all the `*.hex` files and compares the results
-against the original files saved in tests directory. Finally, it reports how many files
-had been tested. If it reports any differences, then something has gone wrong. 
-In that case the safe course of action is to delete all `*.hex` and `*.scr` files from
-the current directory and restore the original `*.hex` files from the tests directory.
-
-### General Encryption
+## General Encryption
 
 You may have files, perhaps whole databases, of security tokens which mix up the 
 hexadecimal data with other kinds of data. While this is perhaps not the best practice,
@@ -135,3 +129,34 @@ For the same reason, the program operates silently. Error messages are sent to s
 
 Symcrypt is invoked by most of the TokenCrypt utilities above to 
 carry out the actual encryption and decryption.
+
+## Testing
+
+**`hextest`**
+
+Tests hexadecimal encryption: `hexecrypt` and `hexdcrypt`.
+
+Generates new keyfile, just for this test.
+
+Saves the existing key.bin and all `*.hex` files from the current directory to 
+`./tests` subdirectory, which it creates if necessary.
+
+Then it first encrypts and then decrypts back again all the `*.hex` 
+files and compares the results against the original files saved in the tests directory.
+Finally, it reports how many files had been tested. 
+If it lists any differences, then something has gone wrong. 
+In that case the safe course of action is to delete all `*.hex` and `*.scr` files from
+the current directory and restore the saved original `*.hex` files from the tests directory.
+
+**`dirtest path/dirname`**
+
+Tests general encryption: `ecrypt` and `dcrypt`.
+
+Generates new keyfile, just for this test.
+
+Uses all the files in a given directory (normally not the current one).
+`Ecrypt` creates `./dirname-ecr` under the current directory with all the compressed files. 
+Similarly, `dcrypt` creates `./dirname-ecr-org`. 
+
+This script then compares all the original files in `path/dirname` against the new ones in 
+`./dirname-ecr-org` and lists any differences.

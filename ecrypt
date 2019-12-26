@@ -6,7 +6,8 @@
 
 case $# in
 	0|1)
-		printf "${0##*/} quitting, requires keyfile and dirname arguments\n";; 
+		printf "${0##*/} quitting, requires keyfile and dirname arguments\n"
+		exit 2;; 
 	2)
       if ! [ -f "$1" ]; then
 		printf "${0##*/}: quitting, keyfile $1 not found\n"
@@ -27,4 +28,4 @@ for file in $2/*; do
     let count+=1
     lzma -z -c $file | symcrypt $1 > $OD/${file##*/}
 done
-printf "${0##*/}: encrypted $count files into ./$OD/}\n"
+printf "${0##*/}: encrypted $count files into ./$OD/\n"
