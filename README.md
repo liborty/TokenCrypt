@@ -152,12 +152,16 @@ the current directory and restore the saved original `*.hex` files from the test
 
 **`dirtest`** path/dirname
 
-Tests general encryption: `ecrypt` and `dcrypt`.
+Tests general encryption and decryption: `ecrypt` and `dcrypt`.
 
 Generates new keyfile, just for this test.
 
-Uses all the files in a given directory (normally not the current one).
-`Ecrypt` creates `./dirname-ecr` under the current directory with all the compressed files. Then `dcrypt` creates `./dirname-ecr-org`. 
+Encrypts and then decrypts back all the files in a given directory (normally not the current one).
+`Ecrypt` creates `./dirname-ecr` under the current directory with all the compressed files in it. Then `dcrypt` creates `./dirname-ecr-org`. 
 
 This script then compares all the original files in `path/dirname` against the newly recreated ones in 
 `./dirname-ecr-org` and lists any differences. There should be none, i.e. just a blank line.
+
+## Conclusion
+
+Watch this space, more facilities are in preparation.
