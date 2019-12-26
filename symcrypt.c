@@ -79,19 +79,19 @@ int main(int argc, char *argv[])
 	       if (! feof(fin1))
     	     {
     	       fprintf(stderr,"%s: error in reading keyfile\n", progname);
-    	       fclose(fout);
+    	       fclose(fout); fclose(fin2); fclose(fin1);
     	       return(1);
 	         } 
            if (fseek( fin1, 0, SEEK_SET ))
             {
                fprintf(stderr,"%s: keyfile failed to seek to the beginning\n", progname);
-               fclose(fout);
+               fclose(fout); fclose(fin2); fclose(fin1);
     	       return(1);
             }
     	   if ((c1 = fgetc(fin1)) == EOF) 
     	     {
     	       fprintf(stderr,"%s: error re-reading keyfile, or it is empty!\n", progname);
-    	       fclose(fout);
+    	       fclose(fout); fclose(fin2); fclose(fin1);
     	       return(1);
     	     } 
     	 }
@@ -99,11 +99,15 @@ int main(int argc, char *argv[])
        if (fputc(uc,fout) == EOF) 
     	 {
     	   fprintf(stderr,"%s: error in output\n", progname);
+           fclose(fout); fclose(fin2); fclose(fin1);
     	   return(1);
     	 } 
       }
    if (! feof(fin2))
-     fprintf(stderr,"%s: error in reading inputfile\n", progname);
+     {
+       fprintf(stderr,"%s: error in reading inputfile\n", progname);
+       fclose(fout); fclose(fin2); fclose(fin1);
+     }
    if (fclose(fin2) == EOF)
      fprintf(stderr,"%s: incorrectly closed inputfile\n", progname);
    if (fclose(fin1) == EOF)

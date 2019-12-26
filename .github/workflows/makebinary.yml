@@ -1,6 +1,9 @@
 name: CI
 
-on: [push]
+on:
+  push:
+    paths:
+    - '**.c'
 
 jobs:
   build:
@@ -13,11 +16,11 @@ jobs:
       run: |
         clang symcrypt.c -o symcrypt
         strip symcrypt
-    - name: Commit files
+    - name: commit
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git commit -a -m "action: symcrypt binary" 
+        git commit -m "action: symcrypt binary" symcrypt
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
