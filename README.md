@@ -27,7 +27,7 @@ When a token consist of several parts, perhaps separated by a dash or some other
 The hexadecimal token files (*.hex) are first converted to binary, 
 which halves them in length. Then the binary encryptor `symcrypt.c` is applied
 (all within a single Linux pipe).
-Decryption is an inverse of this process. See `hexecrypt` and `hexdcrypt`.
+Decryption is the inverse of this process. See `hexecrypt` and `hexdcrypt`.
 
 It is possible to naively encrypt/decrypt directly the hexadecimal files/tokens
 but this is sub-optimal, as the encrypted files are twice as long without any gains
@@ -71,39 +71,37 @@ binkeygen $size > key.bin
 ```
 
 Binkeygen is just a one-liner script:  `</dev/urandom head -c $1`   
-Hide the keyfile somewhere safe and secure (perhaps a USB pen?) and note its path as you will need it.
+Hide the keyfile somewhere safe and secure (perhaps a USB pen?) and note its path as you will need it. Back it up.
   
 **`hexecrypt`** keyfile
   
-The normal usage is to supply the full path to your existing keyfile.
+The normal usage is to supply the full path to an existing keyfile.
  
 All `*.hex` files in the current directory will be encrypted into `*.scr` files and
 can then be manually deleted (at your own risk). It is strongly recommended 
-that you test your ability to use this utility safely and confidently, 
+that you test your ability to use this utility safely and confidently, by
 converting in both directions and comparing to the original. 
-There is a test script `hextest` that is provided to do that testing automatically.
-Be sure that `hextest` did not report any differences before you start deleting any original files. 
+Script `hextest` is provided for convenient automated testing.
+Be sure that `hextest` did not report any differences before you start deleting any original files.
 
-Should you lose your keyfile, you will not be able to decrypt and thus all
-deleted originals will be lost forever, too! This general peril of encryption can never 
+Should you lose your keyfile, you will not be able to decrypt and thus any 
+deleted originals will be lost forever, too! This general peril of encryption can never
 be over emphasised. You have been warned!
 
 **`hexecrypt`**
 
 Calling hexecrypt without the keyfile argument will automatically generate 
 new keyfile of a fixed predetermined length (currently 8192 bits) and use it.
-The key length can be easily changed in the hexecrypt bash script.
+The key length can be easily changed in the hexecrypt `bash` script.
 When key.bin is already present in the current directory, it will be used instead.
 This default behaviour is also a precaution against overwriting an existing key.
 
 **`hexdcrypt`** keyfile
 
-decrypts, recreating all the original `*.hex` files. 
-Be careful that you do not overwrite your originals using a wrong key, 
-save them first and delete the originals and the reconstructed versions 
-only after a successful comparison test (difftest),
-keeping just the encrypted versions.
-It is probably a good idea to first backup your original tokens somewhere else as well.
+decrypts, recreating all the original `*.hex` files in the current directory. 
+Be careful that you do not accidentally overwrite your originals using a wrong key!
+Save them first. Delete the originals and the reconstructed versions 
+only after a successful comparison test (hextest). Then you can keep just the encrypted versions. It is probably a good idea to first backup your original tokens somewhere else as well.
 
 ## General Encryption
 
