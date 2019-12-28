@@ -1,0 +1,24 @@
+#!/bin/bash
+# given some typical file as an argument, generates an appropriate key for it
+# recognises hexadecimal by extension .hex 
+
+case $# in
+	0)
+		printf 1>&2 "${0##*/} quitting, requires a file argument\n"
+		exit 2;; 
+	1)
+  		if ! [ -f "$1" ]; then
+		printf 1>&2 "${0##*/}: quitting, file $1 not found\n"
+		exit 2; fi;;
+	*) 
+		printf 1>&2 "${0##*/} quitting: too many arguments, needs one file\n" 
+		exit 2;;
+esac
+# FILE="${1%.*}"
+LASTEXT=${1##*.}
+
+if [ "$LASTEXT" == 'hex' ]; then 
+	SIZE=$(( $( stat -c%s $1 )/2 + 1 ))
+else SIZE=$( stat -c%s $1 )
+fi
+head -c $SIZE /dev/urandom

@@ -3,28 +3,29 @@
 # hexecrypt encrypts all *.hex files in the current directory
 # hexdcrypt decrypts back all *.scr binary encrypted files in the current directory
 
-noext() {
-	local c=$( ls -1 *."$1" 2>/dev/null | wc -l )
-if [ $c -eq 0 ]; then return 0; else return 1; fi }
-
-if $( noext hex ); then
-	printf "${0##*/} quitting, no .hex files here in $(pwd)\n" 
+# find the first .hex file in this directory
+HEXFILE=$( ls -1 *.hex 2>/dev/null | head -n 1 )
+if [ -z "$HEXFILE" ]; then
+	printf "${0##*/} quitting, no .hex file here in $(pwd)\n" 
 	exit 2
 fi
-
-[ -d tests ] || mkdir tests
+# create the tests subdirectory if it does not exist and save the originals in it
+[ -d tests ] || mkdir tests 
 cp *.hex tests
-printf "${0##*/} saved your untouched *.hex files in tests directory\n"
-binkeygen 2048 > testkey.bin
-printf "${0##*/} generated testkey.bin\n"
+printf "${0##*/} saved the original *.hex files in 'tests' directory\n"
 
-hexecrypt testkey.bin
-hexdcrypt testkey.bin
+# generate keyfile key.bin, using the length of the first .hex file as a guide
+KEYFILE='key.bin'
+keygen $HEXFILE > $KEYFILE
+printf "${0##*/} generated keyfile '$KEYFILE' of %d bytes, use it for decrypting\n" $( stat -c%s $KEYFILE )
+
+hexecrypt $KEYFILE
+hexdcrypt $KEYFILE
 
 printf "${0##*/} found these differences:\n"
-for file in ./*.hex; do
-    [ -f "$file" ] || continue
-    let count+=1
- 	 diff $file tests/$file 
+for F in *.hex; do
+    [ -f "$F" ] || continue
+    let COUNT+=1
+ 	diff $F tests/$F 
 done
-printf "${0##*/} tested $count files\n"
+printf "${0##*/} tested $COUNT files\n"

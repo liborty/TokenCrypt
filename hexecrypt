@@ -1,34 +1,35 @@
 #!/bin/bash
-# hexadecimal encryption/decryption
+# hexadecimal encryption
 # hexecrypt encrypts all *.hex files in the current directory, such as various
 # internet security tokens, into corresponding encrypted binary files *.scr
-# expects one binary keyfile argument, e.g. key.bin (to be kept secure)
-# if the argument and ./key.bin are missing, 
-# new key.bin will be generated in the current directory
-# also keygen can generate a suitable keyfile of any given length 
+# takes one binary keyfile argument, e.g. keyfile.key (to be kept secure)
+# if the argument and ./keyfile.key are both missing, 
+# new keyfile will be generated in the current directory
+
+# also keygen can generate a keyfile of a suitable length for any given file
+# and binkeygen generates manually a key of any given length
+
 # to hex encode any file, use: 'xxd -p file > hexfile'
 # to revert back: 'xxd -p -r hexfile > file'
 
-noext() {
-	local c=$( ls -1 *."$1" 2>/dev/null | wc -l )
-if [ $c -eq 0 ]; then return 0; else return 1; fi }
-
-if $( noext hex ); then
-	printf "${0##*/} quitting, no .hex files here in $(pwd)\n" 
+HEXFILE=$( ls -1 *.hex 2>/dev/null | head -n 1 )
+if [ -z "$HEXFILE" ]; then
+	printf "${0##*/} quitting, no .hex file here in $(pwd)\n" 1>&2
 	exit 2
 fi
 
 case $# in
 	0)
-		keyfile='key.bin'
-		if ! [ -f "$keyfile" ]; then 
-			binkeygen 1024 > $keyfile
-			printf "${0##*/} generated 8192 bit $keyfile, use it for decrypting\n"
+		KEYFILE=${HEXFILE%.hex}.key
+		if ! [ -f "$KEYFILE" ]; then 
+			keygen $HEXFILE > $KEYFILE
+			printf "${0##*/} generated keyfile '$KEYFILE' of %d bytes, use it for decrypting\n" \
+							$( stat -c%s $KEYFILE ) 1>&2
 		fi;; 
 	1)
-		keyfile=$1
-        if ! [ -f "$keyfile" ]; then
-			printf "${0##*/}: quitting, keyfile '$keyfile' not found\n"
+		KEYFILE=$1
+        if ! [ -f "$KEYFILE" ]; then
+			printf "${0##*/}: quitting, keyfile '$KEYFILE' not found\n" 1>&2
 			exit 2
 		fi;;
 	*) 
@@ -36,9 +37,9 @@ case $# in
 		exit 2;;
 esac
 
-for file in ./*.hex; do
-    [ -f "$file" ] || continue
-    let count+=1
-    xxd -p -r $file | symcrypt $keyfile > ${file%.hex}.scr 
+for FILE in ./*.hex; do
+    [ -f "$FILE" ] || continue
+    let COUNT+=1
+    xxd -p -r $FILE | symcrypt $KEYFILE > ${FILE%.hex}.scr
 done
-printf "${0##*/} encrypted $count files\n"
+printf "${0##*/} encrypted $COUNT files\n" 1>&2

@@ -3,7 +3,7 @@
 **A simple utility to encrypt and decrypt multiple security tokens or any files.
 High security without onerous complications.**
 
-## Version 1.0  [![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fatrox%2Fsync-dotenv%2Fbadge&style=flat)](https://actions-badge.atrox.dev/atrox/sync-dotenv/goto)
+## Version 1.0.1  [![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fatrox%2Fsync-dotenv%2Fbadge&style=flat)](https://actions-badge.atrox.dev/atrox/sync-dotenv/goto)
 
 25th December 2019, © Libor Spacek
 
@@ -22,24 +22,28 @@ bash helper scripts to generate keys, to convert .hex files to binary and back,
 to automate the encryption of all files with .hex extension, the decryption of
 all files with .scr extension (in the current directory), compression and encryption of whole directories of any kind of files, their decryption and decompression and finally a couple of test scripts.
 
-When a token consist of several parts, perhaps separated by a dash or some other intervening non-hexadecimal characters, it is best split into individual files containing just pure hex.
+### Hexadecimal Encryption
 
-The hexadecimal token files (*.hex) are first converted to binary, 
+When a token consist of several parts, perhaps separated by a dash or some other intervening non-hexadecimal characters, it is best split into individual files containing only pure hexadecimal.
+
+The hexadecimal (token) files (*.hex) are first converted to binary, 
 which halves them in length. Then the binary encryptor `symcrypt.c` is applied
 (all within a single Linux pipe).
-Decryption is the inverse of this process. See `hexecrypt` and `hexdcrypt`.
+Decryption is the inverse of this process. See `hexecrypt` and `hexdcrypt`. The entire process of hexadecimal encryption and decryption can be automatically tested using the script `hextest`.
 
 It is possible to naively encrypt/decrypt directly the hexadecimal files/tokens
 but this is sub-optimal, as the encrypted files are twice as long without any gains
 in security. In fact, it is probably a pessimisation of security as well.
 
-There may be files, perhaps even whole databases, of security tokens which mix up the 
-hexadecimal data with other kinds of data. While this is perhaps not the best practice,
-it may well arise and could involve much work to separate them. 
-In these circumstances, reach for `ecrypt` and `dcrypt` utilities below. 
-You may not get the 50% compression as with the specialised hex versions but it will be more convenient.
+### General Encryption
 
-Indeed, `ecrypt` and `dcrypt` are designed to be used quite indiscriminately on whole directories of all kinds of files and data, as general purpose archival programs.
+There may be files, perhaps even whole databases of security tokens which mix up the 
+hexadecimal data with other kinds of data. This is perhaps not the best practice but 
+it may well arise and could involve much work to separate them.
+In these circumstances, reach for `ecrypt` and `dcrypt` utilities below.
+You may not get full 50% compression as with the specialised hex versions above but it will be more convenient.
+
+Indeed, `ecrypt` and `dcrypt` are intended to be used on whole directories of all kinds of files and data, as general purpose archival programs. This process can be tested with the script ``dirtest``.
 
 ## Installation
 
@@ -57,44 +61,37 @@ either comment out the compilation in the install script, or just move manually
 all the executables from here to your own bin directory that is in your path 
 (this does not require `sudo` privileges).
 
-## Tokens Encryption
+## Hexadecimal (Tokens) Encryption
 
-```bash
-cd directory/with/your/hextokens
-```
+`cd directory/with/your/hextokens-files`
 
-Establish the typical size of your token files (does not have to be exact) and generate a key of approximately half that size, e.g.:
+`keygen mytypicalfile.hex > keyfile.key`
 
-```bash 
-size=$(( $(stat -c%s myfile.hex )/2 + 1 ))
-binkeygen $size > key.bin
-```
-
-Binkeygen is just a one-liner script:  `</dev/urandom head -c $1`   
-Hide the keyfile somewhere safe and secure (perhaps a USB pen?) and note its path as you will need it. Back it up.
+will generate a keyfile of approximately half the size of `mytypicalfile.hex`. Rename it, hide it somewhere safe and secure (perhaps a USB pen?) and note its path as you will need it. Back it up.
   
 **`hexecrypt`** keyfile
   
-The normal usage is to supply the full path to an existing keyfile.
+The normal encryption/decryption usage is to supply the full path to an existing keyfile.
  
 All `*.hex` files in the current directory will be encrypted into `*.scr` files and
-can then be manually deleted (at your own risk). It is strongly recommended 
+can then be manually deleted (at your own risk). It is strongly recommended
 that you test your ability to use this utility safely and confidently, by
-converting in both directions and comparing to the original. 
+converting in both directions and comparing to the original.
 Script `hextest` is provided for convenient automated testing.
 Be sure that `hextest` did not report any differences before you start deleting any original files.
 
-Should you lose your keyfile, you will not be able to decrypt and thus any 
+Should you lose your keyfile, you will not be able to decrypt and thus any
 deleted originals will be lost forever, too! This general peril of encryption can never
 be over emphasised. You have been warned!
 
 **`hexecrypt`**
 
-Calling hexecrypt without the keyfile argument will automatically generate 
-new keyfile of a fixed predetermined length (currently 8192 bits) and use it.
-The key length can be easily changed in the hexecrypt `bash` script.
-When key.bin is already present in the current directory, it will be used instead.
-This default behaviour is also a precaution against overwriting an existing key.
+Calling hexecrypt without a keyfile argument will automatically generate 
+new keyfile of half the length of the first somefile.hex in the current directory and use it
+for encryption.
+
+When somefile.key is already present in the current directory, it will be used instead.
+This default behaviour is also a precaution against overwriting an existing keyfile.
 
 **`hexdcrypt`** keyfile
 
@@ -123,8 +120,8 @@ is a general utility to encrypt/decrypt any files.
 It is a stand-alone program written in C. It takes keyfile, infile and outfile as arguments.
 Invoking `symcrypt` without any arguments gives help information.
 
-Outfile and infile can be omitted, in which case stdout and stdin are used. 
-This form is particularly convenient for use in a Unix/Linux pipe. 
+Outfile and infile can be omitted, in which case stdout and stdin are used.
+This form is particularly convenient for use in a Unix/Linux pipe.
 For the same reason, the program operates silently. Error messages are sent to stderr.
 
 Symcrypt is invoked by most of the TokenCrypt utilities to
@@ -143,7 +140,7 @@ Saves all `*.hex` files from the current directory to
 
 Then it first encrypts and then decrypts back again all the `*.hex` 
 files in the current directory and compares the results against the original files saved in the tests directory.
-Finally, hextest reports how many files had been tested. 
+Finally, `hextest` reports how many files had been tested. 
 If it lists any differences, then something has gone wrong. 
 In that case the safe course of action is to delete all `*.hex` and `*.scr` files from
 the current directory and restore the saved original `*.hex` files from the tests directory.
