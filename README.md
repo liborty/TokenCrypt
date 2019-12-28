@@ -118,11 +118,12 @@ written into `./dirname-org`
 
 **`superecrypt`** path/dirname
 
-Super security version of `ecrypt` above. Omits the keyfile argument. Instead, fresh keys are generated for all the files in `path/dirname` and written to the directory `./dirname-key` that mirrors the encrypted files in `./dirname-ecr`. 
+Super security version of `ecrypt` above. Omits the keyfile argument. Instead, fresh keys are generated for all the files in `path/dirname` and written to the directory `./dirname-key` that mirrors the encrypted files in `./dirname-ecr` and `./dirname-ecrlz`.
+The last directory is used selectively only for files which are actually shortened by lzma compression, which is generally not true for short and/or binary files.
 
-**`superdcrypt`** path/dirname-key path/dirname-ecr
+**`superdcrypt`** path/dirname-key path/dirname-ecr path/dirname-ecrlz
 
-is the inverse of `superecrypt`. Uses keys from  `path/dirname-key` to decrypt their one-for-one corresponding files  in `path/dirname-ecr` and writes the decrypted results into `./dirname-org`
+is the inverse of `superecrypt`. Uses the keys from  `path/dirname-key` to decrypt their one-for-one corresponding files found either in `path/dirname-ecr` or in `path/dirname-ecrlz` and writes all the decrypted results into `./dirname-org`
 
 **`symcrypt`**
 
