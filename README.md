@@ -29,7 +29,9 @@ When a token consist of several parts, perhaps separated by a dash or some other
 The hexadecimal (token) files (*.hex) are first converted to binary, 
 which halves them in length. Then the binary encryptor `symcrypt.c` is applied
 (all within a single Linux pipe).
-Decryption is the inverse of this process. See `hexecrypt` and `hexdcrypt`. The entire process of hexadecimal encryption and decryption can be automatically tested using the script `hextest`.
+Decryption is the inverse of this process. See `hexecrypt` and `hexdcrypt`.
+
+The entire process of hexadecimal encryption and decryption can be automatically tested using the script `hextest`.
 
 It is possible to naively encrypt/decrypt directly the hexadecimal files/tokens
 but this is sub-optimal, as the encrypted files are twice as long without any gains
@@ -111,8 +113,16 @@ encrypted  using `symcrypt` and written to `./dirname-ecr`
 
 **`dcrypt`** keyfile path/dirname
 
-is the inverse of `ecrypt`. The restored (copies of) the original files are 
+is the inverse of `ecrypt`. The restored (copies of) the original files are
 written into `./dirname-org`
+
+**`superecrypt`** path/dirname
+
+Super security version of `ecrypt` above. Omits the keyfile argument. Instead, fresh keys are generated for all the files in `path/dirname` and written to the directory `./dirname-key` that mirrors the encrypted files in `./dirname-ecr`. 
+
+**`superdcrypt`** path/dirname-key path/dirname-ecr
+
+is the inverse of `superecrypt`. Uses keys from  `path/dirname-key` to decrypt their one-for-one corresponding files  in `path/dirname-ecr` and writes the decrypted results into `./dirname-org`
 
 **`symcrypt`**
 

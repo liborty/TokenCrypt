@@ -1,0 +1,47 @@
+#!/bin/bash
+# encrypts all files in the specified directory 'dirname' (can be ./)
+# into corresponding encrypted binary files in local directory 'dirname-ecr' 
+# with corresponding key files in 'dirname-key'
+
+PNAME=${0##*/}
+
+case $# in
+	0)
+		printf "$PNAME quitting, requires a dirname argument\n"
+		exit 2;; 
+	1)
+      	if ! [ -d "$1" ]; then
+		printf "$PNAME quitting, directory $1 not found\n"
+		exit 2; fi;;
+	*) 
+		printf "$PNAME quitting, too many arguments, needs just a directory\n" 
+		exit 2;;
+esac
+
+# output directory for encrypted versions
+OD=${1##*/}_ecr 
+if ! [ -d "$OD" ]; then mkdir $OD; fi
+ODLZ=${1##*/}_ecrlz 
+if ! [ -d "$ODLZ" ]; then mkdir $ODLZ; fi
+# keys directory
+KD=${1##*/}_key
+if ! [ -d "$KD" ]; then mkdir $KD; fi
+
+for FILE in $1/*; do
+    [ -f "$FILE" ] || continue
+    let COUNT+=1
+	FILEND=${FILE##*/}
+	lzma -z -c $FILE > $FILEND.lz
+	ORGS=$( stat -c%s $FILE )
+	CMPS=$( stat -c%s $FILEND.lz )
+
+	if [ "$ORGS" -gt  "$CMPS" ]; then # compress only if smaller
+		keygen $FILEND.lz > $KD/$FILEND
+		symcrypt $KD/$FILEND $FILEND.lz $ODLZ/$FILEND
+	else
+		keygen $FILE > $KD/$FILEND
+		symcrypt $KD/$FILEND $FILE $OD/$FILEND
+	fi
+	rm $FILEND.lz
+	done
+printf "$PNAME: encrypted $COUNT files into ./$OD/ ./$ODLZ and ./$KD\n"

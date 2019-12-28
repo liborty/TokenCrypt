@@ -8,7 +8,7 @@ if [ -z "$COMPILER" ]; then
 	exit 2
 fi
 $COMPILER symcrypt.c -o symcrypt
-PROGS='symcrypt ecrypt dcrypt hexecrypt hexdcrypt hextest dirtest binkeygen keygen'
+PROGS='symcrypt ecrypt dcrypt hexecrypt hexdcrypt hextest dirtest binkeygen keygen superecrypt superdcrypt'
 chmod 755 $PROGS
 cp $PROGS /usr/local/bin
 printf "Installed TokenCrypt utilities in /usr/local/bin\n"

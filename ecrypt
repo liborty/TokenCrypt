@@ -11,7 +11,7 @@ case $# in
 	2)
       if ! [ -f "$1" ]; then
 		printf "${0##*/}: quitting, keyfile $1 not found\n"
-		printf "note that 'keygen' can generate a keyfile of any length\n"
+		printf "note that 'keygen' can generate a keyfile of the right length\n"
 		exit 2; fi
 		if ! [ -d "$2" ]; then
 		printf "${0##*/}: quitting, dirname $2 not found\n"
@@ -20,7 +20,7 @@ case $# in
 		printf "${0##*/} quitting, too many arguments, needs keyfile and directory\n" 
 		exit 2;;
 esac
-# output directory
+# output directory for encrypted versions
 OD=${2##*/}-ecr 
 if ! [ -d "$OD" ]; then mkdir $OD; fi
 for file in $2/*; do

@@ -15,7 +15,7 @@ fi
 }
 
 if $( noext scr ); then
-	printf "${0##*/} quitting, no .scr files here in $(pwd)\n" 
+	printf "${0##*/} quitting, no .scr files here in $(pwd)\n" 1>&2
 	exit 2
 fi
 
@@ -24,7 +24,7 @@ if [ $# -ne 1 ]; then
 	exit 2
 fi
 if ! [ -f "$1" ]; then
-	printf "${0##*/}: quitting, keyfile '$1' not found\n"
+	printf "${0##*/}: quitting, keyfile '$1' not found\n" 1>&2
 	exit 2
 fi
 
@@ -33,4 +33,4 @@ for file in ./*.scr; do
     let count+=1
 	 symcrypt $1 $file | xxd -p > ${file%.scr}.hex 
 done
-printf "${0##*/} decrypted $count files\n"
+printf "${0##*/} decrypted $count files\n" 1>&2
