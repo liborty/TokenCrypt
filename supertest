@@ -1,0 +1,40 @@
+#!/bin/bash
+# general encryption-decryption test
+# ecrypt encrypts all files in the given directory
+# dcrypt decrypts back all the encrypted files
+
+PROGN=${0##*/}
+
+case $# in
+	0)
+		printf "$PROGN quitting, requires a path argument\n"
+		exit 2;; 
+	1)
+  		if ! [ -d "$1" ]; then
+		printf "$PROGN quitting, input directory name $1 not found\n"
+		exit 2; fi;;
+	*) 
+		printf "$PROGN quitting, too many arguments, needs just one input path\n" 
+		exit 2;;
+esac
+
+DIREND=${1##*/}test
+# output directories preparation
+if [ -d "$DIREND_ecr" ]; then rm -r $DIREND_ecr/*
+else mkdir $DIREND_ecr; fi
+if [ -d "$DIREND_elz" ]; then rm -r $DIREND_elz/*
+else mkdir $DIREND_elz; fi
+if [ -d "$DIREND_key" ]; then rm -r $DIREND_key/*
+else mkdir $DIREND_key; fi
+
+superecrypt $1
+superdcrypt $DIREND_key $DIREND_ecr $DIREND_elz
+
+printf "$PROGN found these differences:\n"
+for FILE in $1/*; do
+    [ -f "$FILE" ] || continue
+    let COUNT+=1
+ 	diff $FILE $DIREND_org/${FILE##*/} 
+done
+rm -rf $DIREND_ecr $DIREND_elz $DIREND_key
+printf "$PROGN tested $COUNT files\n"

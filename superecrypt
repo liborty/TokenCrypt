@@ -7,25 +7,24 @@ PNAME=${0##*/}
 
 case $# in
 	0)
-		printf "$PNAME quitting, requires a dirname argument\n"
+		printf "$PNAME quitting, requires one path argument\n"
 		exit 2;; 
 	1)
       	if ! [ -d "$1" ]; then
 		printf "$PNAME quitting, directory $1 not found\n"
 		exit 2; fi;;
 	*) 
-		printf "$PNAME quitting, too many arguments, needs just a directory\n" 
+		printf "$PNAME quitting, too many arguments, needs just one path\n" 
 		exit 2;;
 esac
 
-# output directory for encrypted versions
-OD=${1##*/}_ecr 
-if ! [ -d "$OD" ]; then mkdir $OD; fi
-ODLZ=${1##*/}_ecrlz 
-if ! [ -d "$ODLZ" ]; then mkdir $ODLZ; fi
+DIREND=${1##*/}
+# output directory for plain encrypted versions
+if ! [ -d "$DIREND_ecr" ]; then mkdir $DIREND_ecr; fi
+# compressed encrypted outputs versions
+if ! [ -d "$DIREND_elz" ]; then mkdir $DIREND_elz; fi
 # keys directory
-KD=${1##*/}_key
-if ! [ -d "$KD" ]; then mkdir $KD; fi
+if ! [ -d "$DIREND_key" ]; then mkdir $DIREND_key; fi
 
 for FILE in $1/*; do
     [ -f "$FILE" ] || continue
@@ -36,12 +35,12 @@ for FILE in $1/*; do
 	CMPS=$( stat -c%s $FILEND.lz )
 
 	if [ "$ORGS" -gt  "$CMPS" ]; then # compress only if smaller
-		keygen $FILEND.lz > $KD/$FILEND
-		symcrypt $KD/$FILEND $FILEND.lz $ODLZ/$FILEND
+		keygen $FILEND.lz > $DIREND_key/$FILEND
+		symcrypt $DIREND_key/$FILEND $FILEND.lz $DIREND_elz/$FILEND
 	else
-		keygen $FILE > $KD/$FILEND
-		symcrypt $KD/$FILEND $FILE $OD/$FILEND
+		keygen $FILE > $DIREND_key/$FILEND
+		symcrypt $DIREND_key/$FILEND $FILE $DIREND_ecr/$FILEND
 	fi
 	rm $FILEND.lz
-	done
-printf "$PNAME: encrypted $COUNT files into ./$OD/ ./$ODLZ and ./$KD\n"
+done
+printf "$PNAME: encrypted $COUNT files into ./$DIREND_key ./$DIREND_ecr ./$DIREND_elz\n"

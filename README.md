@@ -3,9 +3,7 @@
 **A simple utility to encrypt and decrypt multiple security tokens or any files.
 High security without onerous complications.**
 
-## Version 1.0.1  [![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fatrox%2Fsync-dotenv%2Fbadge&style=flat)](https://actions-badge.atrox.dev/atrox/sync-dotenv/goto)
-
-25th December 2019, © Libor Spacek
+## Version 1.0.2  [![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fatrox%2Fsync-dotenv%2Fbadge&style=flat)](https://actions-badge.atrox.dev/atrox/sync-dotenv/goto)
 
 ## Outline
 
@@ -109,21 +107,21 @@ only after a successful comparison test (hextest). Then you can keep just the en
 takes two arguments, the keyfile as above and a path/directory. 
 When the keyfile is missing, or the directory does not exist, the script exits with error messages.
 All files in the supplied directory will be compressed using `lzma`,
-encrypted  using `symcrypt` and written to `./dirname-ecr`
+encrypted  using `symcrypt` and written to `./dirname_ecr`
 
 **`dcrypt`** keyfile path/dirname
 
 is the inverse of `ecrypt`. The restored (copies of) the original files are
-written into `./dirname-org`
+written into `./dirname_org`
 
 **`superecrypt`** path/dirname
 
-Super security version of `ecrypt` above. Omits the keyfile argument. Instead, fresh keys are generated for all the files in `path/dirname` and written to the directory `./dirname-key` that mirrors the encrypted files in `./dirname-ecr` and `./dirname-ecrlz`.
+Super security version of `ecrypt` above. Omits the keyfile argument. Instead, fresh keys are generated for all the files in `path/dirname` and written to the directory `./dirname_key` that mirrors the encrypted files in `./dirname_ecr` and `./dirname_elz`.
 The last directory is used selectively only for files which are actually shortened by lzma compression, which is generally not true for short and/or binary files.
 
-**`superdcrypt`** path/dirname-key path/dirname-ecr path/dirname-ecrlz
+**`superdcrypt`** path/dirname-key path/dirname_ecr path/dirname-ecrlz
 
-is the inverse of `superecrypt`. Uses the keys from  `path/dirname-key` to decrypt their one-for-one corresponding files found either in `path/dirname-ecr` or in `path/dirname-ecrlz` and writes all the decrypted results into `./dirname-org`
+is the inverse of `superecrypt`. Uses the keys from  `path/dirname_key` to decrypt their one-for-one corresponding files found either in `path/dirname_ecr` or in `path/dirname_elz` and writes all the decrypted results into `./dirname_org`
 
 **`symcrypt`**
 
@@ -163,10 +161,14 @@ Tests general encryption and decryption: `ecrypt` and `dcrypt`.
 Generates new keyfile, just for this test.
 
 Encrypts and then decrypts back all the files in a given directory (normally not the current one).
-`Ecrypt` creates `./dirname-ecr` under the current directory with all the compressed files in it. Then `dcrypt` creates `./dirname-ecr-org`. 
+`Ecrypt` creates `./dirname_ecr` under the current directory with all the compressed files in it. Then `dcrypt` creates `./dirname_ecr_org`. 
 
 This script then compares all the original files in `path/dirname` against the newly recreated ones in 
-`./dirname-ecr-org` and lists any differences. There should be none, i.e. just a blank line.
+`./dirname_ecr_org` and lists any differences. There should be none, i.e. just a blank line.
+
+**`supertest`** path/dirname
+
+Similar to `dirtest` above. Tests general encryption and decryption using `superecrypt` and `superdecrypt`. Creates three output directories in the current directory and deletes them afterwards.
 
 ## Conclusion
 

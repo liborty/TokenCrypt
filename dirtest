@@ -3,29 +3,31 @@
 # ecrypt encrypts all files in the given directory
 # dcrypt decrypts back all the encrypted files
 
+PROGN=${0##*/}
+
 case $# in
 	0)
-		printf "${0##*/} quitting, requires a directory argument\n"
+		printf "$PROGN quitting, requires a directory argument\n"
 		exit 2;; 
 	1)
   		if ! [ -d "$1" ]; then
-		printf "${0##*/}: quitting, dirname $1 not found\n"
+		printf "$PROGN quitting, dirname $1 not found\n"
 		exit 2; fi;;
 	*) 
-		printf "${0##*/} quitting, too many arguments, needs just a directory\n" 
+		printf "$PROGN quitting, too many arguments, needs just a directory\n" 
 		exit 2;;
 esac
 
 binkeygen 2048 > testkey.bin
-printf "${0##*/} generated testkey.bin\n"
+printf "$PROGN generated testkey.bin\n"
 
 ecrypt testkey.bin $1
-dcrypt testkey.bin ./${1##*/}-ecr
+dcrypt testkey.bin ./${1##*/}_ecr
 
-printf "${0##*/} found these differences:\n"
-for file in $1/*; do
-    [ -f "$file" ] || continue
-    let count+=1
- 	 diff $file ./${1##*/}-ecr-org/${file##*/} 
+printf "$PROGN found these differences:\n"
+for FILE in $1/*; do
+    [ -f "$FILE" ] || continue
+    let COUNT+=1
+ 	diff $FILE ./${1##*/}_ecr_org/${FILE##*/} 
 done
-printf "${0##*/} tested $count files\n"
+printf "$PROGN tested $COUNT files\n"

@@ -4,28 +4,31 @@
 # expects also a keyfile argument, e.g. key.bin (to be kept secure)
 # note that 'keygen' can generate a suitable keyfile of any given length 
 
+PROGN=${0##*/}
+
 case $# in
 	0|1)
-		printf "${0##*/} quitting, requires keyfile and dirname arguments\n"
+		printf "$PROGN quitting, requires keyfile and dirname arguments\n"
 		exit 2;; 
 	2)
       if ! [ -f "$1" ]; then
-		printf "${0##*/}: quitting, keyfile $1 not found\n"
+		printf "$PROGN quitting, keyfile $1 not found\n"
 		printf "note that 'keygen' can generate a keyfile of the right length\n"
 		exit 2; fi
 		if ! [ -d "$2" ]; then
-		printf "${0##*/}: quitting, dirname $2 not found\n"
+		printf "$PROGN quitting, dirname $2 not found\n"
 		exit 2; fi;;
 	*) 
-		printf "${0##*/} quitting, too many arguments, needs keyfile and directory\n" 
+		printf "$PROGN quitting, too many arguments, needs keyfile and directory\n" 
 		exit 2;;
 esac
 # output directory for encrypted versions
-OD=${2##*/}-ecr 
+OD=${2##*/}_ecr
 if ! [ -d "$OD" ]; then mkdir $OD; fi
-for file in $2/*; do
-    [ -f "$file" ] || continue
-    let count+=1
-    lzma -z -c $file | symcrypt $1 > $OD/${file##*/}
+
+for FILE in $2/*; do
+    [ -f "$FILE" ] || continue
+    let COUNT+=1
+    lzma -z -c $FILE | symcrypt $1 > $OD/${FILE##*/}
 done
-printf "${0##*/}: encrypted $count files into ./$OD/\n"
+printf "$PROGN encrypted $COUNT files into ./$OD/\n"

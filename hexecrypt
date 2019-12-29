@@ -12,9 +12,11 @@
 # to hex encode any file, use: 'xxd -p file > hexfile'
 # to revert back: 'xxd -p -r hexfile > file'
 
+PROGN=${0##*/}
+
 HEXFILE=$( ls -1 *.hex 2>/dev/null | head -n 1 )
 if [ -z "$HEXFILE" ]; then
-	printf "${0##*/} quitting, no .hex file here in $(pwd)\n" 1>&2
+	printf "$PROGN quitting, no .hex file here in $(pwd)\n" 1>&2
 	exit 2
 fi
 
@@ -23,17 +25,17 @@ case $# in
 		KEYFILE=${HEXFILE%.hex}.key
 		if ! [ -f "$KEYFILE" ]; then 
 			keygen $HEXFILE > $KEYFILE
-			printf "${0##*/} generated keyfile '$KEYFILE' of %d bytes, use it for decrypting\n" \
+			printf "$PROGN generated keyfile '$KEYFILE' of %d bytes, use it for decrypting\n" \
 							$( stat -c%s $KEYFILE ) 1>&2
 		fi;; 
 	1)
 		KEYFILE=$1
         if ! [ -f "$KEYFILE" ]; then
-			printf "${0##*/}: quitting, keyfile '$KEYFILE' not found\n" 1>&2
+			printf "$PROGN quitting, keyfile '$KEYFILE' not found\n" 1>&2
 			exit 2
 		fi;;
 	*) 
-		printf "${0##*/} quitting, too many arguments, takes none or one keyfile argument\n" 1>&2 
+		printf "$PROGN quitting, too many arguments, takes none or one keyfile argument\n" 1>&2 
 		exit 2;;
 esac
 
@@ -42,4 +44,4 @@ for FILE in ./*.hex; do
     let COUNT+=1
     xxd -p -r $FILE | symcrypt $KEYFILE > ${FILE%.hex}.scr
 done
-printf "${0##*/} encrypted $COUNT files\n" 1>&2
+printf "$PROGN encrypted $COUNT files\n" 1>&2

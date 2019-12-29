@@ -7,6 +7,8 @@
 # to hex encode any file, use: xxd -p file > hexfile
 # to revert back: xxd -p -r hexfile > file
 
+PROGN=${0##*/}
+
 noext() {
 	local c=$( ls -1 *."$1" 2>/dev/null | wc -l )
 if [ $c -eq 0 ]; then return 0; 
@@ -15,22 +17,22 @@ fi
 }
 
 if $( noext scr ); then
-	printf "${0##*/} quitting, no .scr files here in $(pwd)\n" 1>&2
+	printf "$PROGN quitting, no .scr files here in $(pwd)\n" 1>&2
 	exit 2
 fi
 
 if [ $# -ne 1 ]; then
-	printf "${0##*/} needs keyfile argument\n" 1>&2 
+	printf "$PROGN needs keyfile argument\n" 1>&2 
 	exit 2
 fi
 if ! [ -f "$1" ]; then
-	printf "${0##*/}: quitting, keyfile '$1' not found\n" 1>&2
+	printf "$PROGN quitting, keyfile '$1' not found\n" 1>&2
 	exit 2
 fi
 
-for file in ./*.scr; do
-    [ -f "$file" ] || continue
-    let count+=1
-	 symcrypt $1 $file | xxd -p > ${file%.scr}.hex 
+for FILE in ./*.scr; do
+    [ -f "$FILE" ] || continue
+    let COUNT+=1
+	symcrypt $1 $FILE | xxd -p > ${FILE%.scr}.hex 
 done
-printf "${0##*/} decrypted $count files\n" 1>&2
+printf "$PROGN decrypted $COUNT files\n" 1>&2

@@ -7,7 +7,7 @@ PNAME=${0##*/}
 
 case $# in
 	0|1|2)
-		printf "$PNAME quitting, requires keysdir and encrypteddir arguments\n"
+		printf "$PNAME quitting, needs keysdir encrypteddir compressedencrypteddir\n" 
 		exit 2;; 
 	3)
       if ! [ -d "$1" ]; then
@@ -15,30 +15,31 @@ case $# in
 		exit 2; fi
 		if ! [ -d "$2" ]; then
 		printf "$PNAME quitting, encrypted directory $2 not found\n"
-		exit 2; fi;;
+		exit 2; fi
 		if ! [ -d "$3" ]; then
-		printf "$PNAME quitting, compressed encrypted files directory $3 not found\n"
+		printf "$PNAME quitting, compressed encrypted directory $3 not found\n"
 		exit 2; fi;;
 	*) 
-		printf "$PNAME quitting, needs keysydir encrypteddir compressedencrypteddir\n" 
+		printf "$PNAME quitting, needs keysdir encrypteddir compressedencrypteddir\n" 
 		exit 2;;
 esac
 
-# output directory
-OD=${2##*/}-org 
+# make output directory _org
+OD=${2##*/}_org 
 if ! [ -d "$OD" ]; then mkdir $OD; fi
 
+# loop through the keys
 for FILE in $1/*; do
     [ -f "$FILE" ] || continue
     let COUNT+=1
 	FILEND=${FILE##*/}
 	if [ -f $2/$FILEND ]; then
-		symcrypt $1/$FILE $2/$FILE > $OD/$FILEND
+		symcrypt $FILE $2/$FILEND > $OD/$FILEND
 	else if [ -f $3/$FILEND ]; then
-		symcrypt $1/$FILE $3/$FILE | lzma -d -c > $OD/$FILEND
+		symcrypt $FILE $3/$FILEND | lzma -d -c > $OD/$FILEND
 	else 
-		printf "$PNAME quitting, failed to find file $FILEND\n" 
+		printf "$PNAME quitting, failed to find encrypted file $FILEND\n" 
 		exit 2;;
 	fi; fi
 done
-printf "$PNAME decrypted $count files into ./$OD/\n"
+printf "$PNAME decrypted $COUNT files into ./$OD/\n"
