@@ -173,3 +173,11 @@ Similar to `dirtest` above. Tests general encryption and decryption using `super
 ## Conclusion
 
 Watch this space, more facilities are in preparation.
+
+The next release (1.0.3) will feature `hexcheck` to analyse file contents
+to automatically detect entirely hexadecimal files. This will bring two important improvements:
+
+ 1. not having to rely on extension names
+
+ 2. considerable simplification of usage, as appropriate scripts will be 
+ applied automatically
