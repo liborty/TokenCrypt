@@ -39,7 +39,7 @@ for FILE in $1/*; do
 		symcrypt $FILE $3/$FILEND | lzma -d -c > $OD/$FILEND
 	else 
 		printf "$PNAME quitting, failed to find encrypted file $FILEND\n" 
-		exit 2;;
+		exit 2
 	fi; fi
 done
 printf "$PNAME decrypted $COUNT files into ./$OD/\n"

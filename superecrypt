@@ -20,11 +20,11 @@ esac
 
 DIREND=${1##*/}
 # output directory for plain encrypted versions
-if ! [ -d "$DIREND_ecr" ]; then mkdir $DIREND_ecr; fi
+if ! [ -d "$DIREND"_ecr ]; then mkdir "$DIREND"_ecr; fi
 # compressed encrypted outputs versions
-if ! [ -d "$DIREND_elz" ]; then mkdir $DIREND_elz; fi
+if ! [ -d "$DIREND"_elz ]; then mkdir "$DIREND"_elz; fi
 # keys directory
-if ! [ -d "$DIREND_key" ]; then mkdir $DIREND_key; fi
+if ! [ -d "$DIREND"_key ]; then mkdir "$DIREND"_key; fi
 
 for FILE in $1/*; do
     [ -f "$FILE" ] || continue
@@ -35,12 +35,12 @@ for FILE in $1/*; do
 	CMPS=$( stat -c%s $FILEND.lz )
 
 	if [ "$ORGS" -gt  "$CMPS" ]; then # compress only if smaller
-		keygen $FILEND.lz > $DIREND_key/$FILEND
-		symcrypt $DIREND_key/$FILEND $FILEND.lz $DIREND_elz/$FILEND
+		keygen $FILEND.lz > "$DIREND"_key/$FILEND
+		symcrypt "$DIREND"_key/$FILEND $FILEND.lz "$DIREND"_elz/$FILEND
 	else
-		keygen $FILE > $DIREND_key/$FILEND
-		symcrypt $DIREND_key/$FILEND $FILE $DIREND_ecr/$FILEND
+		keygen $FILE > "$DIREND"_key/$FILEND
+		symcrypt "$DIREND"_key/$FILEND $FILE "$DIREND"_ecr/$FILEND
 	fi
 	rm $FILEND.lz
 done
-printf "$PNAME: encrypted $COUNT files into ./$DIREND_key ./$DIREND_ecr ./$DIREND_elz\n"
+printf "$PNAME: encrypted $COUNT files into ./"$DIREND"_key ./"$DIREND"_ecr ./"$DIREND"_elz\n"

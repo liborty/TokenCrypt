@@ -18,23 +18,23 @@ case $# in
 		exit 2;;
 esac
 
-DIREND=${1##*/}test
+DIREND=${1##*/}
 # output directories preparation
-if [ -d "$DIREND_ecr" ]; then rm -r $DIREND_ecr/*
-else mkdir $DIREND_ecr; fi
-if [ -d "$DIREND_elz" ]; then rm -r $DIREND_elz/*
-else mkdir $DIREND_elz; fi
-if [ -d "$DIREND_key" ]; then rm -r $DIREND_key/*
-else mkdir $DIREND_key; fi
+if [ -d "$DIREND"_ecr ]; then rm -r "$DIREND"_ecr/*
+else mkdir "$DIREND"_ecr; fi
+if [ -d "$DIREND"_elz ]; then rm -r "$DIREND"_elz/*
+else mkdir "$DIREND"_elz; fi
+if [ -d "$DIREND"_key ]; then rm -r "$DIREND"_key/*
+else mkdir "$DIREND"_key; fi
 
 superecrypt $1
-superdcrypt $DIREND_key $DIREND_ecr $DIREND_elz
+superdcrypt "$DIREND"_key "$DIREND"_ecr "$DIREND"_elz
 
 printf "$PROGN found these differences:\n"
 for FILE in $1/*; do
     [ -f "$FILE" ] || continue
     let COUNT+=1
- 	diff $FILE $DIREND_org/${FILE##*/} 
+ 	diff $FILE "$DIREND"_ecr_org/${FILE##*/} 
 done
-rm -rf $DIREND_ecr $DIREND_elz $DIREND_key
+rm -rf "$DIREND"_ecr "$DIREND"_ecr_org "$DIREND"_elz "$DIREND"_key
 printf "$PROGN tested $COUNT files\n"
