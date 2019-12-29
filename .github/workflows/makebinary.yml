@@ -16,11 +16,13 @@ jobs:
       run: |
         clang symcrypt.c -o symcrypt
         strip symcrypt
+        clang hexcheck.c -o hexcheck
+        strip hexcheck
     - name: commit
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git commit -m "action: symcrypt binary" symcrypt
+        git commit -m "action: C binaries" symcrypt hexcheck
     - name: push
       uses: ad-m/github-push-action@master
       with:
