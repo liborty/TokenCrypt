@@ -1,0 +1,49 @@
+#!/bin/bash
+# general encryption-decryption test
+# ecrypt encrypts all files in the given directory
+# dcrypt decrypts back all the encrypted files
+
+PROGN=${0##*/}
+
+case $# in
+	0)
+		printf "$PROGN quitting, requires a path argument\n"
+		exit 2;; 
+	1)
+  		if ! [ -d "$1" ]; then
+		printf "$PROGN quitting, input directory name $1 not found\n"
+		exit 2; fi;;
+	*) 
+		printf "$PROGN quitting, too many arguments, needs just one input path\n" 
+		exit 2;;
+esac
+
+# this is just for better readability of code
+INDIR="$1" 
+# directory names, preceding path is stripped off, so all output goes to ./
+DIREND=${1##*/} 
+KEYDIR="$DIREND"_key # must separate _ from the variable name
+OUTDIR="$DIREND"_crp
+ORGDIR="$DIREND"_org
+
+# check that outputs directories do not already exist
+if [ -d "$KEYDIR" ]; then
+	printf "$PROGN quitting, '$KEYDIR' already exists here!\n";	exit 2; fi
+if [ -d "$OUTDIR" ]; then 
+	printf "$PROGN quitting, '$OUTDIR' already exists here!\n"; exit 2; fi
+if [ -d "$ORGDIR" ]; then 
+	printf "$PROGN quitting, '$ORGDIR' already exists here!\n"; exit 2; fi
+
+# encrypt and decrypt
+ncrpt $INDIR
+dcrpt $KEYDIR $OUTDIR
+
+printf "$PROGN found these differences:\n"
+for INFILE in $INDIR/*; do
+   [ -f "$INFILE" ] || continue # check that a file is selected
+   let COUNT+=1
+ 	diff $INFILE "$ORGDIR/${INFILE##*/}" 
+done
+# tidy up 
+rm -r -f $KEYDIR $OUTDIR > /dev/null 
+printf "$PROGN tested $COUNT files\n"
