@@ -32,6 +32,7 @@ Then compression is tried and if it results in a smaller file, its result is use
 (This will not generally be true for small and/or binary files).
 
 Finally, the binary encryptor `symcrypt.c` is applied.
+
 Decryption is the inverse of this process. See the scripts `ncrpt` and `dcrpt` for details.
 However, the algorithm is transparent to the user, TokenCrypt can be used without
 its knowledge.
