@@ -3,20 +3,20 @@
 # using corresponding keys in the specified directory 'keysname'
 # into corresponding original files in local directory 'dirname_org' 
 
-PNAME=${0##*/}
+PROGN=${0##*/}
 case $# in
 	0|1)
-		printf "$PNAME quitting, needs keysdir encrypteddir\n" 
+		printf "$PROGN quitting, needs keysdir encrypteddir\n" 
 		exit 2;; 
 	2)
       if ! [ -d "$1" ]; then
-		printf "$PNAME quitting, keys directory $1 not found\n"
+		printf "$PROGN quitting, keys directory $1 not found\n"
 		exit 2; fi
 		if ! [ -d "$2" ]; then
-		printf "$PNAME quitting, encrypted directory $2 not found\n"
+		printf "$PROGN quitting, encrypted directory $2 not found\n"
 		exit 2; fi;;		
 	*) 
-		printf "$PNAME quitting, needs keysdir encrypteddir\n" 
+		printf "$PROGN quitting, needs keysdir encrypteddir\n" 
 		exit 2;;
 esac
 
@@ -27,9 +27,10 @@ OUTDIR=${2##*/} # just the last directory name, path is stripped off
 # if the indir ending is standard _crp, then remove it from outdir
 if [ "${OUTDIR##*_}" == 'crp' ]; then OUTDIR=${OUTDIR%_*}; fi
 OUTDIR="$OUTDIR"_org # in any case append _org, i.e. original files reconstructed
+
 # make output directory for all decrypted files
 if [ -d "$OUTDIR" ]; then 
-	printf "$PNAME quitting, '$OUTDIR' already exists here!\n"; exit 2
+	printf "$PROGN quitting, '$OUTDIR' already exists here!\n"; exit 2
 else mkdir $OUTDIR; fi
 
 # decompress all files in INDIR
@@ -56,8 +57,8 @@ for INFILE in $INDIR/*; do
 		symcrypt $KEYFILE.hex.lz $INFILE | lzma -d -c | xxd -p > $OUTFILE
 		continue
 	fi
-	printf "$PNAME failed to find key for encrypted file $FILEND\n"
+	printf "$PROGN failed to find key for encrypted file $FILEND\n"
 	let COUNT-=1
 	let FAILED+=1
 done
-printf "$PNAME: decrypted $COUNT files into $OUTDIR, $FAILED failures\n"
+printf "$PROGN: decrypted $COUNT files into $OUTDIR, $FAILED failures\n"

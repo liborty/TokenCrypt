@@ -3,18 +3,18 @@
 # into corresponding encrypted binary files in local directory 'dirname-ecr' 
 # with corresponding key files in 'dirname-key'
 
-PNAME=${0##*/}
+PROGN=${0##*/}
 
 case $# in
 	0)
-		printf "$PNAME quitting, requires one input path argument\n"
+		printf "$PROGN quitting, requires one input path argument\n"
 		exit 2;; 
 	1)
       	if ! [ -d "$1" ]; then
-		printf "$PNAME quitting, directory $1 not found\n"
+		printf "$PROGN quitting, directory $1 not found\n"
 		exit 2; fi;;
 	*) 
-		printf "$PNAME quitting, too many arguments, needs just one path\n" 
+		printf "$PROGN quitting, too many arguments, needs just one path\n" 
 		exit 2;;
 esac
 
@@ -22,14 +22,12 @@ DIREND=${1##*/} # just the directory name, preceding path stripped off
 OUTDIR="$DIREND"_crp
 KEYDIR="$DIREND"_key
 
-# make output directory for all encrypted files
-if [ -d "$OUTDIR" ]; then 
-	printf "$PNAME quitting, '$OUTDIR' already exists here!\n"; exit 2
-else mkdir $OUTDIR; fi
-# make keys directory
+# prepare output directories
 if [ -d "$KEYDIR" ]; then
-	printf "$PNAME quitting, '$KEYDIR' already exists here!\n";	exit 2
-else mkdir $KEYDIR; fi
+	printf "$PROGN quitting, '$KEYDIR' already exists here!\n";	exit 2; fi
+if [ -d "$OUTDIR" ]; then 
+	printf "$PROGN quitting, '$OUTDIR' already exists here!\n"; exit 2; fi
+mkdir $KEYDIR $OUTDIR
 
 # compress all files from the given input path/directory in $1
 for FILE in $1/*; do
@@ -62,4 +60,4 @@ for FILE in $1/*; do
 	symcrypt $KEYFILE $BINFILE $OUTFILE
 done
 rm hexfile.tmp binfile.tmp lzfile.tmp > /dev/null #tidy up
-printf "$PNAME: encrypted $COUNT files into $OUTDIR, keys are in $KEYDIR\n"
+printf "$PROGN: encrypted $COUNT files into $OUTDIR, keys are in $KEYDIR\n"
