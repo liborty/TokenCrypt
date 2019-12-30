@@ -1,9 +1,9 @@
 # TokenCrypt Code of Conduct
 
-By coming here you agree to:
+By coming here you agree to refrain from:
 
-1. Use encryption for ethical purposes
+1. Using encryption for unethical purposes
 
-2. Not to intimidate others by playing the 'I am so offended' game
+2. Intimidating others by playing the 'I am so offended' game
 
-3. Not to posture about having a personal monopoly on the 'moral high gound'
+3. Posturing about having a personal monopoly on the 'moral high ground'
