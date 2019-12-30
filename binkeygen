@@ -1,6 +1,0 @@
-#!/bin/bash
-if [ $# -ne 1 ]; then
-	printf "${0##*/} needs file size argument\n" 1>&2 
-	exit 2
-fi
-</dev/urandom head -c $1
