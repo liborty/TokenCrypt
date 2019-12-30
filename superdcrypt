@@ -34,7 +34,7 @@ for FILE in $1/*; do
     let COUNT+=1
 	FILEND=${FILE##*/}
 	if [ -f $2/$FILEND ]; then
-		symcrypt $FILE $2/$FILEND > $OD/$FILEND
+		symcrypt $FILE $2/$FILEND $OD/$FILEND
 	else if [ -f $3/$FILEND ]; then
 		symcrypt $FILE $3/$FILEND | lzma -d -c > $OD/$FILEND
 	else 

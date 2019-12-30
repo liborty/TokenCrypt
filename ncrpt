@@ -1,0 +1,65 @@
+#!/bin/bash
+# encrypts all files in the specified directory 'dirname' (can be ./)
+# into corresponding encrypted binary files in local directory 'dirname-ecr' 
+# with corresponding key files in 'dirname-key'
+
+PNAME=${0##*/}
+
+case $# in
+	0)
+		printf "$PNAME quitting, requires one input path argument\n"
+		exit 2;; 
+	1)
+      	if ! [ -d "$1" ]; then
+		printf "$PNAME quitting, directory $1 not found\n"
+		exit 2; fi;;
+	*) 
+		printf "$PNAME quitting, too many arguments, needs just one path\n" 
+		exit 2;;
+esac
+
+DIREND=${1##*/} # just the directory name, preceding path stripped off
+OUTDIR="$DIREND"_crp
+KEYDIR="$DIREND"_key
+
+# make output directory for all encrypted files
+if [ -d "$OUTDIR" ]; then 
+	printf "$PNAME quitting, '$OUTDIR' already exists here!\n"; exit 2
+else mkdir $OUTDIR; fi
+# make keys directory
+if [ -d "$KEYDIR" ]; then
+	printf "$PNAME quitting, '$KEYDIR' already exists here!\n";	exit 2
+else mkdir $KEYDIR; fi
+
+# compress all files from the given input path/directory in $1
+for FILE in $1/*; do
+   [ -f "$FILE" ] || continue # check that the selected item is a file
+   let COUNT+=1
+   FILEND=${FILE##*/} # filename.extension without the preceding path
+   BINFILE=$FILE # initial binfile is the input file
+   KEYFILE=$KEYDIR/$FILEND # base keyfile form: no additional extension
+   OUTFILE=$OUTDIR/$FILEND
+   
+   hexcheck < $FILE > hexfile.tmp
+   if [ "$?" -eq 0 ]; then	# status of hexcheck, true when FILE is entirely hexadecimal
+		xxd -p -r hexfile.tmp > binfile.tmp # shrink 50% from hex to binary
+		BINFILE='binfile.tmp' # now this is the binary file to encrypt
+		KEYFILE="$KEYFILE".hex # append .hex extension for hexadecimal origin
+	fi 
+		
+	lzma -z -c $BINFILE > lzfile.tmp # now trying lzma compression
+	CMPS=$( stat -c%s lzfile.tmp ) # the size after compression
+	ORGS=$( stat -c%s $BINFILE )   # and before compression
+	# use compressed version only if it is actually smaller
+	if [ "$CMPS" -lt "$ORGS" ]; then 
+		KEYFILE="$KEYFILE".lz # append .lz extension to the keyfile to be generated
+		BINFILE='lzfile.tmp'  # assign the compressed file, else use uncompressed
+	fi
+	
+	# generate and write out the key of the right size for the input binfile
+	keygen $BINFILE > $KEYFILE
+	# and encrypt with it
+	symcrypt $KEYFILE $BINFILE $OUTFILE
+done
+rm hexfile.tmp binfile.tmp lzfile.tmp > /dev/null #tidy up
+printf "$PNAME: encrypted $COUNT files into $OUTDIR, keys are in $KEYDIR\n"

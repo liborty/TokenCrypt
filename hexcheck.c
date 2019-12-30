@@ -1,20 +1,24 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-int ishex(int n) 
-{ // returns lower case ascii value of a hexadecimal digit or zero
-	if ( n < 48 ) return(0);
-	if ( n > 102 ) return(0);
-	if (( n > 64 ) & ( n < 71 )) return(n+32);
-	if (( n > 57 ) & ( n < 97 )) return(0);
-	return(n);
+unsigned int ishex(unsigned int n) 
+{ // returns lower case ascii value of a hexadecimal digit
+  // ascii of LF and space unchanged
+  // otherwise returns zero indicating unacceptable hexadecimal data
+	if ( n == 10 ) return(10); // put through LF unchanged, unfailed
+	if ( n == 32 ) return(32); // same for space
+	if ( n < 48 ) return(0); // reject below '0'
+	if ( n > 102 ) return(0); // reject above 'f'
+	if (( n > 64 ) & ( n < 71 )) return(n+32); // accept A-F but change to lower case
+	if (( n > 57 ) & ( n < 97 )) return(0); // reject others between '9' and 'a'
+	return(n); // accepting 0-9 and a-f
 }
 
 int main(int argc, char *argv[])
 {
   FILE *fin,*fout;
   char *progname = argv[0], *filein, *fileout; 
-  int c;
+  unsigned int c;
 
   if ((fout = fopen("/dev/stdout","wb")) == NULL)
 	    { fprintf(stderr,"%s: failed to open /dev/stdout\n", progname);
@@ -28,7 +32,7 @@ int main(int argc, char *argv[])
     
   while((c = fgetc(fin)) != EOF) 
      {
-		 if ((c = ishex(c)))
+		 if ( (c = ishex(c)) > 0 )
 		 {
 			if (fputc((unsigned char)c,fout) == EOF) 
 			{
