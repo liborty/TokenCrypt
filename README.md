@@ -3,7 +3,7 @@
 **A simple utility to encrypt and decrypt directories of security tokens and any other files.
 High security without onerous complications.**
 
-## Version 1.1.1  [![Actions Status](https://github.com/{liborty}/{TokenCrypt}/workflows/{makebinary}/badge.svg)](https://github.com/{owner}/{repo}/actions)
+## Version 1.1.1  [![Actions Status](https://github.com/liborty/TokenCrypt/workflows/makebinary/badge.svg)](https://github.com/liborty/TokenCrypt/actions)
 
 ## Outline
 
