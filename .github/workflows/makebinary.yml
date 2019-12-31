@@ -13,11 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: compile
-      run: |
-        clang symcrypt.c -o symcrypt
-        strip symcrypt
-        clang hexcheck.c -o hexcheck
-        strip hexcheck
+      run: make CC=clang
     - name: commit
       run: |
         git config --local user.email "action@github.com"

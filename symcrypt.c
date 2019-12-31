@@ -1,5 +1,7 @@
 #include "stdio.h"
 
+// performs symmetric XOR encryption between two files
+
 int main(int argc, char *argv[])
 {
   FILE *fin1, *fin2, *fout;

@@ -46,17 +46,23 @@ tested using the script `crptest`.
 
 This software was tested under Linux. 
 Installation from source needs just a C compiler, either clang or gcc.
-
 Download or clone this directory, cd into it and then:  
-**`sudo ./install`**  
-Compiles and installs system-wide in /usr/local/bin. Uninstall everything with:  
-**`sudo ./uninstall`**
 
-Alternatively, if you are using a typical Linux, you can skip the compilation step
-and use the pre-compiled binaries `symcrypt` and `hexcheck` included in this repository.
-To do that, either comment out the compilation in the `install` script, or just move manually 
-all the executables from here to your own bin directory that is in your path 
-(this does not require `sudo` privileges).
+**`make CC=clang`**
+
+or using a default compiler, usually gcc, just say: **`make`**
+
+When you are using a typical Linux, you can skip the compilation step. 
+The pre-compiled binaries `symcrypt` and `hexcheck` included in this repository
+will be installed by default.
+
+**`sudo ./install`**
+ 
+Copies all the executables for system-wide use into /usr/local/bin.  
+To remove them again, use: **`sudo ./uninstall`**
+
+Alternatively, you can, of course, copy them manually to any of your own `bin` 
+directories in your path and this does not require `sudo` priviledges.
 
 ### Dependencies
 
