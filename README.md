@@ -144,12 +144,12 @@ These are left untouched in their original `path/dirname` and it is up to you
 not to lose them. Do not start deleting any of the originals until you 
 are satisfied that the testing was successful, you have invoked `ncrpt path/dirname` 
 to encrypt for real, and double-checked manually that the encrypted files and keys exist
-and are of reasonable non-zero size.
+and are of a reasonable non-zero size. The output of ncrpt reports the overall size.
 
 **How does `dcrpt` know the methods of compression that were used?**
 
 Good question! As we have seen, hex compression and/or zstd compression may or may not
-be applied to any given file. This is encoded in the extension appended to the filename
+be applied to any given file. This is recorded in the extension appended to the filename
 of its key in `./dirname_key`. (While the filenames of the encrypted files are left 
 exactly the same as those of the original files).
 
