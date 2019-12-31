@@ -61,13 +61,13 @@ Copies all the executables for system-wide use into /usr/local/bin.
 To remove them again, use: **`sudo ./uninstall`**
 
 Alternatively, you can, of course, copy them manually to any of your own `bin` 
-directories in your path and this does not require `sudo` priviledges, e.g.:
+directories in your path and this does not require `sudo` privileges, e.g.:
 
 `cp symcrypt hexcheck ncrpt dcrpt crptest ~/bin`
 
 ### Dependencies
 
-Standard utilities `xxd` and `lzma` which are normally pre-installed.
+Standard utilities `xxd` and `lzma` which are normally already pre-installed.
 
 ## Usage
 
@@ -75,21 +75,22 @@ Standard utilities `xxd` and `lzma` which are normally pre-installed.
 
 Fresh individual keys are generated for all the files in `path/dirname` and
 written to the directory `./dirname_key` that mirrors the encrypted files
-which go into `./dirname_crp`.
+which go into `./dirname_crp` (in the current directory).
 
 **`dcrpt`** path/dirname_key path/dirname_crp
 
-is the inverse of `ncrpt`. Uses the keys from  `path/dirname_key` to decrypt 
-their one-for-one corresponding files in `path/dirname_crp`.
-Writes all the decrypted results into `./dirname_org`.
+is the inverse of `ncrpt`. It uses the keys in  `path/dirname_key` to decrypt 
+their name corresponding files in `path/dirname_crp`.
+All the decrypted results are written into `./dirname_org` (in the current directory).
 
 ## Testing
 
 **`crptest`** path/dirname 
 
-Automatically tests `ncrpt` and `dcrpt`. It first encrypts and then decrypts back again all the files in the given directory
+Automatically tests `ncrpt` and `dcrpt`. It first encrypts and then decrypts back again
+all the files in the given input directory 
 and compares the results against the original files. It cleans up after itself except for
-the reconstructed files directory `./dirname_org`, left for double reassurance.
+the reconstructed files directory `./dirname_org`, which is left for reassurance.
 
 There should be just a blank after "crptest found these differences:"
 
@@ -122,10 +123,10 @@ will be accepted but note that they will be deleted in the process.
 
 **What happens to impure hexadecimal files?**
 
-It is possible and simple to naively encrypt/decrypt the hexadecimal files/tokens
-as they are but this is sub-optimal, as they can end up twice as long as needs be. 
-This is just what happens to such 'impure' hex files still containing some odd non-hex characters.
-It may be pessimisation of security as well.
+It is possible and simple to naively encrypt the hexadecimal files/tokens
+as they stand but this is sub-optimal, as they can end up twice as long as they need be. 
+This is exactly what happens to impure hex files still containing some odd non-hex characters.
+It may be a pessimisation of security as well.
 
 **What if `crptest` reports other differences?**
 
@@ -135,23 +136,23 @@ The original files in `path/dirname` will be untouched.
 
 **When can I start deleting my original files?**
 
-These are normally left untouched in their original `path/dirname` and it is up to you
-to not lose them. You should not start deleting any of the originals until you 
+These are left untouched in their original `path/dirname` and it is up to you
+not to lose them. Do not start deleting any of the originals until you 
 are satisfied that the testing was successful, you have invoked `ncrpt path/dirname` 
 to encrypt for real, and double-checked manually that the encrypted files and keys exist
-and have reasonable lengths.
+and are of reasonable non-zero size.
 
 **How does `dcrpt` know the methods of compression that were used?**
 
 Good question! As we have seen, hex compression and/or lzma compression may or may not
-be applied to any given file. This is encoded in the extension appended to the filename
+be applied to any given file. This is recorded in the extension appended to the filename
 of its key in `./dirname_key`. (While the filenames of the encrypted files are left 
 exactly the same as those of the original files).
 
 Be careful not to interfere with the keys' extensions, as this would prevent successful decryption.
 As would changing any of the keys' filenames in general.
 
-**What is the biggest hazard of TokenCrypt?**
+**What is the biggest hazard in using TokenCrypt?**
 
 Misplacing, corrupting, failing to update the backup of, or accidentally overwriting the keys in the generated
 `./dirname_key` directory. In two short words: losing them. 
