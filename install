@@ -8,9 +8,11 @@ if [ -z "$COMPILER" ]; then
 	exit 2
 fi
 $COMPILER symcrypt.c -o symcrypt
+strip symcrypt
 $COMPILER hexcheck.c -o hexcheck
+strip hexcheck
 
-PROGS='symcrypt hexcheck keygen ncrpt dcrpt'
+PROGS='symcrypt hexcheck keygen ncrpt dcrpt crptest'
 chmod 755 $PROGS
 cp $PROGS /usr/local/bin
 printf "Installed TokenCrypt utilities in /usr/local/bin\n"
