@@ -3,7 +3,7 @@
 **A simple utility to encrypt and decrypt directories of security tokens and any other files.
 High security without onerous complications.**
 
-## Version 1.1.1  [![Actions Status](https://github.com/liborty/TokenCrypt/workflows/CI/badge.svg)](https://github.com/liborty/TokenCrypt/actions)
+## Version 1.1.2  [![Actions Status](https://github.com/liborty/TokenCrypt/workflows/CI/badge.svg)](https://github.com/liborty/TokenCrypt/actions)
 
 ## Outline
 
@@ -31,7 +31,7 @@ subsuming compression and keys generation. Plus an automated overall testing scr
 The hexadecimal (token) files are automatically recognised and converted to binary, 
 which halves them in length.
 
-Then lzma compression is applied but only if it results in a smaller file.
+Then modern zstd compression is applied but only if it results in a smaller file.
 (This will not generally be true for small and/or binary files).
 
 Finally, the binary encryptor `symcrypt.c` is applied.
@@ -67,7 +67,10 @@ directories in your path and this does not require `sudo` priviledges, e.g.:
 
 ### Dependencies
 
-Standard utilities `xxd` and `lzma` which are normally pre-installed.
+Standard utility **`xxd`** which is normally pre-installed.
+  
+**`zstd`** compression needs installing. If you prefer `lzma` as in some of
+the earlier versions, you can change it back. One occurence in `ncrpt` and two in `dcrpt`. 
 
 ## Usage
 
@@ -75,7 +78,8 @@ Standard utilities `xxd` and `lzma` which are normally pre-installed.
 
 Fresh individual keys are generated for all the files in `path/dirname` and
 written to the directory `./dirname_key` that mirrors the encrypted files
-which go into `./dirname_crp`.
+which go into `./dirname_crp`. Overall input and output sizes and the number of 
+processed files are reported.
 
 **`dcrpt`** path/dirname_key path/dirname_crp
 
@@ -143,7 +147,7 @@ and have reasonable lengths.
 
 **How does `dcrpt` know the methods of compression that were used?**
 
-Good question! As we have seen, hex compression and/or lzma compression may or may not
+Good question! As we have seen, hex compression and/or zstd compression may or may not
 be applied to any given file. This is encoded in the extension appended to the filename
 of its key in `./dirname_key`. (While the filenames of the encrypted files are left 
 exactly the same as those of the original files).

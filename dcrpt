@@ -49,12 +49,12 @@ for INFILE in $INDIR/*; do
 		symcrypt $KEYFILE.hex $INFILE | xxd -p > $OUTFILE 
 		continue
 	fi
-	if [ -f $KEYFILE.lz ]; then # found compressed nonhex
-		symcrypt $KEYFILE.lz $INFILE | lzma -d -c > $OUTFILE
+	if [ -f $KEYFILE.zst ]; then # found compressed nonhex
+		symcrypt $KEYFILE.zst $INFILE | zstd -d -c > $OUTFILE
 		continue
 	fi
-	if [ -f $KEYFILE.hex.lz ]; then # found hexed and compressed
-		symcrypt $KEYFILE.hex.lz $INFILE | lzma -d -c | xxd -p > $OUTFILE
+	if [ -f $KEYFILE.hex.zst ]; then # found hexed and compressed
+		symcrypt $KEYFILE.hex.lz $INFILE | zstd -d -c | xxd -p > $OUTFILE
 		continue
 	fi
 	printf "$PROGN failed to find key for encrypted file $FILEND\n"

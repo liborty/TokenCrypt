@@ -18,7 +18,8 @@ case $# in
 		exit 2;;
 esac
 
-DIREND=${1##*/} # just the directory name, preceding path stripped off
+INDIR=$1
+DIREND=${INDIR##*/} # just the directory name, preceding path stripped off
 OUTDIR="$DIREND"_crp
 KEYDIR="$DIREND"_key
 
@@ -30,7 +31,7 @@ if [ -d "$OUTDIR" ]; then
 mkdir $KEYDIR $OUTDIR
 
 # compress all files from the given input path/directory in $1
-for FILE in $1/*; do
+for FILE in $INDIR/*; do
    [ -f "$FILE" ] || continue # check that the selected item is a file
    let COUNT+=1
    FILEND=${FILE##*/} # filename.extension without the preceding path
@@ -45,13 +46,14 @@ for FILE in $1/*; do
 		KEYFILE="$KEYFILE".hex # append .hex extension for hexadecimal origin
 	fi 
 		
-	lzma -z -c $BINFILE > lzfile.tmp # now trying lzma compression
-	CMPS=$( stat -c%s lzfile.tmp ) # the size after compression
+	#	lzma -z -c $BINFILE > zfile.tmp # lzma compression
+	zstd -13 -c -q $BINFILE > zfile.tmp # now trying zstd compression -q means no reports
+	CMPS=$( stat -c%s zfile.tmp ) # the size after compression
 	ORGS=$( stat -c%s $BINFILE )   # and before compression
 	# use compressed version only if it is actually smaller
 	if [ "$CMPS" -lt "$ORGS" ]; then 
-		KEYFILE="$KEYFILE".lz # append .lz extension to the keyfile to be generated
-		BINFILE='lzfile.tmp'  # assign the compressed file, else use uncompressed
+		KEYFILE="$KEYFILE".zst # append .zst extension to the keyfile to be generated
+		BINFILE='zfile.tmp'  # assign the compressed file, else use uncompressed
 	fi
 	
 	# generate and write out the key of the right size for the input binfile
@@ -59,5 +61,6 @@ for FILE in $1/*; do
 	# and encrypt with it
 	symcrypt $KEYFILE $BINFILE $OUTFILE
 done
-rm hexfile.tmp binfile.tmp lzfile.tmp > /dev/null #tidy up
+rm hexfile.tmp binfile.tmp zfile.tmp > /dev/null #tidy up
+printf "original size:\t%s (%s)\noutput size:\t%s (%s)\n" $( du -hbs $INDIR $OUTDIR )
 printf "$PROGN: encrypted $COUNT files into $OUTDIR, keys are in $KEYDIR\n"
