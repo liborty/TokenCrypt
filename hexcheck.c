@@ -14,6 +14,9 @@ unsigned int ishex(unsigned int n)
 	return(n); // accepting 0-9 and a-f
 }
 
+// checks if stdin contains only hexadecimal characters NL,space,0-9,A-F,a-f
+// any other character causes it to stop immediately and return failure
+// it writes all checked hex characeters to stdout, converting A-F to a-f
 int main(int argc, char *argv[])
 {
   FILE *fin,*fout;
