@@ -1,12 +1,11 @@
 CFLAGS = -O3
 
-all: symcrypt hexcheck 
+all: symcrypt.c hexcheck.c 
 
-symcrypt: symcrypt.c
+symcrypt.c: 
 	$(CC) symcrypt.c -o symcrypt
 	strip symcrypt 
 
-hexcheck: hexcheck.c
+hexcheck.c:
 	$(CC) hexcheck.c -o hexcheck
 	strip hexcheck
-
