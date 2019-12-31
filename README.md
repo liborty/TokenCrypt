@@ -106,7 +106,13 @@ It may report some missing spaces and newlines in reconstructed hexadecimal file
 This is because `hexcheck` tries to be tolerant of them but `xxd` subsequently
 quite rightly deletes them. When this happens, it is a useful reminder to remove them
 from your original hex files. It can be done most simply by substituting the 
-original hexadecimal files with their reconstructed cleaned-up equivalents from `./dirname_org`
+original hexadecimal files with their reconstructed cleaned-up equivalents
+from `./dirname_org`
+
+**Why does `crptest` report differences between some upper and lower case letters?**
+ 
+This is normal behaviour. A-F letters in hex files are intentionally changed into their
+lower case equivalents a-f (standardised hexadecimal form). 
 
 **My hex files are achieving less than 50% compression?**
 
