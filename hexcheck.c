@@ -23,16 +23,49 @@ int main(int argc, char *argv[])
   char *progname = argv[0], *filein, *fileout; 
   unsigned int c;
 
-  if ((fout = fopen("/dev/stdout","wb")) == NULL)
+  switch (argc)
+    {
+    case 3:
+      fileout = argv[2];
+      if ((fout = fopen(fileout,"wb")) == NULL)
+	    { fprintf(stderr,"%s: failed to open output file %s\n", progname,fileout);
+	      exit(EXIT_FAILURE);
+	    }
+      filein = argv[1];
+      if ((fin = fopen(filein,"rb")) == NULL)
+	    { fprintf(stderr,"%s: failed to open input hexfile %s\n", progname,filein);
+    	  fclose(fout);
+    	  exit(EXIT_FAILURE);
+    	}
+    break;
+    case 2:
+      if ((fout = fopen("/dev/stdout","wb")) == NULL)
 	    { fprintf(stderr,"%s: failed to open /dev/stdout\n", progname);
 	      exit(EXIT_FAILURE);
 	    }
-  if ((fin = fopen("/dev/stdin","rb")) == NULL)
+      filein = argv[1];
+      if ((fin = fopen(filein,"rb")) == NULL)
+	    { fprintf(stderr,"%s: failed to open input hexfile %s\n", progname,filein);
+    	  fclose(fout); 
+          exit(EXIT_FAILURE);
+       	}
+    break;
+    case 1:
+      if ((fout = fopen("/dev/stdout","wb")) == NULL)
+	    { fprintf(stderr,"%s: failed to open /dev/stdout\n", progname);
+	      exit(EXIT_FAILURE);
+	    }
+      if ((fin = fopen("/dev/stdin","rb")) == NULL)
 	    { fprintf(stderr,"%s: failed to open /dev/stdin\n", progname);
 	      fclose(fout);
 	      exit(EXIT_FAILURE);
 	    }
-    
+    break;
+    default:
+      fprintf(stderr,"usage: %s [ hexfile [outfile]]\nomitted files mean stdin/out, e.g. in a pipe: .. | %s hexfile | ..\n",progname,progname);
+      exit(EXIT_FAILURE);
+    }
+      
   while((c = fgetc(fin)) != EOF) 
      {
 		 if ( (c = ishex(c)) > 0 )
