@@ -2,7 +2,7 @@
 
 // performs symmetric XOR encryption between two files
 // takes three file arguments: keyfile, datafile, outfile
-// the last one or two can be left out to use 
+// the last one or two can be omitted to use 
 // stdout and stdin respectively (suitable for use in a pipe)
 
 int main(int argc, char *argv[])
