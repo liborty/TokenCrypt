@@ -3,7 +3,7 @@
 **A simple utility to encrypt and decrypt directories of security tokens and any other files.
 High security without onerous complications.**
 
-## Version 1.1.0  
+## Version 1.1.1  [![Actions Status](https://github.com/liborty/TokenCrypt/workflows/CI/badge.svg)](https://github.com/liborty/TokenCrypt/actions)
 
 ## Outline
 
@@ -31,7 +31,7 @@ subsuming compression and keys generation. Plus an automated overall testing scr
 The hexadecimal (token) files are automatically recognised and converted to binary, 
 which halves them in length.
 
-Then compression is tried and only if it results in a smaller file, its result is used.
+Then lzma compression is applied but only if it results in a smaller file.
 (This will not generally be true for small and/or binary files).
 
 Finally, the binary encryptor `symcrypt.c` is applied.
@@ -44,16 +44,15 @@ tested using the script `crptest`.
 
 ## Installation
 
-This software was tested under Linux. 
-Installation from source needs just a C compiler, either clang or gcc.
-Download or clone this directory, cd into it and then:  
+This software was tested under Linux. Installation from source needs just a C compiler,
+either clang or gcc. Download or clone this directory, cd into it and then:  
 
 **`make CC=clang`**
 
 or using a default compiler, usually gcc, just say: **`make`**
 
 When you are using a typical Linux, you can skip the compilation step. 
-The pre-compiled binaries `symcrypt` and `hexcheck` included in this repository
+Then the pre-compiled binaries `symcrypt` and `hexcheck` included in this repository
 will be installed by default.
 
 **`sudo ./install`**
@@ -62,7 +61,9 @@ Copies all the executables for system-wide use into /usr/local/bin.
 To remove them again, use: **`sudo ./uninstall`**
 
 Alternatively, you can, of course, copy them manually to any of your own `bin` 
-directories in your path and this does not require `sudo` priviledges.
+directories in your path and this does not require `sudo` priviledges, e.g.:
+
+`cp symcrypt hexcheck ncrpt dcrpt crptest ~/bin`
 
 ### Dependencies
 
