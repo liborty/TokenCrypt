@@ -116,7 +116,7 @@ will be accepted but note that they will be deleted in the process.
 **What happens to impure hexadecimal files?**
 
 It is possible and simple to naively encrypt/decrypt the hexadecimal files/tokens
-as they are but this is sub-optimal, as they can end up twice as long. 
+as they are but this is sub-optimal, as they can end up twice as long as needs be. 
 This is just what happens to such 'impure' hex files still containing some odd non-hex characters.
 It may be pessimisation of security as well.
 
@@ -134,12 +134,25 @@ are satisfied that the testing was successful, you have invoked `ncrpt path/dirn
 to encrypt for real, and double-checked manually that the encrypted files and keys exist
 and have reasonable lengths.
 
+**How does `dcrpt` know the methods of compression that were used?**
+
+Good question! As we have seen, hex compression and/or lzma compression may or may not
+be applied to any given file. This is encoded in the extension appended to the filename
+of its key in `./dirname_key`. (While the filenames of the encrypted files are left 
+exactly the same as those of the original files).
+
+Be careful not to interfere with the keys' extensions, as this would prevent successful decryption.
+As would changing any of the keys' filenames in general.
+
 **What is the biggest hazard of TokenCrypt?**
 
 Misplacing, corrupting, failing to update the backup of, or accidentally overwriting the keys in the generated
-`./dirname_key` directory. In two short words: losing them. The keys directory should be kept somewhere separate from 
+`./dirname_key` directory. In two short words: losing them. 
+
+The keys directory should be kept somewhere separate from 
 `./dirname_crp` for security reasons but the rub is that this makes it easier to lose.
-You need to be well organised with your file backups.
+You need to be well organised with your file backups (in two different places)
+and the directories correspondences across them.
 
 ## Conclusion
 
