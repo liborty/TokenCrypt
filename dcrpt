@@ -54,7 +54,7 @@ for INFILE in $INDIR/*; do
 		continue
 	fi
 	if [ -f $KEYFILE.hex.zst ]; then # found hexed and compressed
-		symcrypt $KEYFILE.hex.lz $INFILE | zstd -d -c | xxd -p > $OUTFILE
+		symcrypt $KEYFILE.hex.zst $INFILE | zstd -d -c | xxd -p > $OUTFILE
 		continue
 	fi
 	printf "$PROGN failed to find key for encrypted file $FILEND\n"
