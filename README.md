@@ -25,11 +25,11 @@ automagically: `hexcheck.c` detects entirely hexadecimal files.
 The main workhorse of TokenCrypt is `symcrypt.c` which does fast symmetric
 encryption or decryption of any type of file of any length. It uses practically no memory.
 
-Then there are bash scripts to automate the compression, encryption and decryption
-processes and an automated overall testing script.
+Then there are two bash scripts to automate the encryption and decryption,
+subsuming compression and keys generation. Plus an automated overall testing script.
 
 The hexadecimal (token) files are automatically recognised and converted to binary, 
-which halves them in length. Other files are used as they are.
+which halves them in length.
 
 Then compression is tried and only if it results in a smaller file, its result is used.
 (This will not generally be true for small and/or binary files).
@@ -41,10 +41,6 @@ However, the knowledge of the algorithm is not necessary for effective TokenCryp
 
 The entire process of encryption and decryption can be automatically
 tested using the script `crptest`.
-
-It is possible and simpler to naively encrypt/decrypt the hexadecimal files/tokens
-as they are but this is sub-optimal, as they are twice as long. It is probably 
-pessimisation of security as well.
 
 ## Installation
 
@@ -117,6 +113,13 @@ other intervening non-hexadecimal characters, it is best to split it into indivi
 files, each containing only pure hexadecimal. Any remaining spaces and newlines 
 will be accepted but note that they will be deleted in the process.
 
+**What happens to impure hexadecimal files?**
+
+It is possible and simple to naively encrypt/decrypt the hexadecimal files/tokens
+as they are but this is sub-optimal, as they can end up twice as long. 
+This is just what happens to such 'impure' hex files still containing some odd non-hex characters.
+It may be pessimisation of security as well.
+
 **What if `crptest` reports other differences?**
 
 Should it list any other differences, then something has gone wrong. It will most
@@ -133,8 +136,8 @@ and have reasonable lengths.
 
 **What is the biggest hazard of TokenCrypt?**
 
-Losing, misplacing, corrupting or accidentally overwriting the keys in the generated
-`./dirname_key` directory. It should be kept somewhere separate from 
+Misplacing, corrupting, failing to update the backup of, or accidentally overwriting the keys in the generated
+`./dirname_key` directory. In two short words: losing them. The keys directory should be kept somewhere separate from 
 `./dirname_crp` for security reasons but the rub is that this makes it easier to lose.
 You need to be well organised with your file backups.
 
