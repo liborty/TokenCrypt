@@ -78,7 +78,8 @@ the earlier versions, you can change it back. One occurence in `ncrpt` and two i
 
 Fresh individual keys are generated for all the files in `path/dirname` and
 written to the directory `./dirname_key` that mirrors the encrypted files
-which go into `./dirname_crp`. Overall input and output sizes and the number of 
+which go into `./dirname_crp` (in the current directory).
+Overall input and output sizes and the number of files processed are reported.
 
 **`dcrpt`** path/dirname_key path/dirname_crp
 
