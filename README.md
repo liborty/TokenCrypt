@@ -67,14 +67,10 @@ directories in your path and this does not require `sudo` privileges, e.g.:
 
 ### Dependencies
 
-<<<<<<< HEAD
 Standard utility **`xxd`** which is normally pre-installed.
   
 **`zstd`** compression needs installing. If you prefer `lzma` as in some of
 the earlier versions, you can change it back. One occurence in `ncrpt` and two in `dcrpt`. 
-=======
-Standard utilities `xxd` and `lzma` which are normally already pre-installed.
->>>>>>> b44863810cfb5fd81fe3a4ac74c2ace172200bea
 
 ## Usage
 
@@ -82,12 +78,7 @@ Standard utilities `xxd` and `lzma` which are normally already pre-installed.
 
 Fresh individual keys are generated for all the files in `path/dirname` and
 written to the directory `./dirname_key` that mirrors the encrypted files
-<<<<<<< HEAD
 which go into `./dirname_crp`. Overall input and output sizes and the number of 
-processed files are reported.
-=======
-which go into `./dirname_crp` (in the current directory).
->>>>>>> b44863810cfb5fd81fe3a4ac74c2ace172200bea
 
 **`dcrpt`** path/dirname_key path/dirname_crp
 
@@ -156,13 +147,8 @@ and are of reasonable non-zero size.
 
 **How does `dcrpt` know the methods of compression that were used?**
 
-<<<<<<< HEAD
 Good question! As we have seen, hex compression and/or zstd compression may or may not
 be applied to any given file. This is encoded in the extension appended to the filename
-=======
-Good question! As we have seen, hex compression and/or lzma compression may or may not
-be applied to any given file. This is recorded in the extension appended to the filename
->>>>>>> b44863810cfb5fd81fe3a4ac74c2ace172200bea
 of its key in `./dirname_key`. (While the filenames of the encrypted files are left 
 exactly the same as those of the original files).
 
