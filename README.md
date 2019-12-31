@@ -1,9 +1,9 @@
 # TokenCrypt
 
-**A simple utility to encrypt and decrypt multiple security tokens or any files.
+**A simple utility to encrypt and decrypt directories of security tokens and any other files.
 High security without onerous complications.**
 
-## Version 1.0.3  
+## Version 1.1.0  
 
 ## Outline
 
@@ -11,31 +11,33 @@ Internet security tokens are usually 32,64 or more hexadecimal characters.
 They are increasingly used to facilitate secure access to various 
 Applications Programming Interfaces (APIs). Being plain text,
 they are easily transmitted over the internet but they need to be stored securely,
-that means encrypted.
+that means encrypted. 
 
-The workhorse of TokenCrypt is `symcrypt.c` which does fast symmetric
+TokenCrypt takes whole directories of tokens
+and/or any other files, recognises hexadecimal data, applies the best compression 
+process individually to each file and then encrypts them all with extremely high security.
+
+There may be files and directories, perhaps even whole databases of security tokens,
+all mixed up with other types of files. This is perhaps not the best practice but 
+it may well arise and could involve much work to separate them. TokenCrypt copes with it
+automagically: `hexcheck.c` detects entirely hexadecimal files.
+
+The main workhorse of TokenCrypt is `symcrypt.c` which does fast symmetric
 encryption or decryption of any type of file of any length. It uses practically no memory.
 
-Then there are 
-bash helper scripts to generate keys, to automate the encryption and decryption
-of whole directories and a testing script.
-
-When a token consist of several parts, perhaps separated by a dash or some
-other intervening non-hexadecimal characters, it is best to split it into individual
-files containing only pure hexadecimal. Spaces and newlines will be tolerated
-but will be deleted in the process.
+Then there are bash scripts to automate the compression, encryption and decryption
+processes and an automated overall testing script.
 
 The hexadecimal (token) files are automatically recognised and converted to binary, 
 which halves them in length. Other files are used as they are.
 
-Then compression is tried and if it results in a smaller file, its result is used.
+Then compression is tried and only if it results in a smaller file, its result is used.
 (This will not generally be true for small and/or binary files).
 
 Finally, the binary encryptor `symcrypt.c` is applied.
 
 Decryption is the inverse of this process. See the scripts `ncrpt` and `dcrpt` for details.
-However, the algorithm is transparent to the user, TokenCrypt can be used without
-its knowledge.
+However, the knowledge of the algorithm is not necessary for effective TokenCrypt use.
 
 The entire process of encryption and decryption can be automatically
 tested using the script `crptest`.
@@ -43,15 +45,6 @@ tested using the script `crptest`.
 It is possible and simpler to naively encrypt/decrypt the hexadecimal files/tokens
 as they are but this is sub-optimal, as they are twice as long. It is probably 
 pessimisation of security as well.
-
-### General Encryption
-
-There may be files and directories, perhaps even whole databases of security tokens,
-all mixed up with other types of files. This is perhaps not the best practice but 
-it may well arise and could involve much work to separate them.
-
-TokenCrypt will nonetheless encrypt/decrypt whole directories, applying the best
-procedure individually to each file.
 
 ## Installation
 
@@ -107,12 +100,22 @@ quite rightly deletes them. When this happens, it is a useful reminder to remove
 from your original hex files. It can be done most simply by substituting the 
 original hexadecimal files with their reconstructed cleaned-up equivalents from `./dirname_org`
 
+**My hex files are achieving less than 50% compression?**
+
+They should normally get at least 50% compressed.
 Any other spurious white noise or other non-hexadecimal characters, even just one of them,
-will make `hexcheck` report the file as non-hexadecimal and its compression will
+will make `hexcheck` report the file as non-hexadecimal and so its compression will
 be limited. It may be worth checking that what you thought were hexadecimal files
 were actually accepted as such. This will be indicated by their keys in `./dirname_key`
 having a `.hex` extension in their names. If the original file already had a .hex extension,
-it should have two.
+it should now have two.
+
+**How to get more hexadecimal files accepted?**
+
+When a token consist of several parts, perhaps separated by a dash or some
+other intervening non-hexadecimal characters, it is best to split it into individual
+files, each containing only pure hexadecimal. Any remaining spaces and newlines 
+will be accepted but note that they will be deleted in the process.
 
 **What if `crptest` reports other differences?**
 
@@ -123,9 +126,10 @@ The original files in `path/dirname` will be untouched.
 **When can I start deleting my original files?**
 
 These are normally left untouched in their original `path/dirname` and it is up to you
-not to lose them. You should not start deleting any of the originals until you 
-are satisfied that the testing was successful, you have invoked `ncrpt` to encrypt for real
-and double-checked manually that the encrypted files and keys exist and have reasonable lengths.
+to not lose them. You should not start deleting any of the originals until you 
+are satisfied that the testing was successful, you have invoked `ncrpt path/dirname` 
+to encrypt for real, and double-checked manually that the encrypted files and keys exist
+and have reasonable lengths.
 
 **What is the biggest hazard of TokenCrypt?**
 
