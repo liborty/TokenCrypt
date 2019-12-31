@@ -18,7 +18,7 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git commit -m "action: C binaries" symcrypt hexcheck
+        git commit -a -m "action: C binaries"
     - name: push
       uses: ad-m/github-push-action@master
       with:
