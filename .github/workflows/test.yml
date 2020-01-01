@@ -11,7 +11,7 @@ jobs:
     - name: testrun
       run: |
         PATH=./:$PATH  
-        sudo apt-get install diffutils   
+        sudo apt-get install zstd   
         ./crptest testing > test.log
       shell: bash
       working-directory: ./	
