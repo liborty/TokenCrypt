@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
   while((c = fgetc(fin)) != EOF) 
      {
 	  if ( c == 10 ) continue; // do not fail on LF, just ignore it
-	  if ( n == 32 ) continue; // same for space
+	  if ( c == 32 ) continue; // same for space
 	  if ( (c = ishex(c)) > 0 )
 		 {
 			if (fputc((unsigned char)c,fout) == EOF) 
