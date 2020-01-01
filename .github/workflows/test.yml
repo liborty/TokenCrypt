@@ -3,7 +3,11 @@ name: test
 on: 
    push:
     paths:
-    - 'crptest' 'ncrpt' 'dcrpt' 'symcrypt' 'hexcheck'
+    - 'crptest' 
+    - 'ncrpt' 
+    - 'dcrpt' 
+    - 'symcrypt' 
+    - 'hexcheck'
 jobs:
   build:
     runs-on: ubuntu-latest
