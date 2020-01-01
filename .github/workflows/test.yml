@@ -10,7 +10,7 @@ jobs:
     - uses: actions/checkout@v1
     - name: testrun
       run: |
-        ./install     
+        PATH=./:$PATH     
         ./crptest testing > test.log
       shell: bash
       working-directory: ./	
