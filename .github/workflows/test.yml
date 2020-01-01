@@ -1,18 +1,19 @@
 name: test
 
-on: [push]
-
+on: 
+   push:
+    paths:
+    - 'crptest' 'ncrpt' 'dcrpt' 'symcrypt' 'hexcheck'
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
-    steps:
+  steps:
     - uses: actions/checkout@v1
-    - name: testrun
+    - name: testrun 
       run: |
         rm -rf testing_org
         ./crptest testing > test.log
+      env PATH ./:$PATH
     - name: commit
       run: |
         git config --local user.email "action@github.com"
