@@ -9,14 +9,14 @@ jobs:
 	 - uses: actions/checkout@v1 	  
 	 - name: testrun
 	   run: |
-          rm -rf testing_org
-          ./crptest testing > test.log
-          working-directory: ./
+        rm -rf testing_org
+        ./crptest testing > test.log
+        working-directory: ./
 	 - name: commit
 	   run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git commit -a -m "action:test.log"
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git commit -a -m "action:test.log"
 	 - name: push
           uses:ad-m/github-push-action@master
           with:github_token:${{ secrets.GITHUB_TOKEN }}
