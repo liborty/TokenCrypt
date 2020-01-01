@@ -5,18 +5,18 @@ on: push
 jobs:
    build:
     runs-on: ubuntu-latest
-	 steps:
-	 - uses: actions/checkout@v1 	  
-	 - name: testrun
-	   run: |
+    steps:
+    - uses: actions/checkout@v1
+    - name: testrun
+      	working-directory: ./
+	run: |
         rm -rf testing_org
         ./crptest testing > test.log
-        working-directory: ./
-	 - name: commit
-	   run: |
+    - name: commit
+        run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git commit -a -m "action:test.log"
-	 - name: push
-          uses:ad-m/github-push-action@master
-          with:github_token:${{ secrets.GITHUB_TOKEN }}
+    - name: push
+        uses:ad-m/github-push-action@master
+        with:github_token:${{ secrets.GITHUB_TOKEN }}
