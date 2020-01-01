@@ -21,4 +21,5 @@ jobs:
         git commit -am 'action:test.log'
     - name: push
       uses: ad-m/github-push-action@master
-      with: github_token:${{ secrets.GITHUB_TOKEN }}
+      with: 
+        github_token: ${{ secrets.GITHUB_TOKEN }}
