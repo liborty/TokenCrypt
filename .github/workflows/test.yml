@@ -9,7 +9,10 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: testrun
-      run: ./crptest testing > test.log
+      run: |
+        printf "$PATH\n"
+        which zstd
+        ./crptest testing > test.log
       shell: bash
       working-directory: ./	
     - name: commit
