@@ -5,8 +5,6 @@ unsigned int ishex(unsigned int n)
 { // returns lower case ascii value of a hexadecimal digit
   // ascii of LF and space unchanged
   // otherwise returns zero indicating unacceptable hexadecimal data
-	if ( n == 10 ) return(10); // put through LF unchanged, unfailed
-	if ( n == 32 ) return(32); // same for space
 	if ( n < 48 ) return(0); // reject below '0'
 	if ( n > 102 ) return(0); // reject above 'f'
 	if (( n > 64 ) & ( n < 71 )) return(n+32); // accept A-F but change to lower case
@@ -68,7 +66,9 @@ int main(int argc, char *argv[])
       
   while((c = fgetc(fin)) != EOF) 
      {
-		 if ( (c = ishex(c)) > 0 )
+	  if ( c == 10 ) continue; // do not fail on LF, just ignore it
+	  if ( n == 32 ) continue; // same for space
+	  if ( (c = ishex(c)) > 0 )
 		 {
 			if (fputc((unsigned char)c,fout) == EOF) 
 			{
