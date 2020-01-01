@@ -70,7 +70,8 @@ directories in your path and this does not require `sudo` privileges, e.g.:
 Standard utility **`xxd`** which is normally pre-installed.
   
 **`zstd`** compression needs installing. If you prefer `lzma` as in some of
-the earlier versions, you can change it back. One occurence in `ncrpt` and two in `dcrpt`. 
+the earlier versions, you can change it back in `ncrpt` and `dcrpt`, not forgetting
+the extension names.
 
 ## Usage
 
@@ -94,9 +95,11 @@ All the decrypted results are written into `./dirname_org` (in the current direc
 Automatically tests `ncrpt` and `dcrpt`. It first encrypts and then decrypts back again
 all the files in the given input directory 
 and compares the results against the original files. It cleans up after itself except for
-the reconstructed files directory `./dirname_org`, which is left for reassurance.
-
+the reconstructed files directory `./dirname_org`, which is left for reassurance.  
 There should be just a blank after "crptest found these differences:"
+
+Automated 'github action' script is run in the repository on the included `testing` directory.
+It tests all three types of files (hexadecimal, text and binary).
 
 ## Frequently Asked Questions (FAQ)
 
