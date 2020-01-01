@@ -11,15 +11,15 @@ jobs:
   - uses: actions/checkout@v1
     
   - name: testrun
-    run: crptest testing > test.log
+    run: ./crptest testing > test.log
     shell: bash
-    bin-directory: ./	
+    bin-directory: './'	
 	
   - name: commit
     run: |
       git config --local user.email "action@github.com"
       git config --local user.name "GitHub Action"
-      git commit -a -m "action:test.log"
+      git commit -am 'action:test.log'
 	  
   -name: push	  	
 	uses: ad-m/github-push-action@master
