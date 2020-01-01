@@ -1,6 +1,2 @@
-original size:	8766 (testing)
-output size:	6220 (testing_crp)
-ncrpt: encrypted 3 files into testing_crp, keys are in testing_key
-dcrpt: decrypted 3 files into testing_org, 0 failures
 crptest found these differences:
 crptest tested 3 files
