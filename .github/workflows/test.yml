@@ -12,17 +12,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
   steps:
-    - uses: actions/checkout@v1
-    - name: testrun 
-      run: |
+  - uses: actions/checkout@v1
+  - name: testrun 
+      run:|
         rm -rf testing_org
         ./crptest testing > test.log
-     - name: commit
-      run: |
+  - name: commit
+      run:|
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git commit -a -m "action: test.log"
-    - name: push
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        git commit -a -m "action:test.log"
+  - name: push
+      uses:ad-m/github-push-action@master
+      with:github_token:${{ secrets.GITHUB_TOKEN }}
