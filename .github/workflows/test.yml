@@ -11,13 +11,17 @@ jobs:
   - uses: actions/checkout@v1
     
   - name: testrun
-    	shell: bash
-    	bin-directory: ./	
-	run: crptest testing > test.log
+    run: crptest testing > test.log
+    shell: bash
+    bin-directory: ./	
 	
-  - name: push
-    	git config --local user.email "action@github.com"
-	git config --local user.name "GitHub Action"
-	git commit -a -m "action:test.log"	
-	uses:ad-m/github-push-action@master
-	with:github_token:${{ secrets.GITHUB_TOKEN }}
+  - name: commit
+    run: |
+      git config --local user.email "action@github.com"
+      git config --local user.name "GitHub Action"
+      git commit -a -m "action:test.log"
+	  
+  -name: push	  	
+	uses: ad-m/github-push-action@master
+	with:
+	  github_token:${{ secrets.GITHUB_TOKEN }}
