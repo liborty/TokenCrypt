@@ -11,7 +11,7 @@ jobs:
     - name: testrun
       run: |
         PATH=./:$PATH  
-        sudo apt-get install diff   
+        sudo apt-get install diffutils   
         ./crptest testing > test.log
       shell: bash
       working-directory: ./	
