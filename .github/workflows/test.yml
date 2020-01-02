@@ -10,7 +10,7 @@ jobs:
     - name: testrun
       run: |
         sudo apt-get install zstd   
-        echo "::add-path::./"  
+        PATH=./:$PATH  
         crptest testing > test.log
       shell: bash
     - name: commit
