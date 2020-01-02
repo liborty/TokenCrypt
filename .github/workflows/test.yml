@@ -10,7 +10,7 @@ jobs:
     - name: testrun
       run: |
         sudo apt-get install zstd   
-        PATH=./:$PATH  
+        ::add-path::./  
         crptest testing > test.log
       shell: bash
       working-directory: ./	
