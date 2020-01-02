@@ -93,53 +93,71 @@ All the decrypted results are written into `./dirname_org` (in the current direc
 **`crptest`** path/dirname 
 
 Automatically tests `ncrpt` and `dcrpt`. It first encrypts and then decrypts back again
-all the files in the given input directory 
-and compares the results against the original files. It cleans up after itself except for
-the reconstructed files directory `./dirname_org`, which is left for reassurance.  
-There should be just a blank after "crptest found these differences:"
+all the files in the given input directory and compares the results against the original files.
+It cleans up after itself except for the keys directory `./dirname_key`,
+which is left for reassurance and for information about how was each test file compressed. 
+There should be only a blank produced after "crptest found these differences:"
 
-Automated 'github action' script is run in the repository on the included `testing` directory.
-It tests all three types of files (hexadecimal, text and binary).
+Automated 'github action' runs `crptest` over `testing` directory that is
+included in the repository.
+It tests all the main types of files: hexadecimal, text and binary. 
+The 'test' badge at the top of this document lights up green as 'passing'
+when the test was successful. Note that only the terminal output `test.log`
+is saved in the repository from this automatic test.
 
 ## Frequently Asked Questions (FAQ)
 
 **What if `crptest` reports missing NL and/or spaces in hex files?**
 
 It may report some missing spaces and newlines in reconstructed hexadecimal files.
-This is because `hexcheck` tries to be tolerant of them but `xxd` subsequently
-quite rightly deletes them. When this happens, it is a useful reminder to remove them
-from your original hex files. It can be done most simply by substituting the 
-original hexadecimal files with their reconstructed cleaned-up equivalents
-from `./dirname_org`
+This is because `hexcheck` tolerates them but deletes them silently, as they are
+not hexadecimal characters ( `xxd` does the same ). 
+However, note that, unlike `xxd`, `hexcheck` rejects any other white noise or non printable
+characters and therefore such files are not treated as hexadecimal.
+See the next question below.
 
-**Why does `crptest` report differences between some upper and lower case letters?**
- 
-This is normal behaviour. A-F letters in hex files are intentionally changed into their
-lower case equivalents a-f (standardised hexadecimal form). 
+The problem is that a binary file could consist entirely of non-printable
+characters. Deleting them all and declaring such (empty) file to be hexadecimal would
+be a silly bug. Even when mixed half and half, at what point could we say that it is
+now a hexadecimal file? That is why the hexadecimal check has to be quite strict.
 
-**My hex files are achieving less than 50% compression?**
+When this report happens, it is a useful reminder to remove the white noise 
+from your original hex files. The spaces and newlines can be removed simply
+by running `ncrpt` and `dcrpt` and then substituting the original hexadecimal files with their
+reconstructed cleaned-up equivalents in `./dirname_org`.
 
-They should normally get at least 50% compressed.
-Any other spurious white noise or other non-hexadecimal characters, even just one of them,
-will make `hexcheck` report the file as non-hexadecimal and so its compression will
+**Why are my hex files getting less than 50% compressed?**
+
+They should normally get at least 50% compressed. If you have a whole directory
+full of genuine hexadecimal files, the overall compression will be quite dramatic.
+
+Any spurious white noise or other non-hexadecimal characters, even just one of them,
+will make `hexcheck` report the file as non-hexadecimal and its compression will
 be limited. It may be worth checking that what you thought were hexadecimal files
 were actually accepted as such. This will be indicated by their keys in `./dirname_key`
 having a `.hex` extension in their names. If the original file already had a .hex extension,
 it should now have two.
 
+**Why does `crptest` report differences between some upper and lower case letters?**
+ 
+This is the normal behaviour. A-F letters in hex files are intentionally changed
+by `hexcheck` into their
+lower case equivalents a-f (standard hexadecimal form). Again, you can replace the
+original file with its reconstructed version to prevent the repetition of these reports.
+
 **How to get more hexadecimal files accepted?**
 
 When a token consist of several parts, perhaps separated by a dash or some
-other intervening non-hexadecimal characters, it is best to split it into individual
+other intervening non-hexadecimal characters, it is best to split it manually into individual
 files, each containing only pure hexadecimal. Any remaining spaces and newlines 
 will be accepted but note that they will be deleted in the process.
 
 **What happens to impure hexadecimal files?**
 
-It is possible and simple to naively encrypt the hexadecimal files/tokens
-as they stand but this is sub-optimal, as they can end up twice as long as they need be. 
-This is exactly what happens to impure hex files still containing some odd non-hex characters.
-It may be a pessimisation of security as well.
+Impure 'hexadecimal' files/tokens still containing any non-hex characters
+will be naively compressed and encrypted as they are, just 
+like any other files. However, this is sub-optimal, as they can end up twice as
+long as they needed to be. It may be a pessimisation of security as well.
 
 **What if `crptest` reports other differences?**
 
@@ -155,20 +173,22 @@ are satisfied that the testing was successful, you have invoked `ncrpt path/dirn
 to encrypt for real, and double-checked manually that the encrypted files and keys exist
 and are of a reasonable non-zero size. The output of ncrpt reports the overall size.
 
-**How does `dcrpt` know the methods of compression that were used?**
+**How does `dcrpt` know the actual methods of compression that were used?**
 
 Good question! As we have seen, hex compression and/or zstd compression may or may not
-be applied to any given file. This is recorded in the extension appended to the filename
+be applied to any given file, depending on what is the best for it.
+This information is recorded in the extension appended to the filename
 of its key in `./dirname_key`. (While the filenames of the encrypted files are left 
 exactly the same as those of the original files).
 
-Be careful not to interfere with the keys' extensions, as this would prevent successful decryption.
-As would changing any of the keys' filenames in general.
+Be careful not to interfere with the keys' extensions, as this would prevent
+successful decryption. As would changing any of the keys' filenames in general.
 
 **What is the biggest hazard in using TokenCrypt?**
 
-Misplacing, corrupting, failing to update the backup of, or accidentally overwriting the keys in the generated
-`./dirname_key` directory. In two short words: losing them. 
+Misplacing, corrupting, failing to update the backup of, or accidentally
+overwriting the keys in the generated `./dirname_key` directory.
+In two short words: losing them. 
 
 The keys directory should be kept somewhere separate from 
 `./dirname_crp` for security reasons but the rub is that this makes it easier to lose.

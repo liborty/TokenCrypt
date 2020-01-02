@@ -5,14 +5,13 @@ on: push
 jobs:
   build:   
     runs-on: ubuntu-latest
-    
     steps:
     - uses: actions/checkout@v1
     - name: testrun
       run: |
-        PATH=./:$PATH  
         sudo apt-get install zstd   
-        ./crptest testing > test.log
+        PATH=./:$PATH  
+        crptest testing > test.log
       shell: bash
       working-directory: ./	
     - name: commit

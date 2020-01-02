@@ -62,5 +62,9 @@ for FILE in $INDIR/*; do
 	symcrypt $KEYFILE $BINFILE $OUTFILE
 done
 rm hexfile.tmp binfile.tmp zfile.tmp > /dev/null #tidy up
-printf "original size:\t%s (%s)\noutput size:\t%s (%s)\n" $( du -hbs $INDIR $OUTDIR )
+# produce a report
+SIZES=( $( du -hbs $OUTDIR $INDIR ) ) # array of size,dir,size,dir
+printf "Output size:\t%s (%s)\nOriginal size:\t%s (%s)\nCompression:\t0.%05d\n" \
+	${SIZES[0]} ${SIZES[1]} ${SIZES[2]} ${SIZES[3]} \
+	$(( 100000*${SIZES[0]}/${SIZES[2]} ))
 printf "$PROGN: encrypted $COUNT files into $OUTDIR, keys are in $KEYDIR\n"
