@@ -10,10 +10,9 @@ jobs:
     - name: testrun
       run: |
         sudo apt-get install zstd   
-        ::add-path::./  
+        PATH=./:$PATH  
         crptest testing > test.log
       shell: bash
-      working-directory: ./	
     - name: commit
       run: |
         git config --local user.email "action@github.com"
