@@ -106,13 +106,14 @@ when the test was successful. Note that only the output `test.log`
 is saved in the repository from this automatic test.
 
 Here is what it looks like:
- Output size:	6220 (testing_crp)
- Original size:	8766 (testing)
- Compression to:	70.95%
- ncrpt: encrypted 3 files into testing_crp, keys are in testing_key
- dcrpt: decrypted 3 files into testing_org, 0 failures
- crptest found these differences:
- crptest tested 3 files
+
+	Output size:	6220 (testing_crp)
+	Original size:	8766 (testing)
+	Compression to:	70.95%
+	ncrpt: encrypted 3 files into testing_crp, keys are in testing_key
+	dcrpt: decrypted 3 files into testing_org, 0 failures
+	crptest found these differences:
+	crptest tested 3 files
 
 ## Frequently Asked Questions (FAQ)
 
