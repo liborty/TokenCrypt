@@ -7,17 +7,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: testrun
+
+    - name: install
       run: |
-        sudo apt-get install zstd   
-        PATH=./:$PATH  
-        crptest testing > test.log
+        sudo apt-get install zstd
+        sudo ./install 
+
+    - name: test
+      run: crptest testing > test.log
       shell: bash
+ 
     - name: commit
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git commit -m 'action:test.log' test.log
+
     - name: push
       uses: ad-m/github-push-action@master
       with: 
