@@ -19,8 +19,8 @@ while [ "$#" -gt 0 ]; do
 		'-v :verbose reporting, default is just final summary' \
 		'-z :use zstd compression (default is lzma)' 
 		exit 1;;
-	 -q|--quiet) QUIET=0; shift 1;;
-	 -v|--verbose) VERBOSE=0; shift 1;; 
+	-q|--quiet) QUIET=0; shift 1;;
+	-v|--verbose) VERBOSE=0; shift 1;; 
     -z|--zstd) COMPRESSOR=zstd; EXT=zst; shift 1;;
     -*|--*) printf "$PROGN quitting, unknown flag $1, try -h\n"; exit 2;;
     *) if [ -z "$INDIR" ]; then INDIR=$1; shift 1
@@ -90,10 +90,9 @@ done
 rm hexfile.tmp binfile.tmp zfile.tmp > /dev/null 2>&1 #tidy up
 
 # produce a report
-if ! [ $QUIET ]; then
+if [ -n "$QUIET" ]; then
 	SIZES=( $( du -hbs $OUTDIR $INDIR ) ) # array of size,dir,size,dir
-	printf "Output size:\t%s (%s)\nOriginal size:\t%s (%s)\n" \
-	${SIZES[0]} ${SIZES[1]} ${SIZES[2]} ${SIZES[3]} 
+	printf "Output size:\t%s (%s)\nOriginal size:\t%s (%s)\n" ${SIZES[0]} ${SIZES[1]} ${SIZES[2]} ${SIZES[3]} 
 	CR=$(( 10000*${SIZES[0]}/${SIZES[2]} )) # compression ratio x 10^4 ( xx.xx % )
 	if [ $CR -gt 9999 ]; then 
 		printf "Warning, no compression achieved!\n"

@@ -48,5 +48,5 @@ for INFILE in $INDIR/*; do
  	diff $INFILE "$ORGDIR/${INFILE##*/}" 
 done
 # tidy up 
-rm -rf $ORGDIR $OUTDIR > /dev/null 
+rm -rf $ORGDIR $OUTDIR > /dev/null 2>&1
 printf "$PROGN tested $COUNT files\n"
