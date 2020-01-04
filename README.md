@@ -37,7 +37,7 @@ Then modern zstd compression is applied but only if it results in a smaller file
 Finally, the binary encryptor `symcrypt.c` is applied.
 
 Decryption is the inverse of this process. See the scripts `ncrpt` and `dcrpt` for details.
-However, the knowledge of the algorithm is not necessary for effective TokenCrypt use.
+However, knowledge of the algorithm is not necessary for effective TokenCrypt use.
 
 The entire process of encryption and decryption can be automatically
 tested using the script `crptest`.
@@ -69,9 +69,11 @@ directories in your path and this does not require `sudo` privileges, e.g.:
 
 Standard utility **`xxd`** which is normally pre-installed.
   
-**`zstd`** compression needs installing. If you prefer `lzma` as in some of
-the earlier versions, you can change it back in `ncrpt` and `dcrpt`, not forgetting
-the extension names.
+**`zstd`** compression may need installing: `sudo apt-get install zstd`.
+
+Should you prefer `lzma` compression, as in some of
+the earlier versions, you can change it back in `ncrpt` and `dcrpt` scripts,
+not forgetting the extension names.
 
 ## Usage
 
@@ -81,6 +83,9 @@ Fresh individual keys are generated for all the files in `path/dirname` and
 written to the directory `./dirname_key` that mirrors the encrypted files
 which go into `./dirname_crp` (in the current directory).
 Overall input and output sizes and the number of files processed are reported.
+
+Does not work recursively. It only encrypts the files at the top level of `path/dirname`
+and ignores any subdirectories. (Recursive version may be coming in a later release).
 
 **`dcrpt`** path/dirname_key path/dirname_crp
 
