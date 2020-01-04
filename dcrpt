@@ -57,7 +57,15 @@ for INFILE in $INDIR/*; do
 		symcrypt $KEYFILE.hex.zst $INFILE | zstd -d -c | xxd -p > $OUTFILE
 		continue
 	fi
-	printf "$PROGN failed to find key for encrypted file $FILEND\n"
+		if [ -f $KEYFILE.lz ]; then # found lzma compressed, nonhex
+		symcrypt $KEYFILE.lz $INFILE | lzma -d > $OUTFILE
+		continue
+	fi
+	if [ -f $KEYFILE.hex.lz ]; then # found hexed and lzma compressed
+		symcrypt $KEYFILE.hex.lz $INFILE | lzma -d | xxd -p > $OUTFILE
+		continue
+	fi
+	printf "$PROGN failed to find a useful key for encrypted file $FILEND\n"
 	let COUNT-=1
 	let FAILED+=1
 done

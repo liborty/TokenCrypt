@@ -1,27 +1,52 @@
 #!/bin/bash
 # encrypts all files in the specified directory 'dirname' (can be ./)
-# into corresponding encrypted binary files in local directory 'dirname-ecr' 
+# into corresponding encrypted binary files in local directory 'dirname-crp' 
 # with corresponding key files in 'dirname-key'
 
 PROGN=${0##*/}
+COMPRESSOR=lzma	# the default compression program
+EXT=lz				# and the extension that goes with it
 
-case $# in
-	0)
-		printf "$PROGN quitting, requires one input path argument\n"
-		exit 2;; 
-	1)
-      	if ! [ -d "$1" ]; then
-		printf "$PROGN quitting, directory $1 not found\n"
-		exit 2; fi;;
-	*) 
-		printf "$PROGN quitting, too many arguments, needs just one path\n" 
-		exit 2;;
-esac
+# input args vetting
+while [ "$#" -gt 0 ]; do
+  tabs 3
+  case "$1" in
+    -h|--help) 
+		printf "$PROGN options flags, long versions work too, e.g. --help\n" 
+		printf "\t%s\n" \
+		'-h :prints this helpful text' \
+		'-q :quiet - no reporting, default is just final summary' \
+		'-v :verbose reporting, default is just final summary' \
+		'-z :use zstd compression (default is lzma)' 
+		exit 1;;
+	 -q|--quiet) QUIET=0; shift 1;;
+	 -v|--verbose) VERBOSE=0; shift 1;; 
+    -z|--zstd) COMPRESSOR=zstd; EXT=zst; shift 1;;
+    -*|--*) printf "$PROGN quitting, unknown flag $1, try -h\n"; exit 2;;
+    *) if [ -z "$INDIR" ]; then INDIR=$1; shift 1
+		 else  printf "$PROGN quitting, superfluous argument $1, try -h\n"; exit 2
+		 fi;;
+  esac
+done
+if [ -z "$INDIR" ]; then 
+	printf "$PROGN quitting, requires one input path argument\n"
+	exit 2
+fi 
+if ! [ -d "$INDIR" ]; then
+		printf "$PROGN quitting, directory $INDIR not found\n"
+		exit 2
+fi
 
-INDIR=$1
-DIREND=${INDIR##*/} # just the directory name, preceding path stripped off
+# name the directories
+DIREND=${INDIR##*/} # just the directory name, preceding path is stripped off
 OUTDIR="$DIREND"_crp
 KEYDIR="$DIREND"_key
+
+# build the compressor flags
+FLAGS='-c -q' # the default flags
+if [ $VERBOSE ]; then 
+	if [ "$COMPRESSOR" = 'lzma' ]; then FLAGS='-c -v';	else FLAGS='-c'; fi
+fi
 
 # prepare output directories
 if [ -d "$KEYDIR" ]; then
@@ -31,46 +56,48 @@ if [ -d "$OUTDIR" ]; then
 mkdir $KEYDIR $OUTDIR
 
 # compress all files from the given input path/directory in $1
-for FILE in $INDIR/*; do
-   [ -f "$FILE" ] || continue # check that the selected item is a file
+for INFILE in $INDIR/*; do
+   [ -f "$INFILE" ] || continue # check that the selected item is a file
    let COUNT+=1
-   FILEND=${FILE##*/} # filename.extension without the preceding path
-   BINFILE=$FILE # initial binfile is the input file
+   FILEND=${INFILE##*/} # filename.extension without the preceding path
+   BINFILE=$INFILE # initial binfile is the input file
    KEYFILE=$KEYDIR/$FILEND # base keyfile form: no additional extension
-   OUTFILE=$OUTDIR/$FILEND
+   OUTFILE=$OUTDIR/$FILEND # outfile always the same as input file
    
-   hexcheck < $FILE > hexfile.tmp
-   if [ "$?" -eq 0 ]; then	# status of hexcheck, true when FILE is entirely hexadecimal
-		xxd -p -r hexfile.tmp > binfile.tmp # shrink 50% from hex to binary
+   hexcheck $INFILE hexfile.tmp
+   if [ "$?" -eq 0 ]; then	# status of hexcheck when INFILE is entirely hexadecimal
+		xxd -p -r hexfile.tmp > binfile.tmp # shrinks 50% from hex to binary
 		BINFILE='binfile.tmp' # now this is the binary file to encrypt
 		KEYFILE="$KEYFILE".hex # append .hex extension for hexadecimal origin
 	fi 
-		
-	#	lzma -z -c $BINFILE > zfile.tmp # lzma compression
-	zstd -13 -c -q $BINFILE > zfile.tmp # now trying zstd compression -q means no reports
+	#	lzma -c $BINFILE > zfile.tmp # lzma compression
+	#  zstd -c -q $BINFILE > zfile.tmp # now trying zstd compression -q means no reports
+	
+	$COMPRESSOR $FLAGS $BINFILE > zfile.tmp 
 	CMPS=$( stat -c%s zfile.tmp ) # the size after compression
 	ORGS=$( stat -c%s $BINFILE )   # and before compression
 	# use compressed version only if it is actually smaller
 	if [ "$CMPS" -lt "$ORGS" ]; then 
-		KEYFILE="$KEYFILE".zst # append .zst extension to the keyfile to be generated
+		KEYFILE=$KEYFILE.$EXT # append compression extension to the keyfile to be generated
 		BINFILE='zfile.tmp'  # assign the compressed file, else use uncompressed
 	fi
-	
 	# generate and write out the key of the right size for the input binfile
 	keygen $BINFILE > $KEYFILE
 	# and encrypt with it
 	symcrypt $KEYFILE $BINFILE $OUTFILE
 done
-rm hexfile.tmp binfile.tmp zfile.tmp > /dev/null #tidy up
+
+rm hexfile.tmp binfile.tmp zfile.tmp > /dev/null 2>&1 #tidy up
 
 # produce a report
-SIZES=( $( du -hbs $OUTDIR $INDIR ) ) # array of size,dir,size,dir
-printf "Output size:\t%s (%s)\nOriginal size:\t%s (%s)\n" \
+if ! [ $QUIET ]; then
+	SIZES=( $( du -hbs $OUTDIR $INDIR ) ) # array of size,dir,size,dir
+	printf "Output size:\t%s (%s)\nOriginal size:\t%s (%s)\n" \
 	${SIZES[0]} ${SIZES[1]} ${SIZES[2]} ${SIZES[3]} 
-CR=$(( 10000*${SIZES[0]}/${SIZES[2]} )) # compression ratio x 10^4 ( xx.xx % )
-if [ $CR -gt 9999 ]; then 
-	printf "Warning, no compression achieved!\n"
-else 	
-	printf "Compressed to:\t${CR: 0:2}.${CR: -2}%%\n"
+	CR=$(( 10000*${SIZES[0]}/${SIZES[2]} )) # compression ratio x 10^4 ( xx.xx % )
+	if [ $CR -gt 9999 ]; then 
+		printf "Warning, no compression achieved!\n"
+	else printf "Compressed to:\t${CR: 0:2}.${CR: -2}%%\n"
+	fi
+	printf "$PROGN: encrypted $COUNT files into $OUTDIR, keys are in $KEYDIR\n"
 fi
-printf "$PROGN: encrypted $COUNT files into $OUTDIR, keys are in $KEYDIR\n"
