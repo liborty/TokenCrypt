@@ -1,1 +1,8 @@
-testing
+crptest on: Sat Jan  4 12:13:28 UTC 2020
+[3gH   H   H   H   H   H   H   H   H   H   H   H   H   H   H   H   H   H   H   H   H   H   H   H   H   H   H Output size:	6192 (testing_crp)
+Original size:	8766 (testing)
+Compressed to:	70.63%
+ncrpt: encrypted 3 files into testing_crp, keys are in testing_key
+dcrpt: decrypted 3 files into testing_org, 0 failures
+crptest found these differences:
+crptest tested 3 files
