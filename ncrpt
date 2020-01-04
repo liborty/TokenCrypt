@@ -24,8 +24,8 @@ while [ "$#" -gt 0 ]; do
     -z|--zstd) COMPRESSOR=zstd; EXT=zst; shift 1;;
     -*|--*) printf "$PROGN quitting, unknown flag $1, try -h\n"; exit 2;;
     *) if [ -z "$INDIR" ]; then INDIR=$1; shift 1
-		 else  printf "$PROGN quitting, superfluous argument $1, try -h\n"; exit 2
-		 fi;;
+	   else  printf "$PROGN quitting, superfluous argument $1, try -h\n"; exit 2
+	  fi;;
   esac
 done
 if [ -z "$INDIR" ]; then 
@@ -67,19 +67,19 @@ for INFILE in $INDIR/*; do
    hexcheck $INFILE hexfile.tmp
    if [ "$?" -eq 0 ]; then	# status of hexcheck when INFILE is entirely hexadecimal
 		xxd -p -r hexfile.tmp > binfile.tmp # shrinks 50% from hex to binary
-		BINFILE='binfile.tmp' # now this is the binary file to encrypt
+		BINFILE=binfile.tmp # now this is the binary file to encrypt
 		KEYFILE="$KEYFILE".hex # append .hex extension for hexadecimal origin
-	fi 
+   fi 
 	#	lzma -c $BINFILE > zfile.tmp # lzma compression
 	#  zstd -c -q $BINFILE > zfile.tmp # now trying zstd compression -q means no reports
 	
-	$COMPRESSOR $FLAGS $BINFILE > zfile.tmp 
+	$( $COMPRESSOR $FLAGS $BINFILE > zfile.tmp )
 	CMPS=$( stat -c%s zfile.tmp ) # the size after compression
 	ORGS=$( stat -c%s $BINFILE )   # and before compression
 	# use compressed version only if it is actually smaller
 	if [ "$CMPS" -lt "$ORGS" ]; then 
 		KEYFILE=$KEYFILE.$EXT # append compression extension to the keyfile to be generated
-		BINFILE='zfile.tmp'  # assign the compressed file, else use uncompressed
+		BINFILE=zfile.tmp  # assign the compressed file, else use uncompressed
 	fi
 	# generate and write out the key of the right size for the input binfile
 	keygen $BINFILE > $KEYFILE
