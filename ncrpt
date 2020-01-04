@@ -71,6 +71,6 @@ CR=$(( 10000*${SIZES[0]}/${SIZES[2]} )) # compression ratio x 10^4 ( xx.xx % )
 if [ $CR -gt 9999 ]; then 
 	printf "Warning, no compression achieved!\n"
 else 	
-	printf "Compression to:\t${CR: 0:2}.${CR: -2}%%\n"
+	printf "Compressed to:\t${CR: 0:2}.${CR: -2}%%\n"
 fi
 printf "$PROGN: encrypted $COUNT files into $OUTDIR, keys are in $KEYDIR\n"
