@@ -34,7 +34,7 @@ subsuming the tasks of compression and keys generation. There is also an automat
 The hexadecimal (token) files are recognised and converted to binary, 
 which halves them in size.
 
-Then modern zstd compression is applied but only if it actually reduces the size of the file.
+Then either lzma or zstd compression is applied but only if it actually reduces the size of the file.
 This is generally not going to be the case for small and/or binary files. 
 `TokenCrypt` finally chooses to encrypt the shortest form of each file.
 
@@ -49,7 +49,7 @@ Reminder that intallation needs to be repeated every time that an updated reposi
 (Except when the programs and scripts are unchanged).
 
 This software was tested under Linux. Installation from source needs just a C compiler,
-either clang or gcc. Download or clone this directory, cd into it and then:  
+either clang or gcc. Download or clone this directory, cd into it and then:
 
 **`make CC=clang`**
 
@@ -77,28 +77,38 @@ that automatically generated the pre-compiled binaries was successful.
 
 Standard hex-dump utility **`xxd`** which is normally pre-installed.
 If it is not, usually '`sudo apt-get install xxd`' will install it.
-  
-**`zstd`** compression which may need installing with: '`sudo apt-get install zstd`'.
-This can be done either before the above installation or at any time thereafter.
 
-Should you prefer `lzma` compression, as in some of
-the earlier versions, you can change it back in `ncrpt` and `dcrpt` scripts,
-not forgetting to change the extension names from '`.zst`' to '`.lz`'.
-If there is demand for using different compressors, this will be automated in later
-versions of `TokenCrypt`.
+**`lzma`** compression is now the default. It is normally pre-installed, otherwise
+install it with '`sudo apt-get install lzma`'.
+  
+**`zstd`** compression is only needed if you explicitly choose it by calling `ncrpt` with the -z flag.
+In which case it may first need installing with: '`sudo apt-get install zstd`'.
+This can be done either before the above installation or at any time thereafter.
 
 ## Usage
 
-**`ncrpt`** path/dirname
+**`ncrpt`** [-h] [-q] [-v] [-z] path/dirname
+
+The optional flags mean, respectively: -h help, -q quiet, -v verbose, -z zstd compression.
 
 Encrypted output files go into `./dirname_crp` (under the current directory).
-Unique new key is generated for each file in `path/dirname` and
+Unique new key is generated for each input file in `path/dirname` and
 written to `./dirname_key` that exactly mirrors `./dirname_crp` (and `path/dirname`).
 
-Reports input and output directories sizes (in bytes), the overall compression 
-and the number of files encrypted.
+The default printout is just a summary report at the end, such as the one in `test.log`.
+It reports the sizes (in bytes) of input and output directories, the overall compression 
+and the total number of files encrypted.
 
-Does not work recursively. It only encrypts the files at the top level of `path/dirname`
+The quiet flag cancels this report and that will normally mean no printouts at all.
+The verbose flag adds the details of compressing each file. Setting both
+flags, contradictory as that might seem, turns on the individual files reports and
+off the final summary. The encryption stage is so unproblematic that it warrants no reports.
+
+The default compression is lzma (.lz) but zstd (.zst) can be chosen with the -z flag.
+There is not much difference in compression rates between the two but lzma
+appears to be slightly better.
+
+This script does not work recursively. It only encrypts the files found at the top level of `path/dirname`
 and ignores any subdirectories. (Recursive version may be coming in a later release).
 
 **`dcrpt`** path/dirname_key path/dirname_crp
@@ -106,6 +116,8 @@ and ignores any subdirectories. (Recursive version may be coming in a later rele
 is the inverse of `ncrpt`. It uses the keys in  `path/dirname_key` to decrypt 
 their name corresponding files in `path/dirname_crp`.
 All the decrypted results are written into `./dirname_org` (under the current directory).
+
+Following decryption, it also automatically applies the relevant decompression method(s) for each file.
 
 ## Testing
 
@@ -209,7 +221,7 @@ be deleted afterwards. So do check that they actually exist.
 
 **How does `dcrpt` know the actual method of compression that was used on any given file?**
 
-Good question! As we have seen, hex compression and/or zstd compression may or may not
+Good question! As we have seen, hex compression and/or zstd or lzma compressions may or may not
 be applied to any given file, depending on what is the most effective method for it.
 This information is recorded in the extension appended to the filename
 of its key in `./dirname_key`. (While the filenames of the encrypted files are left 
