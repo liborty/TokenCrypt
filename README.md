@@ -41,13 +41,13 @@ This is generally not going to be the case for small and/or binary files.
 Decryption is the inverse of this process. See the scripts `ncrpt` and `dcrpt` for details.
 However, knowledge of the algorithm is not necessary for effective TokenCrypt use.
 
-The entire process of encryption and decryption is automatically
-tested using the script `crptest`.
+The entire process of encryption and decryption can be tested using the script `crptest`.
 
 ## Installation
 
-Needs to be repeated every time that an updated repository is dowloaded or pulled.
+Reminder that intallation needs to be repeated every time that an updated repository is dowloaded or pulled.
 (Except when the programs and scripts are unchanged).
+
 This software was tested under Linux. Installation from source needs just a C compiler,
 either clang or gcc. Download or clone this directory, cd into it and then:  
 
@@ -57,7 +57,7 @@ or if clang is not installed, just use the default compiler
 (under Linux it is usually gcc): **`make`**
 
 When you are using a typical Linux, you can often skip the compilation step entirely. 
-Then the pre-compiled binaries `symcrypt` and `hexcheck` included in this repository
+Then the pre-compiled binaries `symcrypt` and `hexcheck`, already included in this repository,
 will be installed by default.
 
 **`sudo ./install`**
@@ -69,14 +69,14 @@ Alternatively, you can copy them manually to any of your own `bin`
 directories in your path and this does not require `sudo` privileges, e.g.:
 **`cp symcrypt hexcheck ncrpt dcrpt crptest ~/bin`**
 
-Automated action: 'compile' runs '`make CC=clang`' at GitHub. 
+Automated action 'compile' runs '`make CC=clang`' at GitHub. 
 The 'compile' badge at the top of this document lights up green when the build 
 that automatically generated the pre-compiled binaries was successful.
 
 ### Dependencies
 
-Standard hex-dump utility **`xxd`** which is normally pre-installed. If not, usually
-'`sudo apt-get install xxd`' will install it.
+Standard hex-dump utility **`xxd`** which is normally pre-installed.
+If it is not, usually '`sudo apt-get install xxd`' will install it.
   
 **`zstd`** compression which may need installing with: '`sudo apt-get install zstd`'.
 This can be done either before the above installation or at any time thereafter.
@@ -84,7 +84,7 @@ This can be done either before the above installation or at any time thereafter.
 Should you prefer `lzma` compression, as in some of
 the earlier versions, you can change it back in `ncrpt` and `dcrpt` scripts,
 not forgetting to change the extension names from '`.zst`' to '`.lz`'.
-If there is demand for using different compressors, this can be automated in later
+If there is demand for using different compressors, this will be automated in later
 versions of `TokenCrypt`.
 
 ## Usage
@@ -94,6 +94,7 @@ versions of `TokenCrypt`.
 Encrypted output files go into `./dirname_crp` (under the current directory).
 Unique new key is generated for each file in `path/dirname` and
 written to `./dirname_key` that exactly mirrors `./dirname_crp` (and `path/dirname`).
+
 Reports input and output directories sizes (in bytes), the overall compression 
 and the number of files encrypted.
 
@@ -110,7 +111,7 @@ All the decrypted results are written into `./dirname_org` (under the current di
 
 **`crptest`** path/dirname 
 
-Automatically tests `ncrpt` and `dcrpt`. It first encrypts and then decrypts back again
+Tests `ncrpt` and `dcrpt`. It first encrypts and then decrypts back again
 all the files in the given input directory and compares the results against the original files.
 It cleans up after itself except for the keys directory `./dirname_key`,
 which is left for reassurance and for information about how was each test file compressed. 
@@ -121,9 +122,9 @@ included in the repository.
 It tests all the main types of files: hexadecimal, text and binary. 
 The 'test' badge at the top of this document lights up green 
 when the test was successful. Note that only the output `test.log`
-is saved in the repository from this automatic test. Here is what it looks like:
+is saved in the repository after this automatic test. Here is what it looks like:
 
-	crptest on: Sat 4 Jan 11:25:45 UTC 1020
+	crptest on: Sat 4 Jan 11:25:45 UTC 2020
 	Output size:	6220 (testing_crp)
 	Original size:	8766 (testing)
 	Compressed to:	70.95%
@@ -169,7 +170,7 @@ it should now have two.
 
 **Why does `crptest` report differences between some upper and lower case letters?**
  
-This is the expected behaviour. A-F letters in hex files are intentionally changed
+This is expected behaviour. A-F letters in hex files are intentionally changed
 by `hexcheck` into their lower case equivalents a-f (standard hexadecimal form).
 Again, you can replace the original file with its reconstructed version to
 prevent the repetition of these reports.
@@ -185,7 +186,7 @@ will be accepted but note that they will be deleted in the process.
 
 Impure 'hexadecimal' files/tokens still containing any non-hex characters
 will be compressed and encrypted as they are, just 
-like any other files. Note this is sub-optimal, as they can end up twice as
+like any other files. Note that this is sub-optimal, as they can end up twice as
 big as they needed to be. It may be a pessimisation of security as well.
 
 **What if `crptest` reports other differences?**
@@ -197,11 +198,14 @@ Should you discover a real bug, please create an issue at GitHub.
 
 **When can the original files be deleted?**
 
-These are left untouched in their original `path/dirname` and it is up to you
+They are left untouched in their original `path/dirname` and it is up to you
 not to lose them. Do not start deleting any of the originals until you 
 are satisfied that the testing was successful, you have invoked `ncrpt path/dirname` 
-to encrypt for real, and double-checked manually that the encrypted files and keys exist
+to encrypt them, and double-checked manually that the encrypted files and keys exist
 and are of a reasonable non-zero size. The output of ncrpt reports the overall size.
+
+Note that if you use crptest by a mistake instead of ncrpt, the encrypted files will
+be deleted afterwards. So do check that they actually exist.
 
 **How does `dcrpt` know the actual method of compression that was used on any given file?**
 
