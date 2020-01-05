@@ -213,19 +213,20 @@ are satisfied that the testing was successful, you have invoked `ncrpt path/dirn
 to encrypt them, and double-checked manually that the encrypted files and keys exist
 and are of a reasonable non-zero size. The output of ncrpt reports the overall size.
 
-Note that if you use crptest by a mistake instead of ncrpt, the encrypted files will
+Note that if you call crptest by mistake instead of ncrpt, the encrypted files will
 be deleted afterwards. So do check that they actually exist.
 
 **How does `dcrpt` know the actual method of compression that was used on any given file?**
 
-Good question! As we have seen, hex compression and/or zstd or lzma compressions may or may not
-be applied to any given file, depending on what is the most effective method for it.
-This information is recorded in the extension appended to the filename
+Good question! As we have seen, hex compression and/or lzma or zstd compressions may or may not
+be applied to any given file, depending on what is the user selected compressor, whether the
+file is hexadecimal or not, whether it is actually reduced by compression or not, etc.
+This actual compression(s) carried out are recorded in the extension(s) appended to the filename
 of its key in `./dirname_key`. (While the filenames of the encrypted files are left 
 exactly the same as those of the original files).
 
 Be careful not to interfere with the keys' extensions, as this would prevent
-successful decryption. As would changing any of the keys' filenames in general.
+successful decompression. As would changing any of the keys' filenames in general.
 
 **What is the biggest hazard in using TokenCrypt?**
 
