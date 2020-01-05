@@ -10,9 +10,9 @@ jobs:
 
     - name: install
       run: |
-        sudo apt-get install zstd
         sudo ./install 
-
+        # sudo apt-get install zstd
+        
     - name: test
       run: crptest testing > test.log
       shell: bash
