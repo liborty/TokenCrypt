@@ -1,4 +1,4 @@
-crptest on: 01.04|23:17:21
-[3gH   H   H   H   H   H   H   H   H   H   H   H   H   H   H   H   H   H   H   H   H   H   H   H   H   H   H dcrpt: decrypted 3 files into testing_org, 0 failures
-crptest found these differences:
-crptest tested 3 files
+ncrpt encrypted 3 files into testing_crp, keys are in testing_key
+testing_crp size:	6181
+testing size:	8766
+Compressed to:	70.51%
