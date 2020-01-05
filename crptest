@@ -6,7 +6,7 @@
 PROGN=${0##*/}
 # make this output unique to facilitate git commit working in 
 # automated tests run at github actions:
-printf "$PROGN on: %s\n" $( date -u "+%m.%d|%H:%M:%S" )
+printf "$PROGN run on: %s %s %s %s\n" $( date -u "+%d.%m.%y at %H:%M:%S %Z" )
 
 case $# in
 	0)
