@@ -5,10 +5,10 @@ High security without onerous complications.**
 
 ## Version 1.1.3  [![Actions Status](https://github.com/liborty/TokenCrypt/workflows/compilation/badge.svg)](https://github.com/liborty/TokenCrypt/actions) [![Actions Status](https://github.com/liborty/TokenCrypt/workflows/test/badge.svg)](https://github.com/liborty/TokenCrypt/actions)
 
-## Outline
-
 Use at your own risk! No warranties are given or implied. 
-When using this software, you agree to apply it to ethical purposes.
+By downloading this software, you agree not to use it for unethical purposes.
+
+## Outline
 
 Internet security tokens usually consist of 32,64 or more hexadecimal characters. 
 They are increasingly used to facilitate secure access over the internet protocols
@@ -20,35 +20,33 @@ TokenCrypt takes whole directories of tokens
 and/or any other files, recognises hexadecimal data files, chooses the best compression 
 process individually for each file and finally encrypts them all with extremely high security.
 
-There may be files and directories, perhaps even whole databases of security tokens,
-all mixed up with other types of files. This is perhaps not the best practice but 
-it may well arise and could involve much work to separate them. `TokenCrypt` 
-copes with such directories automagically.
+Security tokens and other data may sometimes be 
+all mixed up in common directories. This is not the best practice but 
+it may well arise and could involve much work to separate them. 
+`TokenCrypt` copes with such directories automagically.
 
 The main workhorse at the heart of TokenCrypt is `symcrypt.c`, which applies fast symmetric
 encryption or decryption to any type of file of any length, while using practically no memory.
 
-Then there are two bash scripts to automate the encryption and decryption,
-subsuming the tasks of compression and keys generation. There is also an automated overall testing script.
+Then there are two bash scripts that automate the whole process of encryption (`ncrpt`)
+and decryption (`dcrpt`), subsuming the tasks of compression/decompression and keys generation as and when needed.
+There is also an automated overall testing script `crptest`.
 
-The hexadecimal (token) files are recognised and converted to binary, 
-which halves them in size.
+The hexadecimal (token) files are recognised and converted to binary, which halves them in size.
 
 Then either lzma or zstd compression is applied but only if it actually reduces the size of the file.
-This is generally not going to be the case for small and/or binary files. 
-`TokenCrypt` finally chooses to encrypt the shortest form of each file.
+This is generally not going to be the case for small and/or binary files, so 
+`ncrpt` chooses to encrypt the shortest form of each file.
 
 Decryption is the inverse of this process. See the scripts `ncrpt` and `dcrpt` for details.
-However, knowledge of the algorithm is not necessary for effective TokenCrypt use.
-
-The entire process of encryption and decryption can be tested using the script `crptest`.
+However, knowledge of the algorithms is not necessary for effective TokenCrypt use.
 
 ## Installation
 
-Reminder that intallation needs to be repeated every time that an updated repository is dowloaded or pulled.
-(Except when the programs and scripts are unchanged).
+Reminder: intallation must be repeated every time that an updated repository is dowloaded or pulled.
+(Except when the programs and scripts have not changed).
 
-This software was tested under Linux. Installation from source needs just a C compiler,
+This software was tested under Linux. Installation from source needs a C compiler,
 either clang or gcc. Download or clone this directory, cd into it and then:
 
 **`make CC=clang`**
@@ -57,7 +55,7 @@ or if clang is not installed, just use the default compiler
 (under Linux it is usually gcc): **`make`**
 
 When you are using a typical Linux, you can often skip the compilation step entirely. 
-Then the pre-compiled binaries `symcrypt` and `hexcheck`, already included in this repository,
+Then the automatically pre-compiled binaries `symcrypt` and `hexcheck`, that are included in this repository,
 will be installed by default.
 
 **`sudo ./install`**
@@ -69,9 +67,9 @@ Alternatively, you can copy them manually to any of your own `bin`
 directories in your path and this does not require `sudo` privileges, e.g.:
 **`cp symcrypt hexcheck ncrpt dcrpt crptest ~/bin`**
 
-Automated action 'compile' runs '`make CC=clang`' at GitHub. 
+Automated github action 'compile' runs '`make CC=clang`' at github. 
 The 'compile' badge at the top of this document lights up green when the build 
-that automatically generated the pre-compiled binaries was successful.
+that automatically generates the pre-compiled binaries is successful.
 
 ### Dependencies
 
@@ -81,8 +79,8 @@ If it is not, usually '`sudo apt-get install xxd`' will install it.
 **`lzma`** compression is now the default. It is normally pre-installed, otherwise
 install it with '`sudo apt-get install lzma`'.
   
-**`zstd`** compression is only needed if you explicitly choose it by calling `ncrpt` with the -z flag.
-In which case it may first need installing with: '`sudo apt-get install zstd`'.
+**`zstd`** compression is only needed if you explicitly choose it by calling `ncrpt` with -z flag.
+In which case it may need installing first with: '`sudo apt-get install zstd`'.
 This can be done either before the above installation or at any time thereafter.
 
 ## Usage
@@ -91,9 +89,10 @@ This can be done either before the above installation or at any time thereafter.
 
 The optional flags mean, respectively: -h help, -q quiet, -v verbose, -z zstd compression.
 
-Encrypted output files go into `./dirname_crp` (under the current directory).
+Encrypted output files go to `./dirname_crp` (under the current directory).
 Unique new key is generated for each input file in `path/dirname` and
 written to `./dirname_key` that exactly mirrors `./dirname_crp` (and `path/dirname`).
+There is no recursive descent into subdirectories. Recursive version may be released later.
 
 The default printout is just a summary report at the end, such as the one in `test.log`.
 It reports the sizes (in bytes) of input and output directories, the overall compression 
@@ -102,14 +101,12 @@ and the total number of files encrypted.
 The quiet flag cancels this report and that will normally mean no printouts at all.
 The verbose flag adds the details of compressing each file. Setting both
 flags, contradictory as that might seem, turns on the individual files reports and
-off the final summary. The encryption stage is so unproblematic that it warrants no reports.
+turns off the final summary.
+The encryption stage is so unproblematic that it does not need any reports.
 
-The default compression is lzma (.lz) but zstd (.zst) can be chosen with the -z flag.
-There is not much difference in compression rates between the two but lzma
+The default compression used is lzma (.lz) but zstd (.zst) can be chosen with the -z flag.
+There is not much difference in their compression rates but lzma
 appears to be slightly better.
-
-This script does not work recursively. It only encrypts the files found at the top level of `path/dirname`
-and ignores any subdirectories. (Recursive version may be coming in a later release).
 
 **`dcrpt`** path/dirname_key path/dirname_crp
 
@@ -117,7 +114,7 @@ is the inverse of `ncrpt`. It uses the keys in  `path/dirname_key` to decrypt
 their name corresponding files in `path/dirname_crp`.
 All the decrypted results are written into `./dirname_org` (under the current directory).
 
-Following decryption, it also automatically applies the relevant decompression method(s) for each file.
+Following decryption, it also automatically applies the correct decompression method(s) to each file.
 
 ## Testing
 
@@ -136,11 +133,11 @@ The 'test' badge at the top of this document lights up green
 when the test was successful. Note that only the output `test.log`
 is saved in the repository after this automatic test. Here is what it looks like:
 
-	crptest on: Sat 4 Jan 11:25:45 UTC 2020
-	Output size:	6220 (testing_crp)
-	Original size:	8766 (testing)
-	Compressed to:	70.95%
-	ncrpt: encrypted 3 files into testing_crp, keys are in testing_key
+	crptest run on: 05.01.20 at 00:48:17 UTC
+	ncrpt encrypted 3 files into testing_crp, keys are in testing_key
+		testing_crp size:	5066
+		testing size:		7640
+		lz compressed to: 66.30%
 	dcrpt: decrypted 3 files into testing_org, 0 failures
 	crptest found these differences:
 	crptest tested 3 files
