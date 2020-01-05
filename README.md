@@ -35,8 +35,8 @@ There is also an automated overall testing script `crptest`.
 The hexadecimal (token) files are recognised and converted to binary, which halves them in size.
 
 Then either lzma or zstd compression is applied but only if it actually reduces the size of the file.
-This is generally not going to be the case for small and/or binary files, so 
-`ncrpt` chooses to encrypt the shortest form of each file.
+This is generally not going to be the case for small and/or binary files, so `ncrpt` chooses 
+to encrypt the shortest form of each file.
 
 Decryption is the inverse of this process. See the scripts `ncrpt` and `dcrpt` for details.
 However, knowledge of the algorithms is not necessary for effective TokenCrypt use.
@@ -73,8 +73,8 @@ that automatically generates the pre-compiled binaries is successful.
 
 ### Dependencies
 
-Standard hex-dump utility **`xxd`** which is normally pre-installed.
-If it is not, usually '`sudo apt-get install xxd`' will install it.
+Standard hex-dump utility **`xxd`** which is normally pre-installed.  
+It can be installed with '`sudo apt-get install xxd`'.
 
 **`lzma`** compression is now the default. It is normally pre-installed, otherwise
 install it with '`sudo apt-get install lzma`'.
