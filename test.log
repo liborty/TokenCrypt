@@ -1,8 +1,8 @@
-crptest on: 01.05|00:28:48
+crptest run on: 05.01.20 at 00:48:17 UTC
 ncrpt encrypted 3 files into testing_crp, keys are in testing_key
-testing_crp size:	5066
-testing size:		7640
-Compressed to: 66.30%
+	testing_crp size:	5066
+	testing size:		7640
+	lz compressed to: 66.30%
 dcrpt: decrypted 3 files into testing_org, 0 failures
 crptest found these differences:
 crptest tested 3 files
