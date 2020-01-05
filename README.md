@@ -65,7 +65,7 @@ To remove them again, use: **`sudo ./uninstall`**
 
 Alternatively, you can copy them manually to any of your own `bin` 
 directories in your path and this does not require `sudo` privileges, e.g.:
-**`cp symcrypt hexcheck ncrpt dcrpt crptest ~/bin`**
+**`cp symcrypt hexcheck ncrpt dcrpt keygen crptest ~/bin`**
 
 Automated github action 'compile' runs '`make CC=clang`' at github. 
 The 'compile' badge at the top of this document lights up green when the build 
@@ -221,7 +221,7 @@ be deleted afterwards. So do check that they actually exist.
 Good question! As we have seen, hex compression and/or lzma or zstd compressions may or may not
 be applied to any given file, depending on what is the user selected compressor, whether the
 file is hexadecimal or not, whether it is actually reduced by compression or not, etc.
-This actual compression(s) carried out are recorded in the extension(s) appended to the filename
+Actual compression(s) carried out are recorded in the extension(s) appended to the filename
 of its key in `./dirname_key`. (While the filenames of the encrypted files are left 
 exactly the same as those of the original files).
 
