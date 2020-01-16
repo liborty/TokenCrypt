@@ -1,6 +1,6 @@
 # TokenCrypt
 
-**Encrypt and decrypt directories of security tokens and any other files. High security without onerous complications.**
+**Encrypts and decrypts directories of security tokens and any other files. High security without onerous complications.**
 
 ## Version 1.1.3  [![Actions Status](https://github.com/liborty/TokenCrypt/workflows/compilation/badge.svg)](https://github.com/liborty/TokenCrypt/actions) [![Actions Status](https://github.com/liborty/TokenCrypt/workflows/test/badge.svg)](https://github.com/liborty/TokenCrypt/actions)
 
