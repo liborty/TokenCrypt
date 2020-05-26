@@ -140,6 +140,9 @@ is saved in the repository after this automatic test. Here is what it looks like
 	dcrpt: decrypted 3 files into testing_org, 0 failures
 	crptest found these differences:
 	crptest tested 3 files
+	
+There is now also `hexkeygen` script utility which will generate random hex files of
+any given size (for testing).
 
 ## Frequently Asked Questions (FAQ)
 
