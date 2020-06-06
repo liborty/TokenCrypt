@@ -31,7 +31,7 @@ Then there are two bash scripts that automate the whole process of encryption (`
 and decryption (`dcrpt`), subsuming the tasks of compression/decompression and keys generation as and when needed.
 There is also an automated overall testing script `crptest`.
 
-The hexadecimal (token) files are recognised and converted to binary, which halves them in size.
+Entirely hexadecimal (token) files are recognised with `hexcheck` and converted to binary, which halves them in size.
 
 Then either lzma or zstd compression is applied but only if it actually reduces the size of the file.
 This is generally not going to be the case for small and/or binary files, so `ncrpt` chooses 

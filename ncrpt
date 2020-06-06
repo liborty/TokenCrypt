@@ -35,6 +35,10 @@ if ! [ -d "$INDIR" ]; then
 		printf "$PROGN quitting, directory $INDIR not found\n"
 		exit 2
 fi
+if [ -z $( which "$COMPRESSOR" ) ]; then 
+		printf "$PROGN quitting, compressor $COMPRESSOR not found\n"
+		exit 2
+fi
 
 # name the directories
 DIREND=${INDIR##*/} # just the directory name, preceding path is stripped off

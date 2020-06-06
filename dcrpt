@@ -20,6 +20,13 @@ case $# in
 		exit 2;;
 esac
 
+if [ -z $( which zstd ) ]; then 
+	printf "$PROGN warning, zstd not found, will not decompress .zstd files\n"
+fi
+if [ -z $( which lzma ) ]; then 
+	printf "$PROGN warning, lzma not found, will not decompress .lzma files\n"
+fi
+
 KEYDIR="$1"
 INDIR="$2"
 FAILED=0
