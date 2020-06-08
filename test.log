@@ -1,9 +1,8 @@
-crptest run on: 08.06.20 at 15:51:42 UTC
+crptest run on: 08.06.20 at 15:55:42 UTC
 ncrpt encrypted 4 files into testing_crp, keys are in testing_key
 	testing_crp size:	7848
 	testing size:		11150
 	lz compressed to: 70.38%
-dcrpt warning, zstd not found, will not decompress .zstd files
 dcrpt: decrypted 4 files into testing_org, 0 failures
 crptest differences found (success when blank):
 1,110c1,31
