@@ -1,22 +1,21 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-unsigned int ishex(unsigned int n) 
+unsigned char ishex(unsigned char n) 
 { // returns lower case ascii value of a hexadecimal digit
   // A-F turned into a-f
   // LF and space left unchanged
   // otherwise returns zero indicating unacceptable hexadecimal data
-
+  
+	if ( n > 102 ) exit(EXIT_FAILURE); // reject above 'f'
  	if ( n < 48 ) 
 		{
 		if ( n == 10 ) return(10); // allow LF
 		if ( n == 32 ) return(32); // allow space
-		return(0);
+		exit(EXIT_FAILURE);
 		} // reject all others below the digit '0' (ascii 48)
-
-	if ( n > 102 ) return(0); // reject above 'f'
-	if (( n > 64 ) & ( n < 71 )) return(n+32); // accept A-F but change to lower case
-	if (( n > 57 ) & ( n < 97 )) return(0); // reject all others between '9' and 'a'
+	if (( n > 64 ) && ( n < 71 )) return(n+32); // accept A-F but change to lower case
+	if (( n > 57 ) && ( n < 97 )) exit(EXIT_FAILURE); // reject all others between '9' and 'a'
 	return(n); // accept remaining valid 0-9 and a-f
 }
 
@@ -28,6 +27,7 @@ int main(int argc, char *argv[])
 {
   FILE *fin,*fout;
   char *progname = argv[0], *filein, *fileout; 
+  int cin;
   unsigned char c;
 
   switch (argc)
@@ -73,20 +73,21 @@ int main(int argc, char *argv[])
       exit(EXIT_FAILURE);
     }
       
-  while((c = fgetc(fin)) != EOF) 
+  while ( 1 ) // while true infinite loop
+    {
+     cin = fgetc(fin); // to test for EOF, must be an int
+     if (cin == EOF) 
      {
-	  if ( (c = ishex(c)) > 0 )
-		 {
-			if (fputc((unsigned char)c,fout) == EOF) 
-			{
-				fprintf(stderr,"%s: error in output\n", progname);
-				fclose(fout); fclose(fin);
-				exit(EXIT_FAILURE);
-			}
-		 }
-		else exit(EXIT_FAILURE);
+    	fclose(fin);
+  		fclose(fout);
+   	exit(EXIT_SUCCESS);
+     }
+     c = ishex((unsigned char)cin); // must return only valid hex values
+	  if (fputc(c,fout) == EOF) 
+		{
+			fprintf(stderr,"%s: error in output\n", progname);
+			fclose(fout); fclose(fin);
+			exit(EXIT_FAILURE);
+		}	
 	 }
-  fclose(fin);
-  fclose(fout);
-  exit(EXIT_SUCCESS);    
 }

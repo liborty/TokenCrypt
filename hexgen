@@ -1,7 +1,12 @@
 #!/bin/bash
+# generates random hex data of length given by the single argument
+# \n is added at the end
+# when the requested size was even, the output will be that one byte longer
+
 if [ $# -ne 1 ]; then
 	printf "$0: needs file size argument, e.g. obtained by 'stat -c%s myfile'\n" 1>&2 
 	exit 2
 fi
-< /dev/urandom tr -dc 'a-f0-9\n ' | head -c $1
-if [[ $(( $1 % 2 )) -eq 1 ]]; then printf "\n"; fi
+if [[ $(( $1 % 2 )) -eq 1 ]]; then SZ=$(( $1-1 )); else SZ=$1; fi
+< /dev/urandom tr -dc 'a-f0-9\n ' | head -c $SZ
+printf " \n"
