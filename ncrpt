@@ -10,21 +10,25 @@ EXT=lz				# and the extension that goes with it
 # input args vetting
 while [ "$#" -gt 0 ]; do
   case "$1" in
-    -h|--help) 
+   -h|--help) 
 		printf "$PROGN options flags, long versions work too, e.g. --help\n" 
 		printf "\t%s\n" \
-		'-h :prints this helpful text' \
-		'-q :quiet - no reporting, default is just final summary' \
-		'-v :verbose reporting, default is just final summary' \
-		'-z :use zstd compression (default is lzma)' 
+		'-h | --help : prints this helpful text' \
+		'-b | --base64 : test for base64 encoded files' \
+		'-x | --hex : test for hexadecimal files' \
+		'-q | --quiet : no reporting (default is the final summary)' \
+		'-v | --verbose : full reporting' \
+		'-z | -zstd : use zstd compression (default is lzma)' 
 		exit 1;;
+	-x|--hex) HEXTEST=0; shift 1;;
+	-b|--base64) B64TEST=0; shift 1;; 	
 	-q|--quiet) QUIET=0; shift 1;;
 	-v|--verbose) VERBOSE=0; shift 1;; 
-    -z|--zstd) COMPRESSOR=zstd; EXT=zst; shift 1;;
-    -*|--*) printf "$PROGN quitting, unknown flag $1, try -h\n"; exit 2;;
-    *) if [ -z "$INDIR" ]; then INDIR=$1; shift 1
+   -z|--zstd) COMPRESSOR=zstd; EXT=zst; shift 1;;
+   -*|--*) printf "$PROGN quitting, unknown flag $1, try -h\n"; exit 2;;
+   *) if [ -z "$INDIR" ]; then INDIR=$1; shift 1
 	   else  printf "$PROGN quitting, superfluous argument $1, try -h\n"; exit 2
-	  fi;;
+	   fi;;
   esac
 done
 if [ -z "$INDIR" ]; then 
@@ -67,15 +71,23 @@ for INFILE in $INDIR/*; do
    KEYFILE=$KEYDIR/$FILEND # base keyfile form: no additional extension
    OUTFILE=$OUTDIR/$FILEND # outfile always the same as input file
    
-   hexcheck $INFILE hexfile.tmp
-   if [ "$?" -eq 0 ]; then	# status of hexcheck when INFILE is entirely hexadecimal
-		xxd -p -r hexfile.tmp > binfile.tmp # shrinks 50% from hex to binary
-		BINFILE=binfile.tmp # now this is the binary file to encrypt
-		KEYFILE="$KEYFILE".hex # append .hex extension for hexadecimal origin
+   if [ $HEXTEST ]; then
+   	hexcheck $INFILE checkfile.tmp
+   	if [ "$?" -eq 0 ]; then	# status of hexcheck when INFILE is entirely hexadecimal
+			xxd -p -r checkfile.tmp > binfile.tmp # shrinks 50% from hex to binary
+			BINFILE=binfile.tmp # now this is the binary file to encrypt
+			KEYFILE="$KEYFILE".hex # append .hex extension for hexadecimal origin
+   	fi
    fi 
-	#	lzma -c $BINFILE > zfile.tmp # lzma compression
-	#  zstd -c -q $BINFILE > zfile.tmp # now trying zstd compression -q means no reports
+	if [ $B64TEST ] && [ "$BINFILE" == "$INFILE" ]; then #  only test if not already hexfile
+   	base64 -d $INFILE > checkfile.tmp # turns base64 into binary, saving 25%
+   	if [ "$?" -eq 0 ]; then	# status of base64 when INFILE was entirely in BASE64
+			BINFILE=checkfile.tmp # now this is the binary file to encrypt
+			KEYFILE="$KEYFILE".base64 # append .base64 extension for base64 origin
+   	fi 
+	fi
 	
+	# now do the (binary) compression	
 	$COMPRESSOR $FLAGS $BINFILE > zfile.tmp 
 	CMPS=$( stat -c%s zfile.tmp ) # the size after compression
 	ORGS=$( stat -c%s $BINFILE )   # and before compression
@@ -95,10 +107,13 @@ if ! [ $QUIET ]; then
     printf "$PROGN encrypted $COUNT files into $OUTDIR, keys are in $KEYDIR\n"
 	SIZES=( $( du -hbs $OUTDIR $INDIR ) ) # array of size,dir,size,dir
 	printf "\t%s size:\t%s\n\t%s size:\t\t%s\n" ${SIZES[1]} ${SIZES[0]} ${SIZES[3]} ${SIZES[2]} 
-	CR=$(( 10000*${SIZES[0]}/${SIZES[2]} )) # compr. ratio x 10^4 ( xx.xx % )
-	if [ $CR -gt 9999 ]; then 
+	# compession ratio x 10^5, printed as xx.xx% 
+	CR=$(( 10000*${SIZES[0]}/${SIZES[2]} )) 
+	if [ $CR -gt 99999 ]; then 
 		printf "\t$PROGN warning, no compression achieved!\n"
-	else printf "\t$EXT compressed to: ${CR: 0:2}.${CR: -2}%%\n"
+	else 
+		set CR=$CR+5 # rounds to the nearest hundredth of percent
+		printf "\t$EXT compressed to: ${CR: 0:2}.${CR: 2:4}%%\n"
 	fi
 fi
-rm hexfile.tmp binfile.tmp zfile.tmp > /dev/null 2>&1 #tidy up
+rm binfile.tmp zfile.tmp checkfile.tmp > /dev/null 2>&1 #tidy up

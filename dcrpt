@@ -44,7 +44,7 @@ else mkdir $OUTDIR; fi
 for INFILE in $INDIR/*; do
    [ -f "$INFILE" ] || continue # check that the selected item is a file
    let COUNT+=1
-   FILEND=${INFILE##*/} # original filename.extensions sans the preceding path
+   FILEND=${INFILE##*/} # original filename.extension without the preceding path
    KEYFILE=$KEYDIR/$FILEND
    OUTFILE=$OUTDIR/$FILEND
    
@@ -56,6 +56,10 @@ for INFILE in $INDIR/*; do
 		symcrypt $KEYFILE.hex $INFILE | xxd -p > $OUTFILE 
 		continue
 	fi
+	if [ -f $KEYFILE.base64 ]; then # found base64 extension
+		symcrypt $KEYFILE.base64 $INFILE | base64 > $OUTFILE 
+		continue
+	fi
 	if [ -f $KEYFILE.zst ]; then # found compressed nonhex
 		symcrypt $KEYFILE.zst $INFILE | zstd -d -c > $OUTFILE
 		continue
@@ -64,12 +68,20 @@ for INFILE in $INDIR/*; do
 		symcrypt $KEYFILE.hex.zst $INFILE | zstd -d -c | xxd -p > $OUTFILE
 		continue
 	fi
-		if [ -f $KEYFILE.lz ]; then # found lzma compressed, nonhex
+	if [ -f $KEYFILE.base64.zst ]; then # found base64 and compressed
+		symcrypt $KEYFILE.base64.zst $INFILE | zstd -d -c | base64 > $OUTFILE
+		continue
+	fi
+	if [ -f $KEYFILE.lz ]; then # found lzma compressed, nonhex
 		symcrypt $KEYFILE.lz $INFILE | lzma -d > $OUTFILE
 		continue
 	fi
 	if [ -f $KEYFILE.hex.lz ]; then # found hexed and lzma compressed
 		symcrypt $KEYFILE.hex.lz $INFILE | lzma -d | xxd -p > $OUTFILE
+		continue
+	fi
+	if [ -f $KEYFILE.base64.lz ]; then # found base64 and lzma compressed
+		symcrypt $KEYFILE.base64.lz $INFILE | lzma -d | base64 > $OUTFILE
 		continue
 	fi
 	printf "$PROGN failed to find a useful key for encrypted file $FILEND\n"

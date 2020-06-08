@@ -9,14 +9,16 @@ By downloading this software, you agree not to use it for unethical purposes.
 
 ## Outline
 
-Internet security tokens usually consist of 32,64 or more hexadecimal characters. 
+Internet security tokens usually consist of 32, 64 or more hexadecimal characters. 
 They are increasingly used to facilitate secure access over the internet protocols
 to various Applications Programming Interfaces (APIs). Being plain text,
 they are easily transmitted but they need to be stored securely,
-that means encrypted. 
+that means encrypted.   
+  
+For similar reasons, base64 encoding into printable characters is often used.
 
 TokenCrypt takes whole directories of tokens
-and/or any other files, recognises hexadecimal data files, chooses the best compression 
+and/or any other files, recognises hexadecimal data files, recognises base64 data, chooses the best compression 
 process individually for each file and finally encrypts them all with extremely high security.
 
 Security tokens and other data may sometimes be 
@@ -84,9 +86,9 @@ This can be done either before the above installation or at any time thereafter.
 
 ## Usage
 
-**`ncrpt`** [-h] [-q] [-v] [-z] path/dirname
+**`ncrpt`** [-h][-x][-b][-q][-v][-z] inputpath/dirname
 
-The optional flags mean, respectively: -h help, -q quiet, -v verbose, -z zstd compression.
+The optional flags mean, respectively: -h help, -x test for hex files, -b test for base64 files, -q quiet, -v verbose, -z zstd compression.
 
 Encrypted output files go to `./dirname_crp` (under the current directory).
 Unique new key is generated for each input file in `path/dirname` and
@@ -117,7 +119,7 @@ Following decryption, it also automatically applies the correct decompression me
 
 ## Testing
 
-**`crptest`** path/dirname 
+**`crptest`** inputpath/dirname 
 
 Tests `ncrpt` and `dcrpt`. It first encrypts and then decrypts back again
 all the files in the given input directory and compares the results against the original files.
@@ -169,7 +171,7 @@ characters will have to be cleaned up manually.
 
 **Why are my hex files over half their size after compression?**
 
-They should normally be 50% or less. If you have a whole directory
+They should normally be around 50% or less. If you have a whole directory
 full of genuine hexadecimal files, the overall compression will be quite dramatic.
 
 Any spurious white noise or other non-hexadecimal characters, even just one of them,
@@ -190,8 +192,7 @@ prevent the repetition of these reports.
 
 When a token consist of several parts, perhaps separated by a dash or some
 other intervening non-hexadecimal characters, it is best to split it manually into individual
-files, each containing only pure hexadecimal. Any remaining spaces and newlines 
-will be accepted but note that they will be deleted in the process.
+files, each containing only pure hexadecimal. Any remaining spaces and newlines will be accepted and preserved.
 
 **What happens to impure 'hexadecimal' files?**
 
