@@ -1,1 +1,8 @@
- 
+crptest run on: 08.06.20 at 12:15:27 UTC
+ncrpt encrypted 4 files into testing_crp, keys are in testing_key
+	testing_crp size:	8221
+	testing size:		11148
+	lz compressed to: 73.74%
+dcrpt: decrypted 4 files into testing_org, 0 failures
+crptest differences found (success when blank):
+crptest tested 4 files
