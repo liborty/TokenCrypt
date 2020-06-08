@@ -33,14 +33,13 @@ Then there are two bash scripts that automate the whole process of encryption (`
 and decryption (`dcrpt`), subsuming the tasks of compression/decompression and keys generation as and when needed.
 There is also an automated overall testing script `crptest`.
 
-Entirely hexadecimal (token) files are recognised with `hexcheck` and converted to binary, which halves them in size.
+Entirely hexadecimal (token) files are recognised with `hexcheck` and converted to binary, which halves them in size. Base64 files are automatically recognised too, resulting in 25% size reduction in their case. After subsequent general compression the reductions will not be so great compared to just compressing the originals but there will still be significant gains, making this worthwhile.
 
-Then either lzma or zstd compression is applied but only if it actually reduces the size of the file.
-This is generally not going to be the case for small and/or binary files, so `ncrpt` chooses 
-to encrypt the shortest form of each file.
+Then either lzma or zstd general compression is applied but only if it actually reduces the size of the file. This is generally not going to be the case for small and/or binary files. 
 
-Decryption is the inverse of this process. See the scripts `ncrpt` and `dcrpt` for details.
-However, knowledge of the algorithms is not necessary for effective TokenCrypt use.
+Therefore `ncrpt` is used to encrypt the shorter form of each file.
+
+Decryption is the inverse of this process. See the scripts `ncrpt` and `dcrpt` for details. However, knowledge of the algorithms is not necessary for effective TokenCrypt use.
 
 ## Installation
 
