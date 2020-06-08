@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # invoke as: sudo ./install
 # installs TokenCrypt utilities in /usr/local/bin
 

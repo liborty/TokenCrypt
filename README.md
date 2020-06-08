@@ -33,29 +33,26 @@ Then there are two bash scripts that automate the whole process of encryption (`
 and decryption (`dcrpt`), subsuming the tasks of compression/decompression and keys generation as and when needed.
 There is also an automated overall testing script `crptest`.
 
-Entirely hexadecimal (token) files are recognised with `hexcheck` and converted to binary, which halves them in size. Base64 files are automatically recognised too, resulting in 25% size reduction in their case. Subsequent general compression reductions will not be so great but there will still be significant overall gains, making the recognition of these files worthwhile.
+Entirely hexadecimal (token) files are recognised with `hexcheck` and converted to binary, which halves them in size. Base64 files are automatically recognised too, resulting in 25% size reduction in their case. The overall gain after general compression may not be quite so much but it will still be significant, making the recognition of these files worthwhile.
 
-Then either lzma or zstd general compression is applied but only if it actually reduces the size of the file. This is generally not going to be the case for small and/or binary files. 
+Then either lzma or zstd general compression is applied, as long as it actually leads to a reduction of the file size. This is generally not  the case for small and/or binary files. 
 
-Therefore `ncrpt` is used to encrypt the shorter form of each file.
+Therefore, when  `ncrpt` is finally invoked to carry out the encryption, it is applied to the shortest form of each file.
 
-Decryption is the inverse of this process. See the scripts `ncrpt` and `dcrpt` for details. However, knowledge of the algorithms is not necessary for effective TokenCrypt use.
+Decryption is the inverse of this process. See the scripts `ncrpt` and `dcrpt` for details. Nevertheless, knowledge of the algorithms is not necessary for effective TokenCrypt use.
 
 ## Installation
 
-Reminder: intallation must be repeated every time that an updated repository is dowloaded or pulled.
-(Except when the programs and scripts have not changed).
+Reminder: installation must be repeated every time that an updated repository is downloaded or pulled and the programs and scripts have changed.
 
-This software was tested under Linux. Installation from source needs a C compiler,
-either clang or gcc. Download or clone this directory, cd into it and then:
+This software was tested under Linux. Installation from source needs a C compiler, either clang or gcc. Download or clone this directory, cd into it and then:
 
 **`make CC=clang`**
 
 or if clang is not installed, just use the default compiler 
 (under Linux it is usually gcc): **`make`**
 
-When you are using a typical Linux, you can often skip the compilation step entirely. Then the automatically pre-compiled binaries `symcrypt` and `hexcheck`, that are included in this repository,
-will be installed by default.
+When you are using a typical Linux, you can often skip the compilation step entirely. Then the automatically pre-compiled binaries `symcrypt` and `hexcheck`, that are included in this repository, will be installed by default.
 
 **`sudo ./install`**
  
@@ -158,3 +155,7 @@ Writes to stdout `size` bytes of random hexadecimal data.
 **`b64gen`** size
 
 Writes to stdout `size` bytes of random base64 data.
+
+## Further Information
+
+See also [FAQ.md](https://github.com/liborty/TokenCrypt/blob/master/FAQ.md) for frequently asked questions.
