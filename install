@@ -1,8 +1,10 @@
 #!/bin/bash
-# invoke as: 
+
+# invoke as: sudo ./install
 # installs TokenCrypt utilities in /usr/local/bin
 
-PROGS='symcrypt hexcheck keygen ncrpt dcrpt crptest'
+PROGS='symcrypt hexcheck keygen hexgen b64gen ncrpt dcrpt crptest'
 chmod 755 $PROGS
 cp $PROGS /usr/local/bin
 printf "Installed TokenCrypt utilities in /usr/local/bin\n"
+

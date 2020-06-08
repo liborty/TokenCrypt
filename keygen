@@ -17,10 +17,7 @@ case $# in
 		exit 2;;
 esac
 
-LASTEXT=${1##*.}
+# LASTEXT=${1##*.}
 
-if [ "$LASTEXT" == 'hex' ]; then 
-	SIZE=$(( $( stat -c%s $1 )/2 + 1 ))
-else SIZE=$( stat -c%s $1 )
-fi
+SIZE=$( stat -c%s $1 )
 head -c $SIZE /dev/urandom

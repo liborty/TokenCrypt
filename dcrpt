@@ -53,7 +53,7 @@ for INFILE in $INDIR/*; do
 		continue
 	fi
 	if [ -f $KEYFILE.hex ]; then # found hexed extension
-		symcrypt $KEYFILE.hex $INFILE | xxd -p > $OUTFILE 
+		symcrypt $KEYFILE.hex $INFILE | xxd -ps > $OUTFILE 
 		continue
 	fi
 	if [ -f $KEYFILE.base64 ]; then # found base64 extension

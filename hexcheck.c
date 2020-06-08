@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 {
   FILE *fin,*fout;
   char *progname = argv[0], *filein, *fileout; 
-  unsigned int c;
+  unsigned char c;
 
   switch (argc)
     {
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 				exit(EXIT_FAILURE);
 			}
 		 }
-		 else exit(EXIT_FAILURE);
+		else exit(EXIT_FAILURE);
 	 }
   fclose(fin);
   fclose(fout);

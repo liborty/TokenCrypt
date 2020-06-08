@@ -3,4 +3,5 @@ if [ $# -ne 1 ]; then
 	printf "$0: needs file size argument, e.g. obtained by 'stat -c%s myfile'\n" 1>&2 
 	exit 2
 fi
-</dev/urandom tr -dc 'a-f0-9' | head -c $1
+< /dev/urandom tr -dc 'a-f0-9\n ' | head -c $1
+if [[ $(( $1 % 2 )) -eq 1 ]]; then printf "\n"; fi

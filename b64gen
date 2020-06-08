@@ -1,0 +1,14 @@
+#!/bin/bash
+if [ $# -ne 1 ]; then
+	printf "$0: needs file size argument, e.g. obtained by 'stat -c%s myfile'\n" 1>&2 
+	exit 2
+fi
+< /dev/urandom tr -dc 'a-zA-Z0-9\n+/' | head -c $1
+# finally pad with = to make output size a multiple of four
+REM=$(( $1%4 ))
+case $REM in
+	0) exit 1;;
+	1) printf "==="; exit 1;;
+	2) printf "=="; exit 1;;
+	3) printf "="; exit 1;;
+esac

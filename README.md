@@ -2,7 +2,7 @@
 
 **Encrypts and decrypts directories of security tokens and any other files. High security without onerous complications.**
 
-## Version 1.1.3  [![Actions Status](https://github.com/liborty/TokenCrypt/workflows/compilation/badge.svg)](https://github.com/liborty/TokenCrypt/actions) [![Actions Status](https://github.com/liborty/TokenCrypt/workflows/test/badge.svg)](https://github.com/liborty/TokenCrypt/actions)
+## Version 1.1.4  [![Actions Status](https://github.com/liborty/TokenCrypt/workflows/compilation/badge.svg)](https://github.com/liborty/TokenCrypt/actions) [![Actions Status](https://github.com/liborty/TokenCrypt/workflows/test/badge.svg)](https://github.com/liborty/TokenCrypt/actions)
 
 Use at your own risk! No warranties are given or implied. 
 By downloading this software, you agree not to use it for unethical purposes.
@@ -33,7 +33,7 @@ Then there are two bash scripts that automate the whole process of encryption (`
 and decryption (`dcrpt`), subsuming the tasks of compression/decompression and keys generation as and when needed.
 There is also an automated overall testing script `crptest`.
 
-Entirely hexadecimal (token) files are recognised with `hexcheck` and converted to binary, which halves them in size. Base64 files are automatically recognised too, resulting in 25% size reduction in their case. After subsequent general compression the reductions will not be so great compared to just compressing the originals but there will still be significant gains, making this worthwhile.
+Entirely hexadecimal (token) files are recognised with `hexcheck` and converted to binary, which halves them in size. Base64 files are automatically recognised too, resulting in 25% size reduction in their case. Subsequent general compression reductions will not be so great but there will still be significant overall gains, making the recognition of these files worthwhile.
 
 Then either lzma or zstd general compression is applied but only if it actually reduces the size of the file. This is generally not going to be the case for small and/or binary files. 
 
@@ -54,8 +54,7 @@ either clang or gcc. Download or clone this directory, cd into it and then:
 or if clang is not installed, just use the default compiler 
 (under Linux it is usually gcc): **`make`**
 
-When you are using a typical Linux, you can often skip the compilation step entirely. 
-Then the automatically pre-compiled binaries `symcrypt` and `hexcheck`, that are included in this repository,
+When you are using a typical Linux, you can often skip the compilation step entirely. Then the automatically pre-compiled binaries `symcrypt` and `hexcheck`, that are included in this repository,
 will be installed by default.
 
 **`sudo ./install`**
@@ -75,6 +74,7 @@ that automatically generates the pre-compiled binaries is successful.
 
 Standard hex-dump utility **`xxd`** which is normally pre-installed.  
 It can be installed with '`sudo apt-get install xxd`'.
+Same with **`base64`**.
 
 **`lzma`** compression is now the default. It is normally pre-installed, otherwise
 install it with '`sudo apt-get install lzma`'.
@@ -87,11 +87,14 @@ This can be done either before the above installation or at any time thereafter.
 
 **`ncrpt`** [-h][-x][-b][-q][-v][-z] inputpath/dirname
 
-The optional flags mean, respectively: -h help, -x test for hex files, -b test for base64 files, -q quiet, -v verbose, -z zstd compression.
+The options mean, respectively: -h help, -x test for hex files, -b test for base64 files, -q quiet, -v verbose, -z zstd compression. 
+
+The tests for hex and base64 files are now optional, you only need to invoke them when you know that the directory being processed may contain some.
 
 Encrypted output files go to `./dirname_crp` (under the current directory).
 Unique new key is generated for each input file in `path/dirname` and
 written to `./dirname_key` that exactly mirrors `./dirname_crp` (and `path/dirname`).
+
 There is no recursive descent into subdirectories. Recursive version may be released later.
 
 The default printout is just a summary report at the end, such as the one in `test.log`.
@@ -128,115 +131,30 @@ There should be only a blank produced after "crptest found these differences:"
 
 Automated github action: 'test' runs `crptest` over `testing` directory that is
 included in the repository.
-It tests all the main types of files: hexadecimal, text and binary. 
+It tests all the main types of files: hexadecimal, base64, plain text and binary. 
 The 'test' badge at the top of this document lights up green 
 when the test was successful. Note that only the output `test.log`
 is saved in the repository after this automatic test. Here is what it looks like:
 
-	crptest run on: 05.01.20 at 00:48:17 UTC
-	ncrpt encrypted 3 files into testing_crp, keys are in testing_key
-		testing_crp size:	5066
-		testing size:		7640
-		lz compressed to: 66.30%
-	dcrpt: decrypted 3 files into testing_org, 0 failures
-	crptest found these differences:
-	crptest tested 3 files
-	
-There is now also `hexkeygen` script utility which will generate random hex files of
-any given size (for testing).
+	crptest run on: 08.06.20 at 06:49:04 UTC
+	ncrpt encrypted 4 files into testing_crp, keys are in testing_key
+	testing_crp size:	8365
+	testing size:		11666
+	lz compressed to: 71.70%
+	dcrpt: decrypted 4 files into testing_org, 0 failures
+	crptest differences found (success when blank):
+	crptest tested 4 files
 
-## Frequently Asked Questions (FAQ)
+If you want to set up your own tests, you  may find the following useful:
 
-**What if `crptest` reports missing NL and/or spaces in hex files?**
+**`keygen`** file
 
-There may occasionally be reports of some missing spaces and newlines in
-the reconstructed hexadecimal files.
-This is because `hexcheck` tolerates them but skips them silently, as they are
-not hexadecimal characters ( `xxd` does the same ). 
-However, note that, unlike `xxd`, `hexcheck` fails over any other non-hex 
-character and such file will not be treated as hexadecimal.
-See the next question below.
+Writes to stdout random binary data of the same length as the given file.
 
-The problem is that a binary file could consist entirely of non-printable
-characters. Skipping them all and declaring such an empty file to be hexadecimal would
-be a bug. Even when mixed half and half, at what point do we say that it is
-now a genuine hexadecimal file? That is why the hexadecimal check has to be quite strict.
+**`hexgen`** size
 
-When this report happens, it is a useful reminder to remove the white noise 
-from your original hex files. The spaces and newlines can be removed simply
-by running `ncrpt` and `dcrpt` and then substituting the original hexadecimal files with their
-reconstructed cleaned-up equivalents in `./dirname_org`. However, any other spurious
-characters will have to be cleaned up manually.
+Writes to stdout `size` bytes of random hexadecimal data.
 
-**Why are my hex files over half their size after compression?**
+**`b64gen`** size
 
-They should normally be around 50% or less. If you have a whole directory
-full of genuine hexadecimal files, the overall compression will be quite dramatic.
-
-Any spurious white noise or other non-hexadecimal characters, even just one of them,
-will make `hexcheck` report the file as non-hexadecimal and its compression will
-be limited. It may be worth checking that what you thought were hexadecimal files
-were actually accepted as such. This will be indicated by their keys in `./dirname_key`
-having a `.hex` extension in their names. If the original file already had a .hex extension,
-it should now have two.
-
-**Why does `crptest` report differences between some upper and lower case letters?**
- 
-This is expected behaviour. A-F letters in hex files are intentionally changed
-by `hexcheck` into their lower case equivalents a-f (standard hexadecimal form).
-Again, you can replace the original file with its reconstructed version to
-prevent the repetition of these reports.
-
-**How to get more hexadecimal files accepted?**
-
-When a token consist of several parts, perhaps separated by a dash or some
-other intervening non-hexadecimal characters, it is best to split it manually into individual
-files, each containing only pure hexadecimal. Any remaining spaces and newlines will be accepted and preserved.
-
-**What happens to impure 'hexadecimal' files?**
-
-Impure 'hexadecimal' files/tokens still containing any non-hex characters
-will be compressed and encrypted as they are, just 
-like any other files. Note that this is sub-optimal, as they can end up twice as
-big as they needed to be. It may be a pessimisation of security as well.
-
-**What if `crptest` reports other differences?**
-
-Should it list any other differences, then something has gone wrong. It will most
-likely be some problem with the directories structure or accessability.
-The original files in `path/dirname` will be untouched.
-Should you discover a real bug, please create an issue at GitHub.
-
-**When can the original files be deleted?**
-
-They are left untouched in their original `path/dirname` and it is up to you
-not to lose them. Do not start deleting any of the originals until you 
-are satisfied that the testing was successful, you have invoked `ncrpt path/dirname` 
-to encrypt them, and double-checked manually that the encrypted files and keys exist
-and are of a reasonable non-zero size. The output of ncrpt reports the overall size.
-
-Note that if you call crptest by mistake instead of ncrpt, the encrypted files will
-be deleted afterwards. So do check that they actually exist.
-
-**How does `dcrpt` know the actual method of compression that was used on any given file?**
-
-Good question! As we have seen, hex compression and/or lzma or zstd compressions may or may not
-be applied to any given file, depending on what is the user selected compressor, whether the
-file is hexadecimal or not, whether it is actually reduced by compression or not, etc.
-Actual compression(s) carried out are recorded in the extension(s) appended to the filename
-of its key in `./dirname_key`. (While the filenames of the encrypted files are left 
-exactly the same as those of the original files).
-
-Be careful not to interfere with the keys' extensions, as this would prevent
-successful decompression. As would changing any of the keys' filenames in general.
-
-**What is the biggest hazard in using TokenCrypt?**
-
-Misplacing, corrupting, failing to update the backup of, or accidentally
-overwriting the keys in the generated `./dirname_key` directory.
-In two short words: losing them. 
-
-The keys directory should be kept somewhere separate from 
-`./dirname_crp` for security reasons but the rub is that this makes it easier to lose.
-You need to be well organised with your file backups (in two different places)
-and the directories correspondences across them.
+Writes to stdout `size` bytes of random base64 data.

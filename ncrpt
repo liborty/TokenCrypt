@@ -74,7 +74,7 @@ for INFILE in $INDIR/*; do
    if [ $HEXTEST ]; then
    	hexcheck $INFILE checkfile.tmp
    	if [ "$?" -eq 0 ]; then	# status of hexcheck when INFILE is entirely hexadecimal
-			xxd -p -r checkfile.tmp > binfile.tmp # shrinks 50% from hex to binary
+			xxd -ps -r checkfile.tmp > binfile.tmp # shrinks 50% from hex to binary
 			BINFILE=binfile.tmp # now this is the binary file to encrypt
 			KEYFILE="$KEYFILE".hex # append .hex extension for hexadecimal origin
    	fi
