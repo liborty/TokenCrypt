@@ -16,8 +16,8 @@ jobs:
       
     - name: commitprogs
       run: |
-        git config --local user.email "liborty@github.com"
-        git config --local user.name "liborty"
+        git config --global user.email "liborty@github.com"
+        git config --global user.name "liborty"
         git commit -am "action: makebinary"
  
     - name: pushprogs
@@ -35,8 +35,6 @@ jobs:
  
     - name: commitlog
       run: |
-        git config --local user.email "liborty@github.com"
-        git config --local user.name "liborty"
         git commit -m 'action:test.log' test.log
 
     - name: push
