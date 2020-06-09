@@ -12,6 +12,7 @@ jobs:
       run: |
         sudo ./install 
         # sudo apt-get install zstd
+      shell: bash
         
     - name: test
       run: crptest testing > test.log
@@ -21,7 +22,7 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git commit -m 'action:test.log' test.log
+        git commit -am 'action:test.log' test.log
 
     - name: push
       uses: ad-m/github-push-action@master
