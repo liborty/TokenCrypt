@@ -69,7 +69,7 @@ for INFILE in $INDIR/*; do
 		continue
 	fi
 	if [ -f $KEYFILE.base64.zst ]; then # found base64 and compressed
-		symcrypt $KEYFILE.base64.zst $INFILE | zstd -d -c | base64 > $OUTFILE
+		symcrypt $KEYFILE.base64.zst $INFILE | zstd -d -c | base64 -w 0 > $OUTFILE
 		continue
 	fi
 	if [ -f $KEYFILE.lz ]; then # found lzma compressed, nonhex
@@ -81,7 +81,7 @@ for INFILE in $INDIR/*; do
 		continue
 	fi
 	if [ -f $KEYFILE.base64.lz ]; then # found base64 and lzma compressed
-		symcrypt $KEYFILE.base64.lz $INFILE | lzma -d | base64 > $OUTFILE
+		symcrypt $KEYFILE.base64.lz $INFILE | lzma -d | base64 -w 0 > $OUTFILE
 		continue
 	fi
 	printf "$PROGN failed to find a useful key for encrypted file $FILEND\n"
