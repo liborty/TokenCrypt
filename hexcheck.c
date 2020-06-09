@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
   FILE *fin,*fout;
   char *progname = argv[0], *filein, *fileout; 
   int cin;
-  unsigned char firsthex = 0;
+  unsigned char firsthex = 0; // to pack bytes
   unsigned char uc;
 
   switch (argc)
