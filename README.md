@@ -63,10 +63,6 @@ Alternatively, you can copy them manually to any of your own `bin`
 directories in your path and this does not require `sudo` privileges, e.g.:
 **`cp symcrypt hexcheck ncrpt dcrpt keygen crptest ~/bin`**
 
-Automated github action 'compile' runs '`make CC=clang`' at github. 
-The 'compile' badge at the top of this document lights up green when the build 
-that automatically generates the pre-compiled binaries is successful.
-
 ### Dependencies
 
 Standard hex-dump utility **`xxd`** which is normally pre-installed.  
@@ -126,11 +122,11 @@ It cleans up after itself except for the keys directory `./dirname_key`,
 which is left for reassurance and for information about how was each test file compressed. 
 There should be only a blank produced after "crptest found these differences:"
 
-Automated github action: 'test' runs `crptest` over `testing` directory that is
+An automated github action compiles the C programs and runs `crptest` over `testing` directory 
 included in the repository.
 It tests all the main types of files: hexadecimal, base64, plain text and binary. 
 The 'test' badge at the top of this document lights up green 
-when the test was successful. Note that only the output `test.log`
+when all the tests were successful. Note that only the output `test.log`
 is saved in the repository after this automatic test. Here is what it looks like:
 
 	crptest run on: 08.06.20 at 06:49:04 UTC
