@@ -7,7 +7,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-
+    - with: 
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: compile
+      run: make CC=clang
+      shell: bash
+      
+    - name: commitprogs
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git commit -am "action: makebinary"
+ 
+    - name: pushprogs
+      uses: ad-m/github-push-action@master
+ 
     - name: install
       run: |
         sudo ./install 
@@ -18,7 +33,7 @@ jobs:
       run: crptest testing > test.log
       shell: bash
  
-    - name: commit
+    - name: commitlog
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
@@ -26,5 +41,4 @@ jobs:
 
     - name: push
       uses: ad-m/github-push-action@master
-      with: 
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+  
