@@ -1,6 +1,11 @@
 #include "stdio.h"
 #include "stdlib.h"
 
+// some useful ascii codes
+const unsigned char zero = 48;
+const unsigned char space = 32;
+const unsigned char lf = 10;
+
 // returns lower case ascii value of a
 // hexadecimal digit A-F turned into a-f
 // LF and space left unchanged
@@ -91,6 +96,11 @@ int main(int argc, char *argv[]) {
       exit(EXIT_FAILURE);
     }
     // pack bytes with two hexes here
+    if ( firsthex ) {
+    	uc = (firsthex << 4) + uc;
+    	firsthex = 0;
+    } else firsthex = uc;
+    
     if (fputc(uc, fout) == EOF) {
       fprintf(stderr, "%s: error in output\n", progname);
       fclose(fout);

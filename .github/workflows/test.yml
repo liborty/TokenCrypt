@@ -8,33 +8,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: compile
-      run: make CC=clang
-      shell: bash
-      
-    - name: commitprogs
-      run: |
-        git config --global user.name 'liborty'
-        git commit -am "action: makebinary"
- 
-    - name: pushprogs
-      uses: ad-m/github-push-action@master
-      with: 
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-   
-    - name: install
-      run: |
-        sudo ./install 
-        # sudo apt-get install zstd
-      shell: bash
-        
     - name: test
-      run: crptest testing > test.log
+      run: ./crptest testing > test.log
       shell: bash
  
     - name: commitlog
       run: |
-        git commit -m 'action:test.log' test.log
+        git commit -am 'action:test.log' test.log
 
     - name: push
       uses: ad-m/github-push-action@master
