@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
       exit(EXIT_FAILURE);
     }
   while ((cin = fgetc(fin)) != EOF)    
-	{
+  {
      uc = ishex((unsigned char)cin);
      if ( uc == 0 ) // non hex character failure exit
 		{
@@ -88,8 +88,8 @@ int main(int argc, char *argv[])
 		fclose(fout); fclose(fin);
 		exit(EXIT_FAILURE);
 		}	
-	 }
-	 fclose(fin);
-  	 fclose(fout);
-    exit(EXIT_SUCCESS);
+ }
+fclose(fin);
+fclose(fout);
+exit(EXIT_SUCCESS);
 }
