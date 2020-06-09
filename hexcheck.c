@@ -1,11 +1,12 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-unsigned char ishex(unsigned char n) { // returns lower case ascii value of a
-                                       // hexadecimal digit A-F turned into a-f
-                                       // LF and space left unchanged
-                                       // otherwise returns zero indicating
-                                       // unacceptable hexadecimal data
+// returns lower case ascii value of a
+// hexadecimal digit A-F turned into a-f
+// LF and space left unchanged
+// otherwise returns zero indicating
+// unacceptable hexadecimal data
+unsigned char ishex(unsigned char n) { 
 
   if (n > 102)
     return (0); // reject above 'f'
