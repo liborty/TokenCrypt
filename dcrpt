@@ -57,7 +57,7 @@ for INFILE in $INDIR/*; do
 		continue
 	fi
 	if [ -f $KEYFILE.base64 ]; then # found base64 extension
-		symcrypt $KEYFILE.base64 $INFILE | base64 > $OUTFILE 
+		symcrypt $KEYFILE.base64 $INFILE | base64 -w 0 > $OUTFILE 
 		continue
 	fi
 	if [ -f $KEYFILE.zst ]; then # found compressed nonhex
