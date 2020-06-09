@@ -33,7 +33,11 @@ Then there are two bash scripts that automate the whole process of encryption (`
 and decryption (`dcrpt`), subsuming the tasks of compression/decompression and keys generation as and when needed.
 There is also an automated overall testing script `crptest`.
 
-Entirely hexadecimal (token) files are recognised with `hexcheck` and converted to binary, which halves them in size. Base64 files are automatically recognised too, resulting in 25% size reduction in their case. The overall gain after general compression may not be quite so much but it will still be significant, making the recognition of these files worthwhile.
+Entirely hexadecimal (token) files are recognised with `hexcheck` and converted to binary, which halves them in size. 
+
+Base64 files are automatically recognised too, resulting in 25% size reduction in their case. Base64 files should not contain any newlines, as `base64` utility then rejects them. 
+
+The overall gain after general compression may not be quite so much but it will still be significant, making the recognition of these files worthwhile.
 
 Then either lzma or zstd general compression is applied, as long as it actually leads to a reduction of the file size. This is generally not  the case for small and/or binary files. 
 
@@ -127,16 +131,7 @@ included in the repository.
 It tests all the main types of files: hexadecimal, base64, plain text and binary. 
 The 'test' badge at the top of this document lights up green 
 when all the tests were successful. Note that only the output `test.log`
-is saved in the repository after this automatic test. Here is what it looks like:
-
-	crptest run on: 08.06.20 at 06:49:04 UTC
-	ncrpt encrypted 4 files into testing_crp, keys are in testing_key
-	testing_crp size:	8365
-	testing size:		11666
-	lz compressed to: 71.70%
-	dcrpt: decrypted 4 files into testing_org, 0 failures
-	crptest differences found (success when blank):
-	crptest tested 4 files
+is saved in the repository after this automatic test.
 
 If you want to set up your own tests, you  may find the following useful:
 
