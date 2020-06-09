@@ -7,15 +7,15 @@ unsigned char ishex(unsigned char n)
   // LF and space left unchanged
   // otherwise returns zero indicating unacceptable hexadecimal data
   
-	if ( n > 102 ) exit(EXIT_FAILURE); // reject above 'f'
+	if ( n > 102 ) return(0); // reject above 'f'
  	if ( n < 48 ) 
 		{
 		if ( n == 10 ) return(10); // allow LF
 		if ( n == 32 ) return(32); // allow space
-		exit(EXIT_FAILURE);
-		} // reject all others below the digit '0' (ascii 48)
+		return(0); // reject all others below the digit '0' (ascii 48) 
+		} 
 	if (( n > 64 ) && ( n < 71 )) return(n+32); // accept A-F but change to lower case
-	if (( n > 57 ) && ( n < 97 )) exit(EXIT_FAILURE); // reject all others between '9' and 'a'
+	if (( n > 57 ) && ( n < 97 )) return(0); // reject all others between '9' and 'a'
 	return(n); // accept remaining valid 0-9 and a-f
 }
 
@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
   FILE *fin,*fout;
   char *progname = argv[0], *filein, *fileout; 
   int cin;
-  unsigned char c;
+  unsigned char uc;
 
   switch (argc)
     {
@@ -72,22 +72,22 @@ int main(int argc, char *argv[])
       fprintf(stderr,"usage: %s [ hexfile [outfile]]\nomitted files mean stdin/out, e.g. in a pipe: .. | %s hexfile | ..\n",progname,progname);
       exit(EXIT_FAILURE);
     }
-      
-  while ( 1 ) // while true infinite loop
-    {
-     cin = fgetc(fin); // to test for EOF, must be an int
-     if (cin == EOF) 
-     {
-    	fclose(fin);
-  		fclose(fout);
-   	exit(EXIT_SUCCESS);
-     }
-     c = ishex((unsigned char)cin); // must return only valid hex values
-	  if (fputc(c,fout) == EOF) 
+  while ((cin = fgetc(fin)) != EOF)    
+	{
+     uc = ishex((unsigned char)cin);
+     if ( uc == 0 ) // non hex character failure exit
 		{
-			fprintf(stderr,"%s: error in output\n", progname);
-			fclose(fout); fclose(fin);
-			exit(EXIT_FAILURE);
+		fclose(fout); fclose(fin);
+		exit(EXIT_FAILURE);
+		}	
+	  if (fputc(uc,fout) == EOF) 
+		{
+		fprintf(stderr,"%s: error in output\n", progname);
+		fclose(fout); fclose(fin);
+		exit(EXIT_FAILURE);
 		}	
 	 }
+	 fclose(fin);
+  	 fclose(fout);
+    exit(EXIT_SUCCESS);
 }
