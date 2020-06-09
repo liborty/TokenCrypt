@@ -2,7 +2,7 @@
 
 **Encrypts and decrypts directories of security tokens and any other files. High security without onerous complications.**
 
-## Version 1.1.4  [![Actions Status](https://github.com/liborty/TokenCrypt/workflows/compilation/badge.svg)](https://github.com/liborty/TokenCrypt/actions) [![Actions Status](https://github.com/liborty/TokenCrypt/workflows/test/badge.svg)](https://github.com/liborty/TokenCrypt/actions)
+## Version 1.1.4  [![Actions Status](https://github.com/liborty/TokenCrypt/workflows/test/badge.svg)](https://github.com/liborty/TokenCrypt/actions)
 
 Use at your own risk! No warranties are given or implied. 
 By downloading this software, you agree not to use it for unethical purposes.
