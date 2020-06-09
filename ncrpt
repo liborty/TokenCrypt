@@ -80,7 +80,7 @@ for INFILE in $INDIR/*; do
    	fi
    fi 
 	if [ $B64TEST ] && [ "$BINFILE" = "$INFILE" ]; then #  only test if not already hexfile
-   	base64 -d $INFILE > checkfile.tmp # turns base64 into binary, saving 25%
+   	base64 -d -w 0 $INFILE > checkfile.tmp # turns base64 into binary, saving 25%
    	if [ "$?" -eq 0 ]; then	# status of base64 when INFILE was entirely in BASE64
 			BINFILE=checkfile.tmp # now this is the binary file to encrypt
 			KEYFILE="$KEYFILE".base64 # append .base64 extension for base64 origin
