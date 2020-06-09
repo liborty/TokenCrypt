@@ -11,7 +11,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.PAT }}
     - name: compile
       run: make CC=clang
     - name: push
