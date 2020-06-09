@@ -16,9 +16,9 @@ jobs:
  
     - name: commit
       run: |
-      	git config --local user.email "action@github.com"
-      	git config --local user.name "GitHub Action"
-      	git commit -am "action: makebinary"
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git commit -am "action: makebinary"
  
     - name: push
       uses: ad-m/github-push-action@master
