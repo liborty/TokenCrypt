@@ -12,8 +12,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: pull
-    	run: git pull
     - name: compile
       run: make CC=clang
     - name: commit
