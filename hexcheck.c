@@ -6,6 +6,7 @@
 // LF and space left unchanged
 // otherwise returns zero indicating
 // unacceptable hexadecimal data
+
 unsigned char ishex(unsigned char n) { 
 
   if (n > 102)
