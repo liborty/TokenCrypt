@@ -21,8 +21,8 @@ case $# in
 		exit 2;;
 esac
 
-make -CC=clang
-
+make CC=clang
+sudo ./install
 
 # this is just for better readability of code
 INDIR="$1" 
@@ -41,8 +41,8 @@ if [ -d "$ORGDIR" ]; then
 	printf "$PROGN quitting, '$ORGDIR' already exists here!\n"; exit 2; fi
 
 # encrypt and decrypt
-./ncrpt -x -b $INDIR
-./dcrpt $KEYDIR $OUTDIR
+ncrpt -x -b $INDIR
+dcrpt $KEYDIR $OUTDIR
 
 printf "$PROGN differences found (success when blank):\n"
 for INFILE in $INDIR/*; do
