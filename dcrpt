@@ -65,7 +65,7 @@ for INFILE in $INDIR/*; do
 		continue
 	fi
 	if [ -f $KEYFILE.hex.zst ]; then # found hexed and compressed
-		symcrypt $KEYFILE.hex.zst $INFILE | zstd -d -c | xxd -p > $OUTFILE
+		symcrypt $KEYFILE.hex.zst $INFILE | zstd -d -c | xxd -ps > $OUTFILE
 		continue
 	fi
 	if [ -f $KEYFILE.base64.zst ]; then # found base64 and compressed
@@ -77,7 +77,7 @@ for INFILE in $INDIR/*; do
 		continue
 	fi
 	if [ -f $KEYFILE.hex.lz ]; then # found hexed and lzma compressed
-		symcrypt $KEYFILE.hex.lz $INFILE | lzma -d | xxd -p > $OUTFILE
+		symcrypt $KEYFILE.hex.lz $INFILE | lzma -d | xxd -ps > $OUTFILE
 		continue
 	fi
 	if [ -f $KEYFILE.base64.lz ]; then # found base64 and lzma compressed
