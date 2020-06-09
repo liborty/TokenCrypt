@@ -7,9 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-      with: 
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-    
+
     - name: compile
       run: make CC=clang
       shell: bash
@@ -21,7 +19,9 @@ jobs:
  
     - name: pushprogs
       uses: ad-m/github-push-action@master
- 
+      with: 
+        token: ${{ secrets.GITHUB_TOKEN }}
+   
     - name: install
       run: |
         sudo ./install 
@@ -38,4 +38,5 @@ jobs:
 
     - name: push
       uses: ad-m/github-push-action@master
-  
+      with: 
+        token: ${{ secrets.GITHUB_TOKEN }}  
