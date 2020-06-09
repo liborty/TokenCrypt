@@ -1,8 +1,128 @@
-crptest run on: 09.06.20 at 08:26:12 UTC
+crptest run on: 09.06.20 at 08:53:01 UTC
+make: Nothing to be done for 'all'.
+Installed TokenCrypt utilities in /usr/local/bin
 ncrpt encrypted 4 files into testing_crp, keys are in testing_key
-	testing_crp size:	4096
+	testing_crp size:	7099
 	testing size:		11150
-	lz compressed to: 36.73%
-dcrpt: decrypted  files into testing_org, 0 failures
+	lz compressed to: 63.66%
+dcrpt: decrypted 4 files into testing_org, 0 failures
 crptest differences found (success when blank):
+1,110c1,6
+<   47ed194351f 375f1202f7a1ab8513748
+< a8294 9de 92 3
+< 
+< 
+< cf6df7ac4059fce97d 47a88f94773
+< 20d8493e9
+< 3
+< 37404a7f41fdc
+<  42d8b
+< 538a6
+< 9f18 febde
+< 904b3
+< 
+< d51d2d1ff1ef
+< 4a
+< 2297 87 5
+< 
+< a3
+< 4f6933d1
+< 5a84aac7e902b52f4 e 24b5ae8453cdc765fc282de3017 
+< 3e75c94 107dc7
+< a8319 f7cc9dfa3e37db386b 5 89f9a f000bda99bae
+< 0cf23fc
+< f703 f96e2af4d4b060
+< d176 50 3a 7715182d794 6143d3e0001bd9c
+< 5dc42ac9f0ad1f9fd38 6c9da3b8 e4a3304 50
+< 70e9e0cf29494ff 06b9f5046cc8cf8d3d2d68c4a4c96bad0
+< 0a644979718 b41e4af767bf3cb5bdbbacfee644c9c4d e02b9e2f630ab0afd5de9b
+< 8f640141c
+< a18c8
+< 80c5f11f35a74b446af8b21424 d0af6f73fc58ac5681
+< 33292f2c e 169
+< c34f892fa
+<  09e6a9a82c9a55c9cd f9785088b0
+<  7dee30651a827c987e82eb e079c6
+< a6e4cd3d9fd2f46cb16de81b 826
+< f08711e2876b7fda3
+< 61d134d5e48a2e3c3248c2d9328128d
+< b97
+< 1eedce2b4c11ab 576ca3
+< 600a3ea9
+<  78ce fd2
+< cc3f0f
+< f7
+< 016b
+< d1be2c026 6720eb6db9d95a8542848f 
+< b
+< 891160ea683de33599b adfd337523c93b57cbb48 337
+< 5ea625d93bbb0 7dc4a9347062ea
+< 5934a5490
+< c e3bc1752402a
+< 2d9ac4835a
+< 2adbb61f63c9b520753 307f14d734
+< 7d46 0f4
+< 518 b26a979f1
+< aa47
+< 23f642bc59 63 72bbe5 a32f49e
+< d2fe
+<  48c 86 ec27c50ebc5d1899747418db e e
+< 24
+< a3bf
+< d6
+< fff8d147c0 92
+< 95 8e6a05e
+< 4 b6856
+< f
+< 5c68 34ba6 ba1795f c 2ed21fed
+< 71e0d96591d21a4f76a31b2793301cf9dc7e9298a8937a75cf7c007de2
+< cb614931dc7
+< 6c32bc
+< 5f52dfeef17d185e10eec04
+< f39a127cf  db
+< 42a5e640d692ab
+< d77f85f
+< 7a7f6dafa2 1
+< 1 eceb52e511b93b16a73275c46dc9
+< 
+< d6144b898c526ae9c5f2f112a89f6396d39f10ca120
+< be  0e1cad8c2afad
+< c3ee517
+< 6225b1972a6cb43d002ef02b6 82fe415975facd61d5475242746
+< 5f
+< 254ca779d8334b404d715bd7e417dbb52b11 618e
+< 94
+< fef3ae4f6ddc c65 cf1128cc8aa3247c25ccc1dd2492 b b0af95
+< 5f2e7a82b68e0b e6e61b516d38014 79d4c2 
+< d4af4b3d5b7ca6330db0af0728e3ed801f 73126dd0233dd6e4cfdf
+< 12152831 
+< c7dd82
+< 235f8e9a 29f 
+< 5bce3bd1
+< 628b
+< eba30a 73e0
+< 02c 7eb44944cf35eefc 0d15b7e8001 d4993
+< e3a05d37587
+< 467d19b1b0e41a3edbc6adc2e8 4
+< acfe9
+< cc813e
+< 
+< 
+< fafd1054ecc82b180c581 7 a1c7ce86dd9e 9255a50939411ddd26 9e81687dc30ecbb
+< 9a61d02 7e29 5290eef0f9fa48
+< 6c478 17488d5
+< 726a645cd10b5c8eefa159d
+< 2734268ea9660
+< 12c157f19715 92b50ba
+<  736742c6304f9bdcd 6
+<  0 674fe16 3f b446
+< 9eae
+< 54f469be7ca9778 
+---
+> 1b02aa1ccd0542afac0201107d3a58f000bd0c03f9060d507761d300010a
+> 6cac0e0c06afb4e02b0a01aace3e1dd0afcece3ce13d09f9080706cf1f1a
+> 3d3bcb3b1a570afd1f021a3e3c3caf07cd3de3ca02cd07307f0fad63a3bf
+> 4886ce0eeeac928eb60dad3a3c01073a3b0e04aa0dabecce1a0caa0ecbaf
+> 0202821e3c1a61cf1aaccabb0a0be61f1d790a011b1029ac0a73002c3e0d
+> 01d4050eacaf027ecd17af1e1e0b73f70406b4
 crptest tested 4 files
