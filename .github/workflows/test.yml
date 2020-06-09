@@ -16,6 +16,7 @@ jobs:
       
     - name: commitprogs
       run: |
+        git config --global user.name 'liborty'
         git commit -am "action: makebinary"
  
     - name: pushprogs
