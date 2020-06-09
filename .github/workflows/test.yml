@@ -6,8 +6,9 @@ jobs:
   build:   
     runs-on: ubuntu-latest
     steps:
-    uses: actions/checkout@v2
-    with: github_token: ${{ secrets.GITHUB_TOKEN }}
+    - uses: actions/checkout@v2
+      with: 
+        token: ${{ secrets.PAT }}
     
     - name: compile
       run: make CC=clang
