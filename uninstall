@@ -1,6 +1,6 @@
 #!/bin/bash
 # invoke as: sudo ./uninstall
 # uninstalls TokenCrypt utilities from /usr/local/bin
-PROGS='symcrypt hexcheck keygen hexgen b64gen ncrpt dcrpt crptest'
+PROGS='symcrypt hexcheck hexify keygen hexgen b64gen ncrpt dcrpt crptest'
 rm $PROGS /usr/local/bin
 printf "Uninstalled TokenCrypt utilities from /usr/local/bin\n"
