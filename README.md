@@ -68,6 +68,10 @@ directories in your path and this does not require `sudo` privileges, e.g.:
 ```bash
 cp symcrypt hexcheck hexify ncrpt dcrpt keygen crptest ~/bin
 ```
+The simplest installation is just to invoke **`./crptest testing`** from the root of the repository.
+This will compile the programs and, after asking for su priviledges, install them in /usr/local/bin.
+As an added benefit, it will also run locally the same test as on github.
+
 ### Dependencies
 
 Standard  **`base64`** tool which is normally pre-installed.  
