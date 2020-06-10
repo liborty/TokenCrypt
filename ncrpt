@@ -106,14 +106,15 @@ done
 if ! [ $QUIET ]; then
     printf "$PROGN encrypted $COUNT files into $OUTDIR, keys are in $KEYDIR\n"
 	SIZES=( $( du -hbs $OUTDIR $INDIR ) ) # array of size,dir,size,dir
-	printf "\t%s size:\t%s\n\t%s size:\t\t%s\n" ${SIZES[3]} ${SIZES[2]} ${SIZES[1]} ${SIZES[0]}  
+	printf "      %s size:\t%s\n      %s size:\t%s\n" \
+	${SIZES[3]} ${SIZES[2]} ${SIZES[1]} ${SIZES[0]}  
 	# compession ratio x 10^5, printed as xx.xx% 
 	CR=$(( 10000*${SIZES[0]}/${SIZES[2]} )) 
 	if [ $CR -gt 99999 ]; then 
 		printf "\t$PROGN warning, no compression achieved!\n"
 	else 
 		set CR=$CR+5 # rounds to the nearest hundredth of percent
-		printf "$PROGN compressed (with $EXT) to: ${CR: 0:2}.${CR: 2:4} %%\n"
+		printf "$PROGN compressed (some with $EXT) to: ${CR: 0:2}.${CR: 2:4} %%\n"
 	fi
 fi
 rm zfile.tmp checkfile.tmp > /dev/null 2>&1 #tidy up
