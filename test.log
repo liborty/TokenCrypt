@@ -1,10 +1,10 @@
-crptest run on: 10.06.20 at 02:43:52 UTC
+crptest run on: 10.06.20 at 02:56:35 UTC
 make: Nothing to be done for 'all'.
 Installed TokenCrypt utilities in /usr/local/bin
 ncrpt encrypted 4 files into testing_crp, keys are in testing_key
-	testing size:	12008
-	testing_crp size:		7843
-ncrpt compressed (with lz) to: 65.31 %
+      testing size:	12008
+      testing_crp size:	7843
+ncrpt compressed (some with lz) to: 65.31 %
 dcrpt: decrypted 4 files into testing_org, 0 failures
 crptest differences found (success when blank):
 crptest tested 4 files
