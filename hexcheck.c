@@ -11,7 +11,7 @@ const unsigned char NONHEX = 0;
 // returns lower case ascii value of a
 // hexadecimal digit a-f turned into A-F
 // LF and space left unchanged
-// otherwise returns 0 indicating
+// otherwise returns NONHEX indicating
 // unacceptable hexadecimal data
 
 unsigned char ishex(unsigned char n) { 
@@ -25,15 +25,7 @@ unsigned char ishex(unsigned char n) {
   if (n < 58) return (n); // 0-9
   return (NONHEX); // reject all others  
 }
-
-void printchar(unsigned char uc, FILE *fout) {
-	if (fputc(uc, fout) == EOF) {
-      fprintf(stderr, "error in output\n");
-      fclose(fout);
-      exit(EXIT_FAILURE);
-	}
-}
-    
+  
 // checks if stdin contains only hexadecimal characters NL,space,0-9,A-F,a-f
 // any other character causes it to stop immediately and return failure
 // it writes all checked and packed hex characters to stdout
@@ -101,28 +93,24 @@ int main(int argc, char *argv[]) {
       fclose(fin);
       exit(EXIT_FAILURE);
     }
-   
-    if ((uc == LF) || (uc == SPACE)) {
-    	if ( firsthex ) {
-    	printchar(uc,fout);
-   //   fprintf(stderr, "%s: quitting, found odd group of hex digits\n", progname);
-   //   fclose(fout);
-   //   fclose(fin);
-   //   exit(EXIT_FAILURE);
-      } else printchar(uc,fout); // print space and nl chars as they are
-    }
+    if ((uc == LF) || (uc == SPACE)) continue; // accept but delete
     // turn ascii into binary   
     if ( uc < 58 ) uc -= ZERO;  // turns character zero into numerical zero
     else if ( uc < 71 ) uc -= 55; // turns A into 10
     // pack one byte with two hexes
-    if ( firsthex ) {
+    if ( firsthex ) { // got full byte, write it out
     	byteout = (byteout << 4) + uc;
-    	firsthex = false;
-    	printchar(byteout,fout); // print one byte packed with two hex chars
-    } else {
+     	if (fputc(byteout, fout) == EOF) {
+      	fprintf(stderr, "error in output\n");
+      	fclose(fout);
+      	exit(EXIT_FAILURE);
+      }
+	  firsthex = false;
+    } 
+    else { // this is first hex, save it
     	byteout = uc;
     	firsthex = true;
-    	}
+    }
   }
   fclose(fin);
   fclose(fout);

@@ -2,7 +2,7 @@
 
 **Encrypts and decrypts directories of security tokens and any other files. High security without onerous complications.**
 
-## Version 1.1.4  [![Actions Status](https://github.com/liborty/TokenCrypt/workflows/test/badge.svg)](https://github.com/liborty/TokenCrypt/actions)
+## Version 1.1.5  [![Actions Status](https://github.com/liborty/TokenCrypt/workflows/test/badge.svg)](https://github.com/liborty/TokenCrypt/actions)
 
 Use at your own risk! No warranties are given or implied. 
 By downloading this software, you agree not to use it for unethical purposes.
@@ -47,7 +47,7 @@ Decryption is the inverse of this process. See the scripts `ncrpt` and `dcrpt` f
 
 ## Installation
 
-Reminder: installation must be repeated every time that an updated repository is downloaded or pulled and the programs and scripts have changed.
+Reminder: installation must be repeated locally every time that an updated repository is downloaded or pulled and the programs and scripts may have changed.
 
 This software was tested under Linux. Installation from source needs a C compiler, either clang or gcc. Download or clone this directory, cd into it and then:
 
@@ -65,20 +65,16 @@ To remove them again, use: **`sudo ./uninstall`**
 
 Alternatively, you can copy them manually to any of your own `bin` 
 directories in your path and this does not require `sudo` privileges, e.g.:
-**`cp symcrypt hexcheck ncrpt dcrpt keygen crptest ~/bin`**
-
+```bash
+cp symcrypt hexcheck hexify ncrpt dcrpt keygen crptest ~/bin
+```
 ### Dependencies
 
-Standard hex-dump utility **`xxd`** which is normally pre-installed.  
-It can be installed with '`sudo apt-get install xxd`'.
-Same with **`base64`**.
+Standard  **`base64`** tool which is normally pre-installed.  
 
-**`lzma`** compression is now the default. It is normally pre-installed, otherwise
-install it with '`sudo apt-get install lzma`'.
+**`lzma`** compression is now the default. It is normally pre-installed, otherwise install it with '`sudo apt-get install lzma`'.
   
-**`zstd`** compression is only needed if you explicitly choose it by calling `ncrpt` with -z flag.
-In which case it may need installing first with: '`sudo apt-get install zstd`'.
-This can be done either before the above installation or at any time thereafter.
+**`zstd`** compression is only needed if you explicitly choose it by calling `ncrpt` with -z option. In which case it will need installing first with: '`sudo apt-get install zstd`', either before the above installation or at any time thereafter. `dcrpt` issues a warning when zstd is not installed. This warning can be ignored if there are no `.zst` files to be decompressed.
 
 ## Usage
 
@@ -94,9 +90,7 @@ written to `./dirname_key` that exactly mirrors `./dirname_crp` (and `path/dirna
 
 There is no recursive descent into subdirectories. Recursive version may be released later.
 
-The default printout is just a summary report at the end, such as the one in `test.log`.
-It reports the sizes (in bytes) of input and output directories, the overall compression 
-and the total number of files encrypted.
+The default printout is just a summary report at the end, such as the one in `test.log`. It reports the sizes (in bytes) of input and output directories, the overall compression percentage rate and the total number of files encrypted.
 
 The quiet flag cancels this report and that will normally mean no printouts at all.
 The verbose flag adds the details of compressing each file. Setting both
@@ -116,6 +110,8 @@ All the decrypted results are written into `./dirname_org` (under the current di
 
 Following decryption, it also automatically applies the correct decompression method(s) to each file.
 
+There are also **`hexcheck`** and **`hexify`** programs which are used internally by  **`ncrpt`** and **`dcrpt`** respectively, to recognise/pack and unpack hexadecimal files.
+
 ## Testing
 
 **`crptest`** inputpath/dirname 
@@ -123,17 +119,16 @@ Following decryption, it also automatically applies the correct decompression me
 Tests `ncrpt` and `dcrpt`. It first encrypts and then decrypts back again
 all the files in the given input directory and compares the results against the original files.
 It cleans up after itself except for the keys directory `./dirname_key`,
-which is left for reassurance and for information about how was each test file compressed. 
-There should be only a blank produced after "crptest found these differences:"
+which is left for reassurance and for information about how was each test file compressed.
 
-An automated github action compiles the C programs and runs `crptest` over `testing` directory 
-included in the repository.
+Ideally there should be only a blank produced after "crptest found these differences:" However, not all .hex and .base64 files are perfect. Should they contain any spaces and newlines, these will be removed in the process and will cause differences to be reported.
+
+An automated github action compiles the C programs and runs **`crptest`** over the `testing` directory included in the repository.
 It tests all the main types of files: hexadecimal, base64, plain text and binary. 
 The 'test' badge at the top of this document lights up green 
-when all the tests were successful. Note that only the output `test.log`
-is saved in the repository after this automatic test.
+when all the tests were successful. Note that only the summary output `test.log` is saved in the repository after this automatic test, not the encrypted or key directories.
 
-If you want to set up your own tests, you  may find the following useful:
+Should you want to set up your own tests, you  may find the following useful:
 
 **`keygen`** file
 

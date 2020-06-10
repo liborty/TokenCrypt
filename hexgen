@@ -9,3 +9,5 @@ if [ $# -ne 1 ]; then
 fi
 if [[ $(( $1 % 2 )) -eq 1 ]]; then SZ=$(( $1-1 )); else SZ=$1; fi
 < /dev/urandom tr -dc 'a-f0-9' | head -c $SZ
+printf "\n"
+
