@@ -146,6 +146,8 @@ Writes to stdout `size` bytes of random hexadecimal data.
 
 Writes to stdout `size` bytes of random base64 data.
 
-## Further Information
+## References and Further Information
 
-See also [FAQ.md](https://github.com/liborty/TokenCrypt/blob/master/FAQ.md) for frequently asked questions.
+1. There is now a blog [On Encryption and E-Democracy](https://oldmill.cz/2020-06-10-crypt.html) that describes in plain English the properties of XOR encryption and some interesting applications, primarily a model proposal for safe E-Democracy.
+  
+1. See also [FAQ.md](https://github.com/liborty/TokenCrypt/blob/master/FAQ.md) for frequently asked questions.
