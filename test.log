@@ -1,4 +1,4 @@
-crptest run on: 10.06.20 at 05:39:42 UTC
+crptest run on: 14.06.20 at 00:49:21 UTC
 make: Nothing to be done for 'all'.
 Installed TokenCrypt utilities in /usr/local/bin
 ncrpt encrypted 4 files into testing_crp, keys are in testing_key
