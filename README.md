@@ -2,7 +2,7 @@
 
 **Encrypts and decrypts directories of security tokens and any other files. High security without onerous complications.**
 
-## Version 1.1.5 ![GitHub active] (https://img.shields.io/badge/GitHub-Active-blue)
+## Version 1.1.5 [GitHub active](https://img.shields.io/badge/GitHub-Active-blue)
 [![Actions Status](https://github.com/liborty/TokenCrypt/workflows/test/badge.svg)](https://github.com/liborty/TokenCrypt/actions) ![GitHub last commit](https://img.shields.io/github/last-commit/liborty/TokenCrypt)
 
 Use at your own risk! No warranties are given or implied. 
