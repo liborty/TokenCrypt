@@ -1,6 +1,5 @@
-crptest run on: 29.08.20 at 03:59:30 UTC
-clang hexify.c -o hexify
-strip hexify
+crptest run on: 29.08.20 at 04:38:30 UTC
+make: Nothing to be done for 'all'.
 Installed TokenCrypt utilities in /usr/local/bin
 ncrpt encrypted 4 files into testing_crp, keys are in testing_key
       testing size:	12008
