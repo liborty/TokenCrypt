@@ -13,8 +13,8 @@ Internet security tokens usually consist of 32, 64 or more hexadecimal character
 They are increasingly used to facilitate secure access over the internet protocols
 to various Applications Programming Interfaces (APIs). Being plain text,
 they are easily transmitted but they need to be stored securely,
-that means encrypted.   
-  
+that means encrypted.
+
 For similar reasons, base64 encoding into printable characters is often used.
 
 TokenCrypt takes whole directories of tokens
@@ -84,15 +84,11 @@ Standard  **`base64`** tool which is normally pre-installed.
 
 **`ncrpt`** [-h][-x][-b][-q][-v][-z] inputpath/dirname
 
-The options mean, respectively: -h help, -x test for hex files, -b test for base64 files, -q quiet, -v verbose, -z zstd compression. 
+The options mean, respectively: -h help, -x test for hex files, -b test for base64 files, -q quiet, -v verbose, -z zstd compression.
 
 The tests for hex and base64 files are now optional, you only need to invoke them when you know that the directory being processed may contain some.
 
-Encrypted output files go to `./dirname_crp` (under the current directory).
-Unique new key is generated for each input file in `path/dirname` and
-written to `./dirname_key` that exactly mirrors `./dirname_crp` (and `path/dirname`).
-
-There is no recursive descent into subdirectories. Recursive version may be released later.
+`Ncrpt` creates two subdirectories in the current directory, each mirroring files in `inputpath/dirname`  that are to be encrypted. Thus `./dirname_crp` will hold the encrypted files and  `./dirname_key` will hold unique keys individually generated for them. There is no recursive descent into subdirectories.
 
 The default printout is just a summary report at the end, such as the one in `test.log`. It reports the sizes (in bytes) of input and output directories, the overall compression percentage rate and the total number of files encrypted.
 
@@ -108,13 +104,13 @@ appears to be slightly better.
 
 **`dcrpt`** path/dirname_key path/dirname_crp
 
-is the inverse of `ncrpt`. It uses the keys in  `path/dirname_key` to decrypt 
-their name corresponding files in `path/dirname_crp`.
+is the inverse of `ncrpt`. It uses the keys in  `path/dirname_key` to decrypt
+their corresponding files, recognised by the same name, in `path/dirname_crp`.
 All the decrypted results are written into `./dirname_org` (under the current directory).
 
-Following decryption, it also automatically applies the correct decompression method(s) to each file.
+Following decryption, the relevant decompression method(s) are also applied to each file, so that the original files are exactly reconstructed.
 
-There are also **`hexcheck`** and **`hexify`** programs which are used internally by  **`ncrpt`** and **`dcrpt`** respectively, to recognise/pack and unpack hexadecimal files.
+There are also **`hexcheck`** and **`hexify`** programs which are used internally by  **`ncrpt`** and **`dcrpt`** respectively, to recognise, pack and unpack hexadecimal files.
 
 ## Testing
 

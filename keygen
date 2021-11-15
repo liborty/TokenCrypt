@@ -1,6 +1,6 @@
 #!/bin/bash
-# given some typical file as an argument, generates an appropriate key for it
-# recognises hexadecimal by extension .hex 
+# given a filename argument, writes to stdout a random encryption key
+# for it of the same length (as the named file).
 
 PROGN=${0##*/}
 
@@ -20,4 +20,4 @@ esac
 # LASTEXT=${1##*.}
 
 SIZE=$( stat -c%s $1 )
-head -c $SIZE /dev/urandom
+head -c $SIZE /dev/random

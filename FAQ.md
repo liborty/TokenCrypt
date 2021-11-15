@@ -33,7 +33,7 @@ were actually accepted as such. This will be indicated by their keys in `./dirna
 having a `.hex` extension in their names. If the original file already had a .hex extension,
 it should now have two.
 
-**Why does `crptest` report differences between some upper and lower case letters?**
+**Why does `crptest` report differences between some upper and lower case letters in hexadecimal files?**
  
 This is expected behaviour. A-F letters in hex files are intentionally changed
 by `hexcheck` into their lower case equivalents a-f (standard hexadecimal form).
