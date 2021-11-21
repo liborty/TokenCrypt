@@ -1,10 +1,12 @@
 # TokenCrypt [<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/liborty/tokencrypt/HEAD?logo=github">](https://github.com/liborty/tokencrypt) [![Actions Status](https://github.com/liborty/TokenCrypt/workflows/test/badge.svg)](https://github.com/liborty/TokenCrypt/actions) 
 
-**Efficiently compresses and securely encrypts directories containing  hexadecimal security tokens, base64 data, text, binary or any other types of files. High security with extreme ease of use.**
+**Efficiently compress and securely encrypt directories containing  hexadecimal security tokens, base64 data, text, binary or any other types of files. High security with ease of use.**
 
-Disclaimer: use at your own risk! No warranties are given or implied. By downloading this software, you agree not to use it for unethical purposes.
+**Disclaimer:** use at your own risk! No warranties are given or implied. By downloading this software, you agree not to use it for unethical purposes.
 
-## Outline
+**Warning:** the encryption keys are written to the subdirectory in the current directory. As is the encrypted directory. If you subsequently lose their connection or lose them entirely, it will not be possible to reconstruct your original data! Should you be encrypting many directories, take care to exactly mirror their directory structure with the generated key directories.
+
+## Introduction
 
 Internet security tokens usually consist of 32, 64 or more hexadecimal characters. 
 They are increasingly used to facilitate secure access over the internet protocols
@@ -12,33 +14,14 @@ to various Applications Programming Interfaces (APIs). Being plain text,
 they are easily transmitted but they need to be stored securely,
 that means strongly encrypted.
 
-For similar ease of trasport reasons, base64 encoding into printable characters is often used to encode binary data.
+For similar trasport reasons, base64 encoding into printable characters is often used to encode binary data.
 
-`TokenCrypt` reads whole directories containing such tokens and/or any other files. It recognises hexadecimal files and base64 files and reconstructs their original compact binary data. It then selects the best compression method for each file and finally encrypts them all with unbreakable security.
+`TokenCrypt` reads whole directories containing such tokens and/or any other types of files. It recognises hexadecimal files and base64 files and converts them to compact binary data. It then selects the best compression method for each file and finally encrypts them all with high security.
 
 Security tokens and other types of files may sometimes be
 all mixed up in one directory. This is not the best practice but
 it may arise and it could involve much work to separate them.
 `TokenCrypt` copes with such mixed contents automagically.
-
-There are two human interface bash scripts that automate the whole process of encryption 
-and decryption:  
-`ncrpt` (for encrypt with vowels left out) executes the tasks of encoding recognition, compression selection, compression, key generation, key saving and encryption.  
-`dcrpt`, (for decrypt) matches the keys, selects the right decompression, decompresses, decrypts and thus exactly reconstructs the contents of the original directory. 
-
-`crptest` optionally performs an automated overall test, checking that not a single byte was corrupted anywhere.
-
-`symcrypt` (C executable) is the background workhorse of this package. It applies fast symmetric XOR encryption or decryption to any type of file of any length, while using practically no memory.
-
-`hexcheck` recognises entirely hexadecimal (token) files and converts them to binary, which halves them in size.
-
-`base64` recognises Base64 files, resulting in 25% size reduction (before final compression),  in their case. Base64 files should not contain any newlines, as this test will then reject  them.
-
-`lzma` or `zstd` are the third party general compression methods used for the final compression, as long as it will actually lead to size reduction. This is not necessarily the case for small and/or binary files. 
-
-When encryption is finally invoked, it is applied to the shortest possible form of each file, thus saving storage space for the data and for the keys. 
-
-Decryption is the inverse of this process. See the scripts `ncrpt` and `dcrpt` for details. Nevertheless, knowledge of the algorithms is not necessary for effective use.
 
 ## Installation
 
@@ -56,16 +39,18 @@ When you are using a typical Linux, you can often skip the compilation step enti
 
 Alternatively, you can copy them manually to any of your own `bin` 
 directories in your path and this does not require `sudo` privileges, e.g.:
+
 ```bash
 cp symcrypt hexcheck hexify ncrpt dcrpt keygen crptest ~/bin
 ```
+
 The simplest installation is just to invoke **`./crptest testing`** from the root of the repository.
 This will compile the programs and, after asking for su priviledges, install them in /usr/local/bin.
 As an added benefit, it will also run locally the same test as on github.
 
 ### Dependencies
 
-Standard  **`base64`** tool which is normally pre-installed. 
+Standard  **`base64`** tool which is normally pre-installed on Linux.
 
 The default compression used is lzma (.lz) but zstd (.zst) can be chosen with the -z flag.
 There is not much difference in their compression rates but lzma
@@ -77,11 +62,13 @@ appears to be slightly better and zst slightly faster.
 
 ## Usage
 
-**`ncrpt`** [-h][-x][-b][-q][-v][-z] inputpath/dirname
+There are two command line interface bash scripts that automate the whole process:
 
-The options mean, respectively: -h help, -x test for hex files, -b test for base64 files, -q quiet, -v verbose, -z zstd compression. The tests for hex and base64 files are now optional.  You only need to invoke them when you suspect that the directory being processed may contain some. Should you forget to use them, everything will still work, only the output may take up more space.
+**`ncrpt** [-h][-x][-b][-q][-v][-z] inputpath/dirname`
 
-`ncrpt` creates two subdirectories in the current directory, each mirroring files in `inputpath/dirname`  that are to be encrypted. Thus `./dirname_crp` will hold the encrypted files and  `./dirname_key` will hold unique keys individually generated for them. There is no recursive descent into subdirectories.
+The options mean, respectively: -h help, -x test for hex files, -b test for base64 files, -q quiet, -v verbose, -z zstd compression. The tests for hex and base64 tests are now optional.  They only need to be invoked when the input directory contains such files. Should you forget to use them, everything will still work, only the output may take up more space than was strictly necessary.
+
+Ncrpt creates two subdirectories in the current directory, each mirroring files in `inputpath/dirname`  that are to be encrypted. Thus `./dirname_crp` will hold the encrypted files and  `./dirname_key` will hold unique keys individually generated for them. There is no recursive descent into subdirectories.
 
 The summary at the end, such as the one shown in `test.log`, reports the sizes (in bytes) of input and output directories, the overall compression percentage rate and the total number of files encrypted.
 
@@ -90,15 +77,35 @@ The verbose flag adds the details of compressing each file. Setting both
 flags, contradictory as that may seem, turns on the individual files reports and
 turns off the final summary. The encryption stage is so unproblematic that it does not need any reports.
 
-**`dcrpt`** path/dirname_key path/dirname_crp
+Purpose: ncrpt (encrypt without vowels) executes the tasks of encoding recognition, compression selection, compression, key generation, key saving and encryption.
+
+`dcrpt path/dirname_key path/dirname_crp`
 
 is the inverse of `ncrpt`. It uses the keys in  `path/dirname_key` to decrypt
-their corresponding files, recognised by the same name, in `path/dirname_crp`.
+their corresponding files, recognised by the same name in `path/dirname_crp`.
 All the decrypted results are written into `./dirname_org` (under the current directory).
 
-Following decryption, the relevant decompression method(s) are also applied to each file, so that the original files are exactly reconstructed.
+Following decryption, the relevant decompression method(s) are applied to each file, so that the original files are exactly reconstructed.
 
-There are also **`hexcheck`** and **`hexify`** programs which are used internally by  **`ncrpt`** and **`dcrpt`** respectively, to recognise, pack and unpack hexadecimal files.
+Purpose: dcrpt, (decrypt without vowels) matches the keys, decrypts the binary files with them, selects the right decompression methods, decompresses, thus reconstructing the contents of the original directory.
+
+`crptest` optionally performs an automated overall test, checking that not a single byte was corrupted anywhere.
+
+## Background Scripts and Programs (not needed by the user)
+
+`hexcheck` (C executable) is invoked by `ncrpt`. It recognises hexadecimal (token) files and packs them to binary, which halves them in size.
+
+`hexify` is invoked by `dcrpt` to unpack the binary files back to their original hexadecimal form.
+
+
+`base64` recognises Base64 files, resulting in 25% size reduction (before final compression),  in their case. Base64 files should not contain any non base64 characters, such as newlines, as this test then must reject  them.
+
+`lzma` or `zstd` are the third party general compression methods used for the final compression, as long as it will result in size reduction. This is not necessarily the case for small and/or binary files. Such incomressible files will be encrypted as they are.
+
+When encryption is finally invoked, it is applied to the shortest possible form of each file, thus saving storage space for the data and for the keys. Decryption is the inverse of this process. See the scripts `ncrpt` and `dcrpt` for details. Nevertheless, knowledge of the algorithms is not necessary for their effective use.
+
+`symcrypt` (C executable) applies fast symmetric XOR encryption (or decryption) to any type of file of any length, while using practically no memory.
+
 
 ## Testing
 
