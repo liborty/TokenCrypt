@@ -27,7 +27,7 @@ it may arise and it could involve much work to separate them.
 
 When using a typical Linux, the local `make` compilation may be skipped entirely. Then the binaries `symcrypt`, `hexcheck` and `hexify` that are included in this repository will be installed by default. They are compiled and tested automatically at github.com.
 
-Otherwise a local installation should be repeated whenever the programs and scripts may have changed.
+Otherwise a local installation should be repeated whenever the programs and scripts may have changed. Another good reason to perform a local compilation is if you suspect that the github binaries may have been compromised.
 
 This software was tested under Linux. Installation from source needs `make` utility and a C compiler, either `clang` or `gcc`. Download or clone this directory, cd into it and then:
 
@@ -40,8 +40,7 @@ This software was tested under Linux. Installation from source needs `make` util
 Alternatively, you can copy them manually to any of your own `bin` directories in your path. This does not require `sudo` privileges, e.g.:  
 `cp symcrypt hexcheck hexify ncrpt dcrpt keygen crptest ~/bin`
 
-The simplest complete installation method is to `touch *.c` and then invoke **`./crptest testing`** (from the root of the repository).  
-This will compile the programs and, after asking for su priviledges, install them in `/usr/local/bin`.
+The simplest complete installation method is to `touch *.c` and then invoke **`./crptest testing`** (from the root of the repository). This will compile the programs and, after asking for su priviledges, install them in `/usr/local/bin`.
 As an added benefit, it will also run locally the same test as is done on github.
 
 ### Dependencies
