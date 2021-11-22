@@ -92,12 +92,11 @@ Purpose: dcrpt, (decrypt without vowels) matches the keys, decrypts the binary f
 
 `hexify` is invoked by `dcrpt` to unpack the binary files back to their original hexadecimal form.
 
-
 `base64` recognises Base64 files, resulting in 25% size reduction (before final compression),  in their case. Base64 files should not contain any non base64 characters, such as newlines, as this test then must reject  them.
 
 `lzma` or `zstd` are the third party general compression methods used for the final compression, as long as it will result in size reduction. This is not necessarily the case for small and/or binary files. Such incomressible files will be encrypted as they are.
 
-When encryption is finally invoked, it is applied to the shortest possible form of each file, thus saving storage space for the data and for the keys. Decryption is the inverse of this process. See the scripts `ncrpt` and `dcrpt` for details. Nevertheless, knowledge of the algorithms is not necessary for their effective use.
+When encryption is finally invoked, it is applied to the shortest possible form of each file, thus saving storage space for the data and for the keys. Decryption is the inverse of this process. See the scripts `ncrpt` and `dcrpt` for details. However, knowledge of the algorithms is not necessary for their effective use.
 
 `symcrypt` (C executable) applies fast symmetric XOR encryption (or decryption) to any type of file of any length, while using practically no memory.
 
@@ -108,15 +107,14 @@ When encryption is finally invoked, it is applied to the shortest possible form 
 
 Tests `ncrpt` and `dcrpt`. It first encrypts and then decrypts back again
 all the files in the given input directory and compares the results against the original files.
-It cleans up after itself except for the keys directory `./dirname_key`,
-which is left for reassurance and for information about how was each test file compressed.
+It then cleans up all the created sub-directories.
 
-Ideally there should be only a blank produced after "crptest found these differences:" However, not all .hex and .base64 files are perfect. Should they contain any spaces and newlines, these will be removed in the process and will cause differences to be reported.
+Ideally, it should report all the reconstructed files as being identical to the originals. However, not all .hex and .base64 files are perfect.
 
 An automated github action compiles the C programs and runs **`crptest`** over the `testing` directory included in the repository.
 It tests all the main types of files: hexadecimal, base64, plain text and binary. 
 The 'test' badge at the top of this document lights up green 
-when all the tests were successful. Note that only the summary output `test.log` is saved in the repository after this automatic test, not the encrypted or key directories.
+when all the tests were passed. Note that only the summary output `test.log` is saved in the repository after this automatic test, not the encrypted, decrypted or key directories.
 
 Should you want to set up your own tests, you  may find the following useful:
 
