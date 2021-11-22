@@ -1,4 +1,4 @@
-crptest run on: 21.11.21 at 07:32:29 UTC
+crptest run on: 22.11.21 at 07:46:08 UTC
 make: Nothing to be done for 'all'.
 Installed TokenCrypt utilities in /usr/local/bin
 ncrpt encrypted 4 files into testing_crp, keys are in testing_key
@@ -6,5 +6,8 @@ ncrpt encrypted 4 files into testing_crp, keys are in testing_key
       testing_crp size:	7843
 ncrpt compressed (some with lz) to: 65.31 %
 dcrpt: decrypted 4 files into testing_org, 0 failures
-crptest differences found (success when blank):
+Files testing/b64f and testing_org/b64f are identical
+Files testing/binf and testing_org/binf are identical
+Files testing/hexf and testing_org/hexf are identical
+Files testing/textf and testing_org/textf are identical
 crptest tested 4 files
