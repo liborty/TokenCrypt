@@ -6,6 +6,7 @@
 PROGN=${0##*/}
 COMPRESSOR=lzma	# the default compression program
 EXT=lz				# and the extension that goes with it
+BACKSZ=10000 # size of files to be encrypted in the subshells
 
 # input args vetting
 while [ "$#" -gt 0 ]; do
@@ -96,15 +97,17 @@ for INFILE in $INDIR/*; do
 		KEYFILE=$KEYFILE.$EXT # append compression extension to the keyfile to be generated
 		BINFILE=zfile.tmp  # assign the compressed file, else use uncompressed
 	fi
+	if [ $( stat -c%s $BINFILE ) -gt $BACKSZ ]; then BJ=\&; else BJ=''; fi
 	# generate and write out the key of the right size for the input binfile
-	keygen $BINFILE > $KEYFILE
+	keygen $BINFILE > $KEYFILE $BJ
 	# and encrypt with it
-	symcrypt $KEYFILE $BINFILE $OUTFILE
+	symcrypt $KEYFILE $BINFILE $OUTFILE $BJ
 done
 
 # produce a report
 if ! [ $QUIET ]; then
-    printf "$PROGN encrypted $COUNT files into $OUTDIR, keys are in $KEYDIR\n"
+    printf "$PROGN encrypted $COUNT files into $OUTDIR, keys written to $KEYDIR\n"
+	wait 
 	SIZES=( $( du -hbs $OUTDIR $INDIR ) ) # array of size,dir,size,dir
 	printf "      %s size:\t%s\n      %s size:\t%s\n" \
 	${SIZES[3]} ${SIZES[2]} ${SIZES[1]} ${SIZES[0]}  
@@ -117,4 +120,5 @@ if ! [ $QUIET ]; then
 		printf "$PROGN compressed (some with $EXT) to: ${CR: 0:2}.${CR: 2:4} %%\n"
 	fi
 fi
+wait
 rm zfile.tmp checkfile.tmp > /dev/null 2>&1 #tidy up

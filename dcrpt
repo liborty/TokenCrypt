@@ -3,6 +3,8 @@
 # using corresponding keys in the specified directory 'keysname'
 # into corresponding original files in local directory 'dirname_org' 
 
+BACKSZ=10000
+
 PROGN=${0##*/}
 case $# in
 	0|1)
@@ -47,45 +49,49 @@ for INFILE in $INDIR/*; do
    FILEND=${INFILE##*/} # original filename.extension without the preceding path
    KEYFILE=$KEYDIR/$FILEND
    OUTFILE=$OUTDIR/$FILEND
+
+	if [ $( stat -c%s $INFILE ) -gt $BACKSZ ]; then BJ=\&; else BJ=''; fi
+
    
    if [ -f $KEYFILE ]; then # found key with no extra extensions
-		symcrypt $KEYFILE $INFILE $OUTFILE # just decrypt the infile and save it
+		symcrypt $KEYFILE $INFILE $OUTFILE $BJ # just decrypt the infile and save it
 		continue
 	fi
 	if [ -f $KEYFILE.hex ]; then # found hexed extension
-		symcrypt $KEYFILE.hex $INFILE | hexify > $OUTFILE 
+		symcrypt $KEYFILE.hex $INFILE | hexify > $OUTFILE $BJ
 		continue
 	fi
 	if [ -f $KEYFILE.base64 ]; then # found base64 extension
-		symcrypt $KEYFILE.base64 $INFILE | base64 -w 0 > $OUTFILE 
+		symcrypt $KEYFILE.base64 $INFILE | base64 -w 0 > $OUTFILE $BJ
 		continue
 	fi
 	if [ -f $KEYFILE.zst ]; then # found compressed nonhex
-		symcrypt $KEYFILE.zst $INFILE | zstd -d -c > $OUTFILE
+		symcrypt $KEYFILE.zst $INFILE | zstd -d -c > $OUTFILE $BJ
 		continue
 	fi
 	if [ -f $KEYFILE.hex.zst ]; then # found hexed and compressed
-		symcrypt $KEYFILE.hex.zst $INFILE | zstd -d -c | hexify > $OUTFILE
+		symcrypt $KEYFILE.hex.zst $INFILE | zstd -d -c | hexify > $OUTFILE $BJ
 		continue
 	fi
 	if [ -f $KEYFILE.base64.zst ]; then # found base64 and compressed
-		symcrypt $KEYFILE.base64.zst $INFILE | zstd -d -c | base64 -w 0 > $OUTFILE
+		symcrypt $KEYFILE.base64.zst $INFILE | zstd -d -c | base64 -w 0 > $OUTFILE $BJ
 		continue
 	fi
 	if [ -f $KEYFILE.lz ]; then # found lzma compressed, nonhex
-		symcrypt $KEYFILE.lz $INFILE | lzma -d > $OUTFILE
+		symcrypt $KEYFILE.lz $INFILE | lzma -d > $OUTFILE $BJ
 		continue
 	fi
 	if [ -f $KEYFILE.hex.lz ]; then # found hexed and lzma compressed
-		symcrypt $KEYFILE.hex.lz $INFILE | lzma -d | hexify > $OUTFILE
+		symcrypt $KEYFILE.hex.lz $INFILE | lzma -d | hexify > $OUTFILE $BJ
 		continue
 	fi
 	if [ -f $KEYFILE.base64.lz ]; then # found base64 and lzma compressed
-		symcrypt $KEYFILE.base64.lz $INFILE | lzma -d | base64 -w 0 > $OUTFILE
+		symcrypt $KEYFILE.base64.lz $INFILE | lzma -d | base64 -w 0 > $OUTFILE $BJ
 		continue
 	fi
 	printf "$PROGN failed to find a useful key for encrypted file $FILEND\n"
 	let COUNT-=1
 	let FAILED+=1
 done
+wait
 printf "$PROGN: decrypted $COUNT files into $OUTDIR, $FAILED failures\n"

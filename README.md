@@ -130,6 +130,10 @@ Writes to stdout `size` bytes of random hexadecimal data.
 
 Writes to stdout `size` bytes of random base64 data.
 
+## Releases Log
+
+**22Nov2021** - Improved `readme.md`. The key generation, encryption and decryption will now automatically run in sub shells on files over certain size, currently set to 10k. This will result in speedup on multi-core CPUs.
+
 ## References and Further Information
 
 1. There is a blog [On Encryption and E-Democracy](https://oldmill.cz/2020-06-10-crypt.html) that describes in plain English the properties of XOR encryption and some interesting applications, primarily a model proposal for safe E-Democracy.
