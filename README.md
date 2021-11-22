@@ -1,6 +1,6 @@
 # TokenCrypt [<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/liborty/tokencrypt/HEAD?logo=github">](https://github.com/liborty/tokencrypt) [![Actions Status](https://github.com/liborty/TokenCrypt/workflows/test/badge.svg)](https://github.com/liborty/TokenCrypt/actions) 
 
-**Efficiently compress and securely encrypt directories containing  hexadecimal security tokens, base64 data, text, binary or any other types of files. High security with ease of use.**
+**Efficiently compress and securely encrypt directories containing  hexadecimal security tokens, base64 data, text, binary and any other types of files. High security with ease of use.**
 
 **Disclaimer:** use at your own risk! No warranties are given or implied. By downloading this software, you agree not to use it for unethical purposes.
 
@@ -21,44 +21,40 @@ For similar trasport reasons, base64 encoding into printable characters is often
 Security tokens and other types of files may sometimes be
 all mixed up in one directory. This is not the best practice but
 it may arise and it could involve much work to separate them.
-`TokenCrypt` copes with such mixed contents automagically.
+`TokenCrypt` copes with such mixed directories contents automagically.
 
 ## Installation
 
-Reminder: installation must be repeated locally every time that an updated repository is downloaded or pulled and the programs and scripts may have changed.
+When using a typical Linux, the local `make` compilation may be skipped entirely. Then the binaries `symcrypt`, `hexcheck` and `hexify` that are included in this repository will be installed by default. They are compiled and tested automatically at github.com.
 
-This software was tested under Linux. Installation from source needs a C compiler, either clang or gcc. Download or clone this directory, cd into it and then:
+Otherwise a local installation should be repeated whenever the programs and scripts may have changed.
 
-`make CC=clang` or if clang is not installed, just use the default compiler 
-(under Linux it is usually gcc): **`make`**
+This software was tested under Linux. Installation from source needs `make` utility and a C compiler, either `clang` or `gcc`. Download or clone this directory, cd into it and then:
 
-When you are using a typical Linux, you can often skip the compilation step entirely. Then the automatically pre-compiled binaries `symcrypt` and `hexcheck`, that are included in this repository, will be installed by default.
+`sudo ./uninstall` will delete any previously installed programs and scripts and touch the local sources for recompilation.
 
-`sudo ./install` copies all the executables for system-wide use into /usr/local/bin. To remove them again, use:  
-`sudo ./uninstall`
+`make CC=clang` or if clang compiler is not installed, just use the default compiler (under Linux it is usually gcc) with plain: **`make`**
 
-Alternatively, you can copy them manually to any of your own `bin` 
-directories in your path and this does not require `sudo` privileges, e.g.:
+`sudo ./install` copies all the executables for system-wide use into /usr/local/bin. Whether they were created by local compilation or just pulled from the repository. 
 
-```bash
-cp symcrypt hexcheck hexify ncrpt dcrpt keygen crptest ~/bin
-```
+Alternatively, you can copy them manually to any of your own `bin` directories in your path. This does not require `sudo` privileges, e.g.:  
+`cp symcrypt hexcheck hexify ncrpt dcrpt keygen crptest ~/bin`
 
-The simplest installation is just to invoke **`./crptest testing`** from the root of the repository.
-This will compile the programs and, after asking for su priviledges, install them in /usr/local/bin.
-As an added benefit, it will also run locally the same test as on github.
+The simplest complete installation method is to `touch *.c` and then invoke **`./crptest testing`** (from the root of the repository).  
+This will compile the programs and, after asking for su priviledges, install them in `/usr/local/bin`.
+As an added benefit, it will also run locally the same test as is done on github.
 
 ### Dependencies
 
 Standard  **`base64`** tool which is normally pre-installed on Linux.
 
-The default compression used is lzma (.lz) but zstd (.zst) can be chosen with the -z flag.
+The default compression used is `lzma` (.lz) but `zstd` (.zst) can be chosen with the `-z` flag to `ncrpt`.
 There is not much difference in their compression rates but lzma
 appears to be slightly better and zst slightly faster.
 
 **`lzma`** compression is the default. It is normally pre-installed, otherwise install it with '`sudo apt-get install lzma`'.
   
-**`zstd`** compression is only needed if you explicitly choose it by calling `ncrpt` with -z option. It will need installing first with: `sudo apt-get install zstd`, either before the above installation or at any time thereafter. `dcrpt` issues a warning if `zstd` is not installed. This warning can be ignored if there are no `.zst` files to be decompressed.
+**`zstd`** compression only needs to be installed if you explicitly choose to use it. Install it with: `sudo apt-get install zstd`, either before the above installation or at any time thereafter. `dcrpt` issues a warning if `zstd` is not installed. This warning can be ignored if there are no `.zst` files to be decompressed.
 
 ## Usage
 

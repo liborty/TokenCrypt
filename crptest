@@ -44,11 +44,10 @@ if [ -d "$ORGDIR" ]; then
 ncrpt -x -b $INDIR
 dcrpt $KEYDIR $OUTDIR
 
-printf "$PROGN differences found (success when blank):\n"
 for INFILE in $INDIR/*; do
-   [ -f "$INFILE" ] || continue # check that a file is selected
-   let COUNT+=1
- 	diff $INFILE "$ORGDIR/${INFILE##*/}" 
+ 	[ -f "$INFILE" ] || continue # check that a file is selected
+  	let COUNT+=1
+	diff -s $INFILE "$ORGDIR/${INFILE##*/}" 
 done
 # tidy up 
 rm -rf $ORGDIR $OUTDIR > /dev/null 2>&1
