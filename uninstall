@@ -3,8 +3,8 @@
 # uninstalls TokenCrypt utilities from /usr/local/bin
 PROGS='symcrypt hexcheck hexify keygen hexgen b64gen ncrpt dcrpt crptest'
 for PROG in $PROGS; do
-    rm $PROG/usr/local/bin
+    rm /usr/local/bin/$PROG
 done
 printf "Uninstalled TokenCrypt utilities from /usr/local/bin\n"
 touch *.c
-printf "Touched the source *.c files for fresh compilation"
+printf "Touched the source *.c files for fresh compilation\n"
