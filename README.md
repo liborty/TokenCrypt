@@ -4,9 +4,12 @@
 
 **Disclaimer:** use at your own risk! No warranties are given or implied. By downloading this software, you agree not to use it for unethical purposes.
 
-**Warning:** the encryption keys are written to the subdirectory in the current directory. As is the encrypted directory. If you subsequently lose their connection or lose them entirely, it will not be possible to reconstruct your original data! Should you be encrypting many directories, take care to exactly mirror their directory structure with the generated key directories.
+**Warning:** the encryption keys and the encrypted files are written to two separate subdirectories in the current directory. Should you subsequently lose track of the association between them or lose the keys entirely, it will not be possible to reconstruct your original data! When encrypting many directories, take care to exactly mirror their structure with the generated key directories.
 
 ## Introduction
+
+`Ncrpt` reads whole directories containing API tokens, base64 files and
+any other types of files. It recognises hexadecimal files and base64 files and converts them to compact binary data. It then selects the best compression method for each file and finally encrypts them all with high security.
 
 Internet security tokens usually consist of 32, 64 or more hexadecimal characters.
 They are increasingly used to facilitate secure access over the internet protocols
@@ -16,12 +19,12 @@ that means strongly encrypted.
 
 For similar trasport reasons, base64 encoding into printable characters is often used to encode binary data.
 
-`TokenCrypt` reads whole directories containing such tokens and/or any other types of files. It recognises hexadecimal files and base64 files and converts them to compact binary data. It then selects the best compression method for each file and finally encrypts them all with high security. 
+
 
 Security tokens and other types of files may sometimes be
 all mixed up in one directory. This is not the best practice but
 it may arise and it could involve much work to separate them.
-`TokenCrypt` copes with such mixed directories contents automagically.
+`Ncrpt` copes with such mixed directories contents automagically.
 
 ## Installation
 
@@ -59,7 +62,7 @@ appears to be slightly better and zstd slightly faster.
 
 There are two command line interface bash scripts that automate the whole process:
 
-**`ncrpt** [-h][-x][-b][-q][-v][-z] inputpath/dirname`
+`ncrpt [-h][-x][-b][-q][-v][-z] inputpath/dirname`
 
 The options mean, respectively: -h help, -x test for hex files, -b test for base64 files, -q quiet, -v verbose, -z zstd compression. The tests for hex and base64 tests are now optional.  They only need to be invoked when the input directory contains such files. Should you forget to use them, everything will still work, only the output may take up more space than was strictly necessary.
 
