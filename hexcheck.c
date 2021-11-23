@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
     uc = ishex((unsigned char)cin);
     if (uc == NONHEX) // non hex character failure exit
     { 
-    	fprintf(stderr, "%s: quitting, found nonhex character %c\n", progname, (unsigned char)cin);
+    	fprintf(stderr, "%s invalid char %c\n", progname, (unsigned char)cin);
       fclose(fout);
       fclose(fin);
       exit(EXIT_FAILURE);

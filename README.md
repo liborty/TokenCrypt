@@ -8,7 +8,7 @@
 
 ## Introduction
 
-Internet security tokens usually consist of 32, 64 or more hexadecimal characters. 
+Internet security tokens usually consist of 32, 64 or more hexadecimal characters.
 They are increasingly used to facilitate secure access over the internet protocols
 to various Applications Programming Interfaces (APIs). Being plain text,
 they are easily transmitted but they need to be stored securely,
@@ -16,7 +16,7 @@ that means strongly encrypted.
 
 For similar trasport reasons, base64 encoding into printable characters is often used to encode binary data.
 
-`TokenCrypt` reads whole directories containing such tokens and/or any other types of files. It recognises hexadecimal files and base64 files and converts them to compact binary data. It then selects the best compression method for each file and finally encrypts them all with high security.
+`TokenCrypt` reads whole directories containing such tokens and/or any other types of files. It recognises hexadecimal files and base64 files and converts them to compact binary data. It then selects the best compression method for each file and finally encrypts them all with high security. 
 
 Security tokens and other types of files may sometimes be
 all mixed up in one directory. This is not the best practice but
@@ -47,13 +47,13 @@ As an added benefit, it will also run locally the same test as is done on github
 
 Standard  **`base64`** tool which is normally pre-installed on Linux.
 
-The default compression used is `lzma` (.lz) but `zstd` (.zst) can be chosen with the `-z` flag to `ncrpt`.
-There is not much difference in their compression rates but lzma
-appears to be slightly better and zst slightly faster.
-
-**`lzma`** compression is the default. It is normally pre-installed, otherwise install it with '`sudo apt-get install lzma`'.
+**`lzma`** is the default compression. It is normally pre-installed, otherwise install it with '`sudo apt-get install lzma`'.
   
-**`zstd`** compression only needs to be installed if you explicitly choose to use it. Install it with: `sudo apt-get install zstd`, either before the above installation or at any time thereafter. `dcrpt` issues a warning if `zstd` is not installed. This warning can be ignored if there are no `.zst` files to be decompressed.
+**`zstd`** compression needs to be installed before you can explicitly select to use it with `-z` flag to `ncrpt`. To install: `sudo apt-get install zstd`.  
+`dcrpt` issues a warning if `zstd` is not installed. This warning can be ignored if there are no `.zst` files to be decompressed.
+
+There is not much difference in the compression rates: lzma
+appears to be slightly better and zstd slightly faster.
 
 ## Usage
 
@@ -63,26 +63,27 @@ There are two command line interface bash scripts that automate the whole proces
 
 The options mean, respectively: -h help, -x test for hex files, -b test for base64 files, -q quiet, -v verbose, -z zstd compression. The tests for hex and base64 tests are now optional.  They only need to be invoked when the input directory contains such files. Should you forget to use them, everything will still work, only the output may take up more space than was strictly necessary.
 
-Ncrpt creates two subdirectories in the current directory, each mirroring files in `inputpath/dirname`  that are to be encrypted. Thus `./dirname_crp` will hold the encrypted files and  `./dirname_key` will hold unique keys individually generated for them. There is no recursive descent into subdirectories.
+Ncrpt creates two subdirectories in the current directory, each mirroring files in `inputpath/dirname`  that are to be encrypted. Thus
+`./dirname_crp` will hold the encrypted files and  `./dirname_key` will hold unique keys individually generated for them. There is no recursive descent into subdirectories.
 
-The summary at the end, such as the one shown in `test.log`, reports the sizes (in bytes) of input and output directories, the overall compression percentage rate and the total number of files encrypted.
+The summary at the end, such as the one shown in `test.log`, reports the sizes (in bytes) of input and output directories, the total compressed size as a percentage of the original size, and the total number of files encrypted. The compression to 50% will exactly compensate for the creation  of the encryption keys.
 
-The quiet flag cancels this report.
-The verbose flag adds the details of compressing each file. Setting both
+The quiet flag -q cancels the report.
+The verbose flag -v adds the details of compressing each file. Setting both
 flags, contradictory as that may seem, turns on the individual files reports and
-turns off the final summary. The encryption stage is so unproblematic that it does not need any reports.
+turns off the final summary. The encryption itself is so unproblematic that it does not need any reports.
 
-Purpose: ncrpt (encrypt without vowels) executes the tasks of encoding recognition, compression selection, compression, key generation, key saving and encryption.
+Summary: ncrpt (encrypt without vowels) executes the tasks of encoding recognition, compression selection, compression, key generation, key saving and encryption.
 
 `dcrpt path/dirname_key path/dirname_crp`
 
-is the inverse of `ncrpt`. It uses the keys in  `path/dirname_key` to decrypt
-their corresponding files, recognised by the same name in `path/dirname_crp`.
-All the decrypted results are written into `./dirname_org` (under the current directory).
+is the inverse of `ncrpt`, i.e. its operations are carried out in exactly the reverse order.  It uses the keys in  `path/dirname_key` to decrypt their corresponding files, recognised by the same name in `path/dirname_crp`. So, never rename an encrypted file, unless you rename its corresponding key file as well! The two directories must always match.
 
 Following decryption, the relevant decompression method(s) are applied to each file, so that the original files are exactly reconstructed.
 
-Purpose: dcrpt, (decrypt without vowels) matches the keys, decrypts the binary files with them, selects the right decompression methods, decompresses, thus reconstructing the contents of the original directory.
+The results are written into `./dirname_org` (under the current directory).
+
+Summary: dcrpt, (decrypt without vowels) matches the keys, decrypts the binary files with them, selects the right decompression methods and  decompresses, thus reconstructing the contents of the original directory.
 
 `crptest` optionally performs an automated overall test, checking that not a single byte was corrupted anywhere.
 
@@ -92,13 +93,19 @@ Purpose: dcrpt, (decrypt without vowels) matches the keys, decrypts the binary f
 
 `hexify` is invoked by `dcrpt` to unpack the binary files back to their original hexadecimal form.
 
-`base64` recognises Base64 files, resulting in 25% size reduction (before final compression),  in their case. Base64 files should not contain any non base64 characters, such as newlines, as this test then must reject  them.
+`base64` recognises Base64 files, resulting in 25% size reduction in their case (before final compression). Base64 files should not contain any non base64 characters, such as newlines, as this test will then reject them.
 
-`lzma` or `zstd` are the third party general compression methods used for the final compression, as long as it will result in size reduction. This is not necessarily the case for small and/or binary files. Such incomressible files will be encrypted as they are.
+`lzma` or `zstd` are the third party general compression methods used here for the final compression, as long as it will result in size reduction. This is not necessarily the case for small and/or binary files. Such incomressible files will be encrypted as they are.
 
 When encryption is finally invoked, it is applied to the shortest possible form of each file, thus saving storage space for the data and for the keys. Decryption is the inverse of this process. See the scripts `ncrpt` and `dcrpt` for details. However, knowledge of the algorithms is not necessary for their effective use.
 
 `symcrypt` (C executable) applies fast symmetric XOR encryption (or decryption) to any type of file of any length, while using practically no memory.
+
+`keygen file > key` writes to stdout random binary data of the same length as the given file. Called by `ncrpt`.
+
+`hexgen size`  writes to stdout `size` bytes of random hexadecimal data. No longer needed at all.
+
+`b64gen size` writes to stdout `size` bytes of random base64 data. No longer needed at all.
 
 
 ## Testing
@@ -109,28 +116,16 @@ Tests `ncrpt` and `dcrpt`. It first encrypts and then decrypts back again
 all the files in the given input directory and compares the results against the original files.
 It then cleans up all the created sub-directories.
 
-Ideally, it should report all the reconstructed files as being identical to the originals. However, not all .hex and .base64 files are perfect.
+Ideally, it should report all the reconstructed files as being identical to the originals.
 
 An automated github action compiles the C programs and runs **`crptest`** over the `testing` directory included in the repository.
-It tests all the main types of files: hexadecimal, base64, plain text and binary. 
-The 'test' badge at the top of this document lights up green 
+It tests all the main types of files: hexadecimal, base64, plain text and binary.
+The 'test' badge at the top of this document lights up green
 when all the tests were passed. Note that only the summary output `test.log` is saved in the repository after this automatic test, not the encrypted, decrypted or key directories.
 
-Should you want to set up your own tests, you  may find the following useful:
-
-**`keygen`** file
-
-Writes to stdout random binary data of the same length as the given file.
-
-**`hexgen`** size
-
-Writes to stdout `size` bytes of random hexadecimal data.
-
-**`b64gen`** size
-
-Writes to stdout `size` bytes of random base64 data.
-
 ## Releases Log
+
+**23Nov2021** - Made multithreading more efficient: now converting files by background processes in order of their decreasing size. Should result in considerable speedups for large collections of large files.
 
 **22Nov2021** - Improved `readme.md`. The key generation, encryption and decryption will now automatically run in sub shells on files over certain size, currently set to 10k. This will result in speedup on multi-core CPUs.
 

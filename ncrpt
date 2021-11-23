@@ -45,47 +45,22 @@ if [ -z $( which "$COMPRESSOR" ) ]; then
 		exit 2
 fi
 
-# name the directories
-DIREND=${INDIR##*/} # just the directory name, preceding path is stripped off
-OUTDIR="$DIREND"_crp
-KEYDIR="$DIREND"_key
+function processfile {
 
-# build the compressor flags
-FLAGS='-c -z -q' # the default flags
-if [ $VERBOSE ]; then 
-	if [ "$COMPRESSOR" = 'lzma' ]; then FLAGS='-c -z -v';	else FLAGS='-c'; fi
-fi
-
-# prepare output directories
-if [ -d "$KEYDIR" ]; then
-	printf "$PROGN quitting, '$KEYDIR' already exists here!\n";	exit 2; fi
-if [ -d "$OUTDIR" ]; then 
-	printf "$PROGN quitting, '$OUTDIR' already exists here!\n"; exit 2; fi
-mkdir $KEYDIR $OUTDIR
-
-# compress all files from the given input path/directory in $1
-for INFILE in $INDIR/*; do
-   [ -f "$INFILE" ] || continue # check that the selected item is a file
-   let COUNT+=1
-   FILEND=${INFILE##*/} # filename.extension without the preceding path
-   BINFILE=$INFILE # initial binfile is the input file
-   KEYFILE=$KEYDIR/$FILEND # base keyfile form: no additional extension
-   OUTFILE=$OUTDIR/$FILEND # outfile always the same as input file
-   
-   if [ $HEXTEST ]; then
-   	hexcheck $INFILE checkfile.tmp
-   	if [ "$?" -eq 0 ]; then	# status of hexcheck when INFILE is entirely hexadecimal
-#			xxd -ps -r checkfile.tmp > binfile.tmp # shrinks 50% from hex to binary
+    if [ $HEXTEST ]; then
+   		hexcheck $INFILE checkfile.tmp
+   		if [ "$?" -eq 0 ]; then	# status of hexcheck when INFILE is entirely hexadecimal
 			BINFILE=checkfile.tmp # now this is the binary file to encrypt
 			KEYFILE="$KEYFILE".hex # append .hex extension for hexadecimal origin
+   		fi
    	fi
-   fi 
+
 	if [ $B64TEST ] && [ "$BINFILE" = "$INFILE" ]; then #  test if not already hexfile
-   	base64 -d -w 0 $INFILE > checkfile.tmp # turns base64 into binary, saving 25%
-   	if [ "$?" -eq 0 ]; then	# status of base64 when INFILE was entirely in BASE64
+   		base64 -d -w 0 $INFILE > checkfile.tmp # turns base64 into binary, saving 25%
+   		if [ "$?" -eq 0 ]; then	# status of base64 when INFILE was entirely in BASE64
 			BINFILE=checkfile.tmp # now this is the binary file to encrypt
 			KEYFILE="$KEYFILE".base64 # append .base64 extension for base64 origin
-   	fi 
+   		fi 
 	fi
 	
 	# now do the (binary) compression	
@@ -97,28 +72,65 @@ for INFILE in $INDIR/*; do
 		KEYFILE=$KEYFILE.$EXT # append compression extension to the keyfile to be generated
 		BINFILE=zfile.tmp  # assign the compressed file, else use uncompressed
 	fi
-	if [ $( stat -c%s $BINFILE ) -gt $BACKSZ ]; then BJ=\&; else BJ=''; fi
 	# generate and write out the key of the right size for the input binfile
-	keygen $BINFILE > $KEYFILE $BJ
+	keygen $BINFILE > $KEYFILE
 	# and encrypt with it
-	symcrypt $KEYFILE $BINFILE $OUTFILE $BJ
+	symcrypt $KEYFILE $BINFILE $OUTFILE
+}
+
+# Main starts here
+# set up the names of the directories
+DIREND=${INDIR##*/} # just the directory name, preceding path is stripped off
+OUTDIR="$DIREND"_crp
+KEYDIR="$DIREND"_key
+
+# build the compressor flags
+FLAGS='-c -z -q' # the default flags
+if [ $VERBOSE ]; then 
+	if [ "$COMPRESSOR" = 'lzma' ]; then FLAGS='-c -z -v';	else FLAGS='-c'; fi
+fi
+
+# create output directories
+if [ -d "$KEYDIR" ]; then
+	printf "$PROGN quitting, '$KEYDIR' already exists!\n";	exit 2; fi
+if [ -d "$OUTDIR" ]; then 
+	printf "$PROGN quitting, '$OUTDIR' already exists!\n"; exit 2; fi
+mkdir $KEYDIR $OUTDIR
+
+# sort files in INDIR by size
+ITEMS=$(ls -SL $INDIR)
+# prepare to fire off subshells
+BJ=\&
+
+# compress all files from the given input path/directory in $1
+for FILEND in $ITEMS; do
+   INFILE=$INDIR/$FILEND
+   [ -f "$INFILE" ] || continue # the selected item is a file
+   # FILEND=${INFILE##*/} # filename.extension without the preceding path
+   BINFILE=$INFILE # initial binfile is the input file
+   KEYFILE=$KEYDIR/$FILEND # base keyfile form: no additional extension
+   OUTFILE=$OUTDIR/$FILEND # outfile always the same as input file
+   let COUNT+=1
+
+   # turn off subshells when files become smaller than BACKSZ
+   [ -z "$BJ" ] || [ $( stat -c%s $INFILE ) -gt $BACKSZ ] || BJ='' 
+   processfile $BJ  
 done
 
-# produce a report
-if ! [ $QUIET ]; then
-    printf "$PROGN encrypted $COUNT files into $OUTDIR, keys written to $KEYDIR\n"
-	wait 
-	SIZES=( $( du -hbs $OUTDIR $INDIR ) ) # array of size,dir,size,dir
-	printf "      %s size:\t%s\n      %s size:\t%s\n" \
-	${SIZES[3]} ${SIZES[2]} ${SIZES[1]} ${SIZES[0]}  
-	# compession ratio x 10^5, printed as xx.xx% 
-	CR=$(( 10000*${SIZES[0]}/${SIZES[2]} )) 
-	if [ $CR -gt 99999 ]; then 
-		printf "\t$PROGN warning, no compression achieved!\n"
-	else 
-		set CR=$CR+5 # rounds to the nearest hundredth of percent
-		printf "$PROGN compressed (some with $EXT) to: ${CR: 0:2}.${CR: 2:4} %%\n"
-	fi
-fi
 wait
 rm zfile.tmp checkfile.tmp > /dev/null 2>&1 #tidy up
+# report
+if ! [ $QUIET ]; then
+	SIZES=( $( du -hbs $OUTDIR $INDIR ) ) # array of size,dir,size,dir
+	printf "$PROGN %s: %s => %s: %s " \
+	${SIZES[3]} ${SIZES[2]} ${SIZES[1]} ${SIZES[0]}  
+	# compession ratio x 10^5, to be printed as xx.xx% 
+	CR=$(( 10000*${SIZES[0]}/${SIZES[2]} )) 
+	if [ $CR -gt 99999 ]; then 
+		printf "no compression\n"
+	else 
+		set CR=$CR+5 # rounds to the nearest hundredth of percent
+		printf "(${CR: 0:2}.${CR: 2:4} %%)\n"
+	fi
+	printf "$PROGN encrypted $COUNT files into $OUTDIR, keys written to $KEYDIR\n"
+fi

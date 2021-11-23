@@ -20,4 +20,4 @@ esac
 # LASTEXT=${1##*.}
 
 SIZE=$( stat -c%s $1 )
-head -c $SIZE /dev/random
+head -c $SIZE /dev/urandom

@@ -3,7 +3,7 @@
 # using corresponding keys in the specified directory 'keysname'
 # into corresponding original files in local directory 'dirname_org' 
 
-BACKSZ=10000
+BACKSZ=10000 # files above this size will be processed in subshells
 
 PROGN=${0##*/}
 case $# in
@@ -23,10 +23,16 @@ case $# in
 esac
 
 if [ -z $( which zstd ) ]; then 
-	printf "$PROGN warning, zstd not found, will not decompress .zstd files\n"
+	printf "$PROGN warning, zstd compressor is not installed, will not decompress .zstd files\n"
 fi
 if [ -z $( which lzma ) ]; then 
-	printf "$PROGN warning, lzma not found, will not decompress .lzma files\n"
+	printf "$PROGN warning, lzma compressor is not installed, will not decompress .lzma files\n"
+fi
+if [ -z $( which base64 ) ]; then 
+	printf "$PROGN warning, base64 decoder is not installed, will not unpack .base64 files\n"
+fi
+if [ -z $( which hexify ) ]; then 
+	printf "$PROGN warning, hexify is not installed, will not unpack .hex files\n"
 fi
 
 KEYDIR="$1"
@@ -42,16 +48,22 @@ if [ -d "$OUTDIR" ]; then
 	printf "$PROGN quitting, '$OUTDIR' already exists here!\n"; exit 2
 else mkdir $OUTDIR; fi
 
-# decompress all files in INDIR
-for INFILE in $INDIR/*; do
-   [ -f "$INFILE" ] || continue # check that the selected item is a file
-   let COUNT+=1
-   FILEND=${INFILE##*/} # original filename.extension without the preceding path
-   KEYFILE=$KEYDIR/$FILEND
-   OUTFILE=$OUTDIR/$FILEND
+# sort files in INDIR by size
+ITEMS=$(ls -SL $INDIR)
+# prepare to fire off subshells
+BJ=\&
 
-	if [ $( stat -c%s $INFILE ) -gt $BACKSZ ]; then BJ=\&; else BJ=''; fi
-
+# decompress all ITEMS, in decreasing order of size
+for FNAME in $ITEMS; do
+	INFILE=$INDIR/$FNAME	
+   	[ -f "$INFILE" ] || continue # check that INFILE is a proper file
+  	 # ${INFILE##*/} # original filename.extension without the preceding path
+   	KEYFILE=$KEYDIR/$FNAME
+   	OUTFILE=$OUTDIR/$FNAME
+   	let COUNT+=1
+ 
+   # turn off subshells when files become smaller than BACKSZ
+   [ -z "$BJ" ] || [ $( stat -c%s $INFILE ) -gt $BACKSZ ] || BJ='' 
    
    if [ -f $KEYFILE ]; then # found key with no extra extensions
 		symcrypt $KEYFILE $INFILE $OUTFILE $BJ # just decrypt the infile and save it
@@ -89,7 +101,7 @@ for INFILE in $INDIR/*; do
 		symcrypt $KEYFILE.base64.lz $INFILE | lzma -d | base64 -w 0 > $OUTFILE $BJ
 		continue
 	fi
-	printf "$PROGN failed to find a useful key for encrypted file $FILEND\n"
+	printf "$PROGN failed to find a useful key for encrypted file $FNAME\n"
 	let COUNT-=1
 	let FAILED+=1
 done
