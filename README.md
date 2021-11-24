@@ -64,7 +64,7 @@ There are two command line interface bash scripts that automate the whole proces
 
 `ncrpt [-h][-x][-b][-q][-v][-z] inputpath/dirname`
 
-The options mean, respectively: -h help, -x test for hex files, -b test for base64 files, -q quiet, -v verbose, -z zstd compression. The tests for hex and base64 tests are now optional.  They only need to be invoked when the input directory contains such files. Should you forget to use them, everything will still work, only the output may take up more space than was strictly necessary.
+The options mean, respectively: -h help, -x test for hexadecimal files, -b test for base64 files, -q quiet, -v verbose, -z zstd compression. The tests for hexadecima and b64 files only need to be invoked when the input directory contains such files. Should you forget to use them, everything will still work, only the output may take up more space than was strictly necessary.
 
 Ncrpt creates two subdirectories in the current directory, each mirroring files in `inputpath/dirname`  that are to be encrypted. Thus
 `./dirname_crp` will hold the encrypted files and  `./dirname_key` will hold unique keys individually generated for them. There is no recursive descent into subdirectories.
@@ -92,7 +92,7 @@ Summary: dcrpt, (decrypt without vowels) matches the keys, decrypts the binary f
 
 ## Background Scripts and Programs (not needed by the user)
 
-`hexcheck` (C executable) is invoked by `ncrpt`. It recognises hexadecimal (token) files and packs them to binary, which halves them in size.
+`hexcheck` (C executable) is invoked by `ncrpt`. It recognises hexadecimal (token) files and packs them to binary, which halves them in size. Hexadecimal files should only contain (0-9,A-F) ascii characters. There are some exceptions: lower case a-f are accepted but converted to A-F. Spaces and newlines just get deleted. This tolerant policy may result in some differences between the original and the reconstructed files. Then it is best to replace the original file with the cleaned up reconstructed one.
 
 `hexify` is invoked by `dcrpt` to unpack the binary files back to their original hexadecimal form.
 
@@ -113,13 +113,16 @@ When encryption is finally invoked, it is applied to the shortest possible form 
 
 ## Testing
 
-**`crptest`** inputpath/dirname 
+**`crptest`** inputpath/dirname
 
 Tests `ncrpt` and `dcrpt`. It first encrypts and then decrypts back again
 all the files in the given input directory and compares the results against the original files.
 It then cleans up all the created sub-directories.
 
-Ideally, it should report all the reconstructed files as being identical to the originals.
+It may start with messages: 'hexcheck invalid char x' and 'base64: invalid input'. This is expected behviour when -x and -b flags are activated. It is showing that tests for hexadecimal and base64 files are failing on files of other types, as they should.
+
+`crptest` should eventually report all the reconstructed files as being identical to the originals.
+Some differences may be reported for hexadecimal files because `hexcheck` converts a-f to A-F and cleans up spurious spaces and newlines, instead of just rejecting such almost hexadecimal files. API keys should be separated into their own  unique files. If the spaces/newlines turn out to be an unintended corruption, then the original file ought to be replaced by the cleaned up (reconstructed) version.
 
 An automated github action compiles the C programs and runs **`crptest`** over the `testing` directory included in the repository.
 It tests all the main types of files: hexadecimal, base64, plain text and binary.
@@ -127,6 +130,8 @@ The 'test' badge at the top of this document lights up green
 when all the tests were passed. Note that only the summary output `test.log` is saved in the repository after this automatic test, not the encrypted, decrypted or key directories.
 
 ## Releases Log
+
+**24Nov2021** - Shortened .base64 extensions to .b64. Rename old encrypted files accordingly. Some cosmetic improvements.
 
 **23Nov2021** - Made multithreading more efficient: now converting files by background processes in order of their decreasing size. Should result in considerable speedups for large collections of large files.
 

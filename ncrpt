@@ -11,7 +11,7 @@ BACKSZ=10000 # size of files to be encrypted in the subshells
 # input args vetting
 while [ "$#" -gt 0 ]; do
   case "$1" in
-   -h|--help) 
+   	-h|--help) 
 		printf "$PROGN options flags, long versions work too, e.g. --help\n" 
 		printf "\t%s\n" \
 		'-h | --help : prints this helpful text' \
@@ -25,9 +25,9 @@ while [ "$#" -gt 0 ]; do
 	-b|--base64) B64TEST=0; shift 1;; 	
 	-q|--quiet) QUIET=0; shift 1;;
 	-v|--verbose) VERBOSE=0; shift 1;; 
-   -z|--zstd) COMPRESSOR=zstd; EXT=zst; shift 1;;
-   -*|--*) printf "$PROGN quitting, unknown flag $1, try -h\n"; exit 2;;
-   *) if [ -z "$INDIR" ]; then INDIR=$1; shift 1
+   	-z|--zstd) COMPRESSOR=zstd; EXT=zst; shift 1;; #new compressor and extension
+   	-*|--*) printf "$PROGN quitting, unknown flag $1, try -h\n"; exit 2;;
+   	*) if [ -z "$INDIR" ]; then INDIR=$1; shift 1
 	   else  printf "$PROGN quitting, superfluous argument $1, try -h\n"; exit 2
 	   fi;;
   esac
@@ -45,40 +45,6 @@ if [ -z $( which "$COMPRESSOR" ) ]; then
 		exit 2
 fi
 
-function processfile {
-
-    if [ $HEXTEST ]; then
-   		hexcheck $INFILE checkfile.tmp
-   		if [ "$?" -eq 0 ]; then	# status of hexcheck when INFILE is entirely hexadecimal
-			BINFILE=checkfile.tmp # now this is the binary file to encrypt
-			KEYFILE="$KEYFILE".hex # append .hex extension for hexadecimal origin
-   		fi
-   	fi
-
-	if [ $B64TEST ] && [ "$BINFILE" = "$INFILE" ]; then #  test if not already hexfile
-   		base64 -d -w 0 $INFILE > checkfile.tmp # turns base64 into binary, saving 25%
-   		if [ "$?" -eq 0 ]; then	# status of base64 when INFILE was entirely in BASE64
-			BINFILE=checkfile.tmp # now this is the binary file to encrypt
-			KEYFILE="$KEYFILE".base64 # append .base64 extension for base64 origin
-   		fi 
-	fi
-	
-	# now do the (binary) compression	
-	$COMPRESSOR $FLAGS $BINFILE > zfile.tmp 
-	CMPS=$( stat -c%s zfile.tmp ) # the size after compression
-	ORGS=$( stat -c%s $BINFILE )   # and before compression
-	# use compressed version only if it is actually smaller
-	if [ "$CMPS" -lt "$ORGS" ]; then 
-		KEYFILE=$KEYFILE.$EXT # append compression extension to the keyfile to be generated
-		BINFILE=zfile.tmp  # assign the compressed file, else use uncompressed
-	fi
-	# generate and write out the key of the right size for the input binfile
-	keygen $BINFILE > $KEYFILE
-	# and encrypt with it
-	symcrypt $KEYFILE $BINFILE $OUTFILE
-}
-
-# Main starts here
 # set up the names of the directories
 DIREND=${INDIR##*/} # just the directory name, preceding path is stripped off
 OUTDIR="$DIREND"_crp
@@ -97,6 +63,40 @@ if [ -d "$OUTDIR" ]; then
 	printf "$PROGN quitting, '$OUTDIR' already exists!\n"; exit 2; fi
 mkdir $KEYDIR $OUTDIR
 
+# define function to process one file, possibly in the background
+function processfile {
+
+    if [ $HEXTEST ]; then
+   		hexcheck $INFILE checkfile.tmp
+   		if [ "$?" -eq 0 ]; then	# status of hexcheck when INFILE is entirely hexadecimal
+			BINFILE=checkfile.tmp # now this is the binary file to encrypt
+			KEYFILE="$KEYFILE".hex # append .hex extension for hexadecimal origin
+   		fi
+   	fi
+
+	if [ $B64TEST ] && [ "$BINFILE" = "$INFILE" ]; then #  test if not already hexfile
+   		base64 -d -w 0 $INFILE > checkfile.tmp # turns base64 into binary, saving 25%
+   		if [ "$?" -eq 0 ]; then	# status of base64 when INFILE was entirely in base64
+			BINFILE=checkfile.tmp # now this is the binary file to encrypt
+			KEYFILE="$KEYFILE".b64 # append .b64 extension for base64 origin
+   		fi 
+	fi
+	
+	# now do the binary compression	
+	$COMPRESSOR $FLAGS $BINFILE > zfile.tmp 
+	CMPS=$( stat -c%s zfile.tmp ) # the size after compression
+	ORGS=$( stat -c%s $BINFILE )   # and before compression
+	# use compressed version only if it is actually smaller
+	if [ "$CMPS" -lt "$ORGS" ]; then 
+		KEYFILE=$KEYFILE.$EXT # append compression extension to the keyfile to be generated
+		BINFILE=zfile.tmp  # assign the compressed file, else use uncompressed
+	fi
+	# generate and write out the key of the right size for the input binfile
+	keygen $BINFILE > $KEYFILE
+	# and encrypt with it
+	symcrypt $KEYFILE $BINFILE $OUTFILE
+}
+
 # sort files in INDIR by size
 ITEMS=$(ls -SL $INDIR)
 # prepare to fire off subshells
@@ -104,22 +104,22 @@ BJ=\&
 
 # compress all files from the given input path/directory in $1
 for FILEND in $ITEMS; do
-   INFILE=$INDIR/$FILEND
-   [ -f "$INFILE" ] || continue # the selected item is a file
-   # FILEND=${INFILE##*/} # filename.extension without the preceding path
-   BINFILE=$INFILE # initial binfile is the input file
+   INFILE=$INDIR/$FILEND # reconstruct one full path/filename
+   [ -f "$INFILE" ] || continue # only process genuine file
+   # getting filename.extension without the preceding path prior to using ls
+   # FILEND=${INFILE##*/} 
+   BINFILE=$INFILE # the initial binfile is the input file
    KEYFILE=$KEYDIR/$FILEND # base keyfile form: no additional extension
    OUTFILE=$OUTDIR/$FILEND # outfile always the same as input file
    let COUNT+=1
 
-   # turn off subshells when files become smaller than BACKSZ
-   [ -z "$BJ" ] || [ $( stat -c%s $INFILE ) -gt $BACKSZ ] || BJ='' 
-   processfile $BJ  
+   # turn off subshells when file size falls below BACKSZ
+   [ -z "$BJ" ] || [ $( stat -c%s $INFILE ) -ge $BACKSZ ] || BJ='' 
+   processfile $BJ  # the above defined function
 done
-
-wait
+wait # for all proccessfiles to finish
 rm zfile.tmp checkfile.tmp > /dev/null 2>&1 #tidy up
-# report
+# optional report
 if ! [ $QUIET ]; then
 	SIZES=( $( du -hbs $OUTDIR $INDIR ) ) # array of size,dir,size,dir
 	printf "$PROGN %s: %s => %s: %s " \

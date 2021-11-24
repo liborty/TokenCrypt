@@ -48,6 +48,49 @@ if [ -d "$OUTDIR" ]; then
 	printf "$PROGN quitting, '$OUTDIR' already exists here!\n"; exit 2
 else mkdir $OUTDIR; fi
 
+# define function to reconstruct one file, possibly in the background
+function recoverfile {  
+   	if [ -f $KEYFILE ]; then # found key with no extra extensions
+		symcrypt $KEYFILE $INFILE $OUTFILE # just decrypt the infile and save it
+		return
+	fi
+	if [ -f $KEYFILE.hex ]; then # found hex extension
+		symcrypt $KEYFILE.hex $INFILE | hexify > $OUTFILE $BJ
+		return
+	fi
+	if [ -f $KEYFILE.b64 ]; then # found b64 extension
+		symcrypt $KEYFILE.b64 $INFILE | base64 -w 0 > $OUTFILE $BJ
+		return
+	fi
+	if [ -f $KEYFILE.zst ]; then # found compressed plain
+		symcrypt $KEYFILE.zst $INFILE | zstd -d -c > $OUTFILE $BJ
+		return
+	fi
+	if [ -f $KEYFILE.hex.zst ]; then # found hex and zst
+		symcrypt $KEYFILE.hex.zst $INFILE | zstd -d -c | hexify > $OUTFILE $BJ
+		return
+	fi
+	if [ -f $KEYFILE.b64.zst ]; then # found b64 and zst
+		symcrypt $KEYFILE.b64.zst $INFILE | zstd -d -c | base64 -w 0 > $OUTFILE $BJ
+		return
+	fi
+	if [ -f $KEYFILE.lz ]; then # found lzma compressed, plain
+		symcrypt $KEYFILE.lz $INFILE | lzma -d > $OUTFILE $BJ
+		return
+	fi
+	if [ -f $KEYFILE.hex.lz ]; then # found hex and lz compressed
+		symcrypt $KEYFILE.hex.lz $INFILE | lzma -d | hexify > $OUTFILE $BJ
+		return
+	fi
+	if [ -f $KEYFILE.base64.lz ]; then # found b64 and lz compressed
+		symcrypt $KEYFILE.b64.lz $INFILE | lzma -d | base64 -w 0 > $OUTFILE $BJ
+		return
+	fi
+	printf "$PROGN failed to find a useful key for encrypted file $FNAME\n"
+	let COUNT-=1
+	let FAILED+=1
+}
+
 # sort files in INDIR by size
 ITEMS=$(ls -SL $INDIR)
 # prepare to fire off subshells
@@ -61,49 +104,9 @@ for FNAME in $ITEMS; do
    	KEYFILE=$KEYDIR/$FNAME
    	OUTFILE=$OUTDIR/$FNAME
    	let COUNT+=1
- 
-   # turn off subshells when files become smaller than BACKSZ
-   [ -z "$BJ" ] || [ $( stat -c%s $INFILE ) -gt $BACKSZ ] || BJ='' 
-   
-   if [ -f $KEYFILE ]; then # found key with no extra extensions
-		symcrypt $KEYFILE $INFILE $OUTFILE $BJ # just decrypt the infile and save it
-		continue
-	fi
-	if [ -f $KEYFILE.hex ]; then # found hexed extension
-		symcrypt $KEYFILE.hex $INFILE | hexify > $OUTFILE $BJ
-		continue
-	fi
-	if [ -f $KEYFILE.base64 ]; then # found base64 extension
-		symcrypt $KEYFILE.base64 $INFILE | base64 -w 0 > $OUTFILE $BJ
-		continue
-	fi
-	if [ -f $KEYFILE.zst ]; then # found compressed nonhex
-		symcrypt $KEYFILE.zst $INFILE | zstd -d -c > $OUTFILE $BJ
-		continue
-	fi
-	if [ -f $KEYFILE.hex.zst ]; then # found hexed and compressed
-		symcrypt $KEYFILE.hex.zst $INFILE | zstd -d -c | hexify > $OUTFILE $BJ
-		continue
-	fi
-	if [ -f $KEYFILE.base64.zst ]; then # found base64 and compressed
-		symcrypt $KEYFILE.base64.zst $INFILE | zstd -d -c | base64 -w 0 > $OUTFILE $BJ
-		continue
-	fi
-	if [ -f $KEYFILE.lz ]; then # found lzma compressed, nonhex
-		symcrypt $KEYFILE.lz $INFILE | lzma -d > $OUTFILE $BJ
-		continue
-	fi
-	if [ -f $KEYFILE.hex.lz ]; then # found hexed and lzma compressed
-		symcrypt $KEYFILE.hex.lz $INFILE | lzma -d | hexify > $OUTFILE $BJ
-		continue
-	fi
-	if [ -f $KEYFILE.base64.lz ]; then # found base64 and lzma compressed
-		symcrypt $KEYFILE.base64.lz $INFILE | lzma -d | base64 -w 0 > $OUTFILE $BJ
-		continue
-	fi
-	printf "$PROGN failed to find a useful key for encrypted file $FNAME\n"
-	let COUNT-=1
-	let FAILED+=1
+	# turn off subshells when file size has fallen below BACKSZ
+   	[ -z "$BJ" ] || [ $( stat -c%s $INFILE ) -ge $BACKSZ ] || BJ='' 
+	recoverfile $BJ # BJ can be unset, then short files run in this shell
 done
-wait
+wait # to ensure that all backround recoverfiles have finished
 printf "$PROGN: decrypted $COUNT files into $OUTDIR, $FAILED failures\n"
