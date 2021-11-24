@@ -8,8 +8,10 @@
 
 ## Introduction
 
-`Ncrpt` reads whole directories containing API tokens, base64 files and
-any other types of files. It recognises hexadecimal files and base64 files and converts them to compact binary data. It then selects the best compression method for each file and finally encrypts them all with high security.
+`Ncrpt` reads given input directory containing API tokens, base64 files and
+any other types of files. It recognises hexadecimal files and base64 files and converts them to compact binary data.
+It then selects the best compression method for each file and finally encrypts them all with high security.
+Subdirectories are ignored, there is no recursive descent into them.
 
 Internet security tokens usually consist of 32, 64 or more hexadecimal characters.
 They are increasingly used to facilitate secure access over the internet protocols
@@ -19,12 +21,10 @@ that means strongly encrypted.
 
 For similar trasport reasons, base64 encoding into printable characters is often used to encode binary data.
 
-
-
 Security tokens and other types of files may sometimes be
 all mixed up in one directory. This is not the best practice but
-it may arise and it could involve much work to separate them.
-`Ncrpt` copes with such mixed directories contents automagically.
+it can arise and it could involve much work to separate them.
+`Ncrpt` copes with such mixed directories contents automatically.
 
 ## Installation
 
@@ -64,10 +64,10 @@ There are two command line interface bash scripts that automate the whole proces
 
 `ncrpt [-h][-x][-b][-q][-v][-z] inputpath/dirname`
 
-The options mean, respectively: -h help, -x test for hexadecimal files, -b test for base64 files, -q quiet, -v verbose, -z zstd compression. The tests for hexadecima and b64 files only need to be invoked when the input directory contains such files. Should you forget to use them, everything will still work, only the output may take up more space than was strictly necessary.
+The options mean, respectively: -h help, -x test for hexadecimal files, -b test for base64 files, -q quiet, -v verbose, -z zstd compression. The tests for hexadecimal and base64 files only need to be invoked when the input directory contains such files. Should you forget to use them, everything will still work, only the output may take up more space than was strictly necessary.
 
-Ncrpt creates two subdirectories in the current directory, each mirroring files in `inputpath/dirname`  that are to be encrypted. Thus
-`./dirname_crp` will hold the encrypted files and  `./dirname_key` will hold unique keys individually generated for them. There is no recursive descent into subdirectories.
+Ncrpt creates two subdirectories in the current directory, each mirroring files in `inputpath/dirname`  that are being encrypted. Thus
+`./dirname_crp` will hold the encrypted files and  `./dirname_key` will hold the unique keys individually generated for them.
 
 The summary at the end, such as the one shown in `test.log`, reports the sizes (in bytes) of input and output directories, the total compressed size as a percentage of the original size, and the total number of files encrypted. The compression to 50% will exactly compensate for the creation  of the encryption keys.
 
@@ -131,11 +131,11 @@ when all the tests were passed. Note that only the summary output `test.log` is 
 
 ## Releases Log
 
-**24Nov2021** - Shortened .base64 extensions to .b64. Rename old encrypted files accordingly. Some cosmetic improvements.
+**24Nov21** - Shortened .base64 extensions to .b64. Rename old encrypted files accordingly. Some cosmetic improvements.
 
-**23Nov2021** - Made multithreading more efficient: now converting files by background processes in order of their decreasing size. Should result in considerable speedups for large collections of large files.
+**23Nov21** - Made multithreading more efficient: now converting files by background processes in order of their decreasing size. Should result in considerable speedups for large collections of large files.
 
-**22Nov2021** - Improved `readme.md`. The key generation, encryption and decryption will now automatically run in sub shells on files over certain size, currently set to 10k. This will result in speedup on multi-core CPUs.
+**22Nov21** - Improved `readme.md`. The key generation, encryption and decryption will now automatically run in sub shells on files over certain size, currently set to 10k. This will result in speedup on multi-core CPUs.
 
 ## References and Further Information
 
