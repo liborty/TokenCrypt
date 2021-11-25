@@ -55,35 +55,35 @@ function recoverfile {
 		return
 	fi
 	if [ -f $KEYFILE.hex ]; then # found hex extension
-		symcrypt $KEYFILE.hex $INFILE | hexify > $OUTFILE $BJ
+		symcrypt $KEYFILE.hex $INFILE | hexify > $OUTFILE
 		return
 	fi
 	if [ -f $KEYFILE.b64 ]; then # found b64 extension
-		symcrypt $KEYFILE.b64 $INFILE | base64 -w 0 > $OUTFILE $BJ
+		symcrypt $KEYFILE.b64 $INFILE | base64 -w 0 > $OUTFILE
 		return
 	fi
 	if [ -f $KEYFILE.zst ]; then # found compressed plain
-		symcrypt $KEYFILE.zst $INFILE | zstd -d -c > $OUTFILE $BJ
+		symcrypt $KEYFILE.zst $INFILE | zstd -d -c > $OUTFILE
 		return
 	fi
 	if [ -f $KEYFILE.hex.zst ]; then # found hex and zst
-		symcrypt $KEYFILE.hex.zst $INFILE | zstd -d -c | hexify > $OUTFILE $BJ
+		symcrypt $KEYFILE.hex.zst $INFILE | zstd -d -c | hexify > $OUTFILE
 		return
 	fi
 	if [ -f $KEYFILE.b64.zst ]; then # found b64 and zst
-		symcrypt $KEYFILE.b64.zst $INFILE | zstd -d -c | base64 -w 0 > $OUTFILE $BJ
+		symcrypt $KEYFILE.b64.zst $INFILE | zstd -d -c | base64 -w 0 > $OUTFILE
 		return
 	fi
 	if [ -f $KEYFILE.lz ]; then # found lzma compressed, plain
-		symcrypt $KEYFILE.lz $INFILE | lzma -d > $OUTFILE $BJ
+		symcrypt $KEYFILE.lz $INFILE | lzma -d > $OUTFILE
 		return
 	fi
 	if [ -f $KEYFILE.hex.lz ]; then # found hex and lz compressed
-		symcrypt $KEYFILE.hex.lz $INFILE | lzma -d | hexify > $OUTFILE $BJ
+		symcrypt $KEYFILE.hex.lz $INFILE | lzma -d | hexify > $OUTFILE
 		return
 	fi
 	if [ -f $KEYFILE.base64.lz ]; then # found b64 and lz compressed
-		symcrypt $KEYFILE.b64.lz $INFILE | lzma -d | base64 -w 0 > $OUTFILE $BJ
+		symcrypt $KEYFILE.b64.lz $INFILE | lzma -d | base64 -w 0 > $OUTFILE
 		return
 	fi
 	printf "$PROGN failed to find a useful key for encrypted file $FNAME\n"
