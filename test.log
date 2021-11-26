@@ -1,11 +1,12 @@
-crptest run on: 26.11.21 at 13:21:59 UTC
+crptest run on: 26.11.21 at 14:43:06 UTC
 make: Nothing to be done for 'all'.
 Installed TokenCrypt utilities in /usr/local/bin
-ncrpt testing: 25416 => testingcrypt: 9197 (36.23 %)
+ncrpt testing: 40863 => testingcrypt: 17865 (43.76 %)
 ncrpt encrypted testing into testingcrypt, keys written to testingkey
-dcrpt testingcrypt: 9197 => testingorg: 25416 (36.23 %)
+dcrpt testingcrypt: 17865 => testingorg: 40863 (43.76 %)
 dcrpt decrypted testingcrypt into testingorg
 Files testing/b64.code and testingorg/b64.code are identical
 Files testing/binf.bin and testingorg/binf.bin are identical
 Files testing/hexf.api and testingorg/hexf.api are identical
+Files testing/subdir/README.md and testingorg/subdir/README.md are identical
 Files testing/textf.txt and testingorg/textf.txt are identical
