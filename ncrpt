@@ -1,127 +1,158 @@
 #!/bin/bash
-# encrypts all files in the specified directory 'dirname' (can be ./)
-# into corresponding encrypted binary files in local directory 'dirname-crp' 
-# with corresponding key files in 'dirname-key'
+# encrypts all files in the specified directory 'indir' 
+# writes key files into directory 'keydir', extensions indicating compression methods 
+# writes encrypted binary files with the same names into directory 'outdir' 
 
 PROGN=${0##*/}
 COMPRESSOR=lzma	# the default compression program
 EXT=lz				# and the extension that goes with it
 BACKSZ=10000 # size of files to be encrypted in the subshells
 
-# input args vetting
-while [ "$#" -gt 0 ]; do
-  case "$1" in
-   	-h|--help) 
-		printf "$PROGN options flags, long versions work too, e.g. --help\n" 
-		printf "\t%s\n" \
-		'-h | --help : prints this helpful text' \
-		'-b | --base64 : test for base64 encoded files' \
-		'-x | --hex : test for hexadecimal files' \
-		'-q | --quiet : no reporting (default is the final summary)' \
-		'-v | --verbose : full reporting' \
-		'-z | -zstd : use zstd compression (default is lzma)' 
-		exit 1;;
-	-x|--hex) HEXTEST=0; shift 1;;
-	-b|--base64) B64TEST=0; shift 1;; 	
-	-q|--quiet) QUIET=0; shift 1;;
-	-v|--verbose) VERBOSE=0; shift 1;; 
-   	-z|--zstd) COMPRESSOR=zstd; EXT=zst; shift 1;; #new compressor and extension
-   	-*|--*) printf "$PROGN quitting, unknown flag $1, try -h\n"; exit 2;;
-   	*) if [ -z "$INDIR" ]; then INDIR=$1; shift 1
-	   else  printf "$PROGN quitting, superfluous argument $1, try -h\n"; exit 2
-	   fi;;
-  esac
-done
-if [ -z "$INDIR" ]; then 
-	printf "$PROGN quitting, requires one input path argument\n"
-	exit 2
-fi 
-if ! [ -d "$INDIR" ]; then
-		printf "$PROGN quitting, directory $INDIR not found\n"
-		exit 2
-fi
-if [ -z $( which "$COMPRESSOR" ) ]; then 
-		printf "$PROGN quitting, compressor $COMPRESSOR not found\n"
-		exit 2
-fi
-
-# set up the names of the directories
-DIREND=${INDIR##*/} # just the directory name, preceding path is stripped off
-OUTDIR="$DIREND"_crp
-KEYDIR="$DIREND"_key
-
-# build the compressor flags
-FLAGS='-c -z -q' # the default flags
-if [ $VERBOSE ]; then 
-	if [ "$COMPRESSOR" = 'lzma' ]; then FLAGS='-c -z -v';	else FLAGS='-c'; fi
-fi
-
-# create output directories
-if [ -d "$KEYDIR" ]; then
-	printf "$PROGN quitting, '$KEYDIR' already exists!\n";	exit 2; fi
-if [ -d "$OUTDIR" ]; then 
-	printf "$PROGN quitting, '$OUTDIR' already exists!\n"; exit 2; fi
-mkdir $KEYDIR $OUTDIR
-
-# define function to process one file, possibly in the background
+# function to compress and encrypt one file
+# takes four arguments: ITEM INDIR KEYDIR OUTDIR
+# KEYDIR OUTDIR must be writeable
+# creates and cleans up two temporary files in OUTDIR
 function processfile {
 
+	local INFILE=$2/$1 
+	local KEYFILE=$3/$1
+	local OUTFILE=$4/$1 
+
     if [ $HEXTEST ]; then
-   		hexcheck $INFILE checkfile.tmp
+   		hexcheck $INFILE $OUTFILE.tmp000 2>/dev/null # ignore failure messages
    		if [ "$?" -eq 0 ]; then	# status of hexcheck when INFILE is entirely hexadecimal
-			BINFILE=checkfile.tmp # now this is the binary file to encrypt
+			INFILE=$OUTFILE.tmp000 # now this becomes the binary file to further compress
 			KEYFILE="$KEYFILE".hex # append .hex extension for hexadecimal origin
    		fi
    	fi
 
-	if [ $B64TEST ] && [ "$BINFILE" = "$INFILE" ]; then #  test if not already hexfile
-   		base64 -d -w 0 $INFILE > checkfile.tmp # turns base64 into binary, saving 25%
+	if [ $B64TEST ] && [ "$INFILE" = "$2/$1" ]; then #  test if not already hexfile
+   		base64 -d -w 0 $INFILE > $OUTFILE.tmp000 2>/dev/null # turns base64 into binary, saving 25%
    		if [ "$?" -eq 0 ]; then	# status of base64 when INFILE was entirely in base64
-			BINFILE=checkfile.tmp # now this is the binary file to encrypt
+			INFILE=$OUTFILE.tmp000 # now this becomes the binary file to further compress
 			KEYFILE="$KEYFILE".b64 # append .b64 extension for base64 origin
    		fi 
 	fi
 	
-	# now do the binary compression	
-	$COMPRESSOR $FLAGS $BINFILE > zfile.tmp 
-	CMPS=$( stat -c%s zfile.tmp ) # the size after compression
-	ORGS=$( stat -c%s $BINFILE )   # and before compression
+	# now, in all three cases, do binary compression	
+	$COMPRESSOR $FLAGS $INFILE > $OUTFILE.tmp001 
+	local CMPS=$( stat -c%s $OUTFILE.tmp001 ) # the size after compression
+	local ORGS=$( stat -c%s $INFILE )  # and before compression
 	# use compressed version only if it is actually smaller
 	if [ "$CMPS" -lt "$ORGS" ]; then 
 		KEYFILE=$KEYFILE.$EXT # append compression extension to the keyfile to be generated
-		BINFILE=zfile.tmp  # assign the compressed file, else use uncompressed
+		INFILE=$OUTFILE.tmp001  # assign the compressed file name, else stay with uncompressed
 	fi
-	# generate and write out the key of the right size for the input binfile
-	keygen $BINFILE > $KEYFILE
-	# and encrypt with it
-	symcrypt $KEYFILE $BINFILE $OUTFILE
+	# generate and write out the key of the same size as the infile
+	keygen $INFILE > $KEYFILE
+	# encrypt with it and write to OUTFILE 
+	symcrypt $KEYFILE $INFILE $OUTFILE
+	rm $OUTFILE.tmp000 $OUTFILE.tmp001 > /dev/null  #tidy up
 }
 
-# sort files in INDIR by size
-ITEMS=$(ls -SL $INDIR)
-# prepare to fire off subshells
-BJ=\&
+# function to process a whole directory
+# takes three arguments: INDIR KEYDIR OUTDIR
+function processdir {
 
-# compress all files from the given input path/directory in $1
-for FILEND in $ITEMS; do
-   INFILE=$INDIR/$FILEND # reconstruct one full path/filename
-   [ -f "$INFILE" ] || continue # only process genuine file
-   # getting filename.extension without the preceding path prior to using ls
-   # FILEND=${INFILE##*/} 
-   BINFILE=$INFILE # the initial binfile is the input file
-   KEYFILE=$KEYDIR/$FILEND # base keyfile form: no additional extension
-   OUTFILE=$OUTDIR/$FILEND # outfile always the same as input file
-   let COUNT+=1
+	[ -n "$2" ] || { 
+		printf "$PROGN quitting, keydir is not set!\n" >&2
+		exit 2
+	}
+	[ -e "$2" ] && { 
+		printf "$PROGN quitting, keydir $2 already exists!\n" >&2
+		exit 2
+	}
+	[ -n "$3" ] || { 
+		printf "$PROGN quitting, outdir is not set!\n" >&2
+		exit 2
+	}
+	[ -e "$3" ] && { 
+		printf "$PROGN quitting, outdir $3 already exists!\n" >&2
+		exit 2
+	}
 
-   # turn off subshells when file size falls below BACKSZ
-   [ -z "$BJ" ] || [ $( stat -c%s $INFILE ) -ge $BACKSZ ] || BJ='' 
-   processfile $BJ  # the above defined function
+	# create the ouput directories
+	mkdir $2 $3
+	[ "$?" -ne 0 ] && {
+		printf "$PROGN quitting, failed to create output directories $2 $3!\n" >&2
+		exit 2
+	}
+
+	# sort files in INDIR by size
+	# stripping the path path prior to using ls was done thus: FILEND=${INFILE##*/} 
+	ITEMS=$(ls -SAL $1)
+	# prepare to fire off subshells
+	BJ=\&
+
+	# iterate through the listing
+	for ITEM in $ITEMS; do
+		local IND=$1/$ITEM
+   		if [ -d "$IND" ]; then  # recursively process existing subdirectory?
+			if [ -n "$RECURSE" ]; then  # just push ITEM onto paths, no changing of directories
+				processdir $IND $2/$ITEM $3/$ITEM &
+			fi
+			continue # either processed or ignored this subdir now
+		fi
+   		[ -f "$IND" ] || continue # only process genuine file now
+ 		# turn off subshells when file size falls below BACKSZ
+   		[ -z "$BJ" ] || [ $( stat -c%s $IND ) -ge $BACKSZ ] || BJ='' 
+   		processfile $ITEM $1 $2 $3 $BJ 
+	done
+} # end of processdir
+
+function usage { printf "Usage: $PROGN [-h][-b][-x][-q][-r][-v][-z] indir keydir outdir" >&2; }
+
+# Main starts here
+# get options, including long options, extracted as arg to the last option '-'
+while getopts hbxqrvz-: OPT; do
+ if [ "$OPT" = "-" ]; then   # long option: reset OPT and OPTARG
+    OPT="${OPTARG%%=*}"      # extract long option name
+    OPTARG="${OPTARG#$OPT}"  # extract long option argument (here empty)
+    OPTARG="${OPTARG#=}"     # remove any assignments `=` from long options
+ fi
+ case "$OPT" in
+    h | help ) usage; printf "\t%s\n" \
+		'-h | --help : print this text' \
+		'-b | --b64 : test for base64 encoded files' \
+		'-x | --hex : test for hexadecimal files' \
+		'-q | --quiet : turn off the final summary' \
+		'-r | --recurse : process also subdirectories' \
+		'-v | --verbose : detailed reporting' \
+		'-z | --zstd : use zstd compression instead of lzma' 
+		exit 1;;
+	# record all presented options
+	b | b64 ) B64TEST=0;; 
+	x | hex ) HEXTEST=0;;
+	q | quiet ) QUIET=0;;
+	r | recurse ) RECURSE=0;;
+	v | verbose ) VERBOSE=0;; 
+   	z | zstd ) COMPRESSOR=zstd; EXT=zst;; #alternative compressor and its extension
+    ??* ) printf "$PROGN quitting, invalid long option: $OPT\n" >&2; usage; exit 2;;  
+	*) exit 2;;  # invalid short option (error will be reported via getopts)
+ esac
 done
-wait # for all proccessfiles to finish
-rm zfile.tmp checkfile.tmp > /dev/null 2>&1 #tidy up
-# optional report
+shift $((OPTIND-1)) # remove parsed options and args from $@ list
+
+# Globally validate the input directory
+[ -d "$1" ] || { 
+	printf "$PROGN quitting, input directory $1 not found\n" >&2
+	exit 2
+}
+# Globally validate the compressor. It has been set either to lzma or zstd
+[ -z $( which "$COMPRESSOR" ) ] && { 
+	printf "$PROGN quitting, compressor utility $COMPRESSOR not found\n" >&2
+	exit 2
+}
+FLAGS='-c -z -q' # the default compressor flags
+if [ $VERBOSE ]; then 
+	if [ "$COMPRESSOR" = 'lzma' ]; then FLAGS='-c -z -v';	else FLAGS='-c'; fi
+fi
+processdir $1 $2 $3
+wait # for all sub proccesses to finish
+
+# optional final report
 if ! [ $QUIET ]; then
-	SIZES=( $( du -hbs $OUTDIR $INDIR ) ) # array of size,dir,size,dir
+	SIZES=( $( du -hbs $3 $1 ) ) # array of size,dir,size,dir
 	printf "$PROGN %s: %s => %s: %s " \
 	${SIZES[3]} ${SIZES[2]} ${SIZES[1]} ${SIZES[0]}  
 	# compession ratio x 10^5, to be printed as xx.xx% 
@@ -129,8 +160,8 @@ if ! [ $QUIET ]; then
 	if [ $CR -gt 99999 ]; then 
 		printf "no compression\n"
 	else 
-		set CR=$CR+5 # rounds to the nearest hundredth of percent
+		CR=$(( $CR+5 )) # rounds to the nearest hundredth of percent
 		printf "(${CR: 0:2}.${CR: 2:4} %%)\n"
 	fi
-	printf "$PROGN encrypted $COUNT files into $OUTDIR, keys written to $KEYDIR\n"
+	printf "$PROGN encrypted $1 into $3, keys written to $2\n"
 fi

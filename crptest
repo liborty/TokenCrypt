@@ -28,9 +28,9 @@ sudo ./install
 INDIR="$1" 
 # directory names, preceding path is stripped off, so all output goes to ./
 DIREND=${1##*/} 
-KEYDIR="$DIREND"_key # must separate _ from the variable name
-OUTDIR="$DIREND"_crp
-ORGDIR="$DIREND"_org
+KEYDIR="$DIREND"key # must separate _ from the variable name
+OUTDIR="$DIREND"crypt
+ORGDIR="$DIREND"org
 
 # check that outputs directories do not already exist
 if [ -d "$KEYDIR" ]; then
@@ -41,14 +41,14 @@ if [ -d "$ORGDIR" ]; then
 	printf "$PROGN quitting, '$ORGDIR' already exists here!\n"; exit 2; fi
 
 # encrypt and decrypt
-ncrpt -x -b $INDIR
-dcrpt $KEYDIR $OUTDIR
+ncrpt -x -b -r $INDIR $KEYDIR $OUTDIR
+dcrpt -r $OUTDIR $KEYDIR $ORGDIR
+diff -s -r $INDIR $ORGDIR
 
-for INFILE in $INDIR/*; do
- 	[ -f "$INFILE" ] || continue # check that a file is selected
-  	let COUNT+=1
-	diff -s $INFILE "$ORGDIR/${INFILE##*/}" 
-done
+# for INFILE in $INDIR/*; do
+# 	[ -f "$INFILE" ] || continue # check that a file is selected
+#  	let COUNT+=1
+#	diff -s $INFILE "$ORGDIR/${INFILE##*/}" 
+# done
 # tidy up 
 rm -rf $ORGDIR $OUTDIR $KEYDIR > /dev/null 2>&1
-printf "$PROGN tested $COUNT files\n"
