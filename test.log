@@ -1,5 +1,10 @@
-crptest run on: 26.11.21 at 14:43:06 UTC
-make: Nothing to be done for 'all'.
+crptest run on: 27.11.21 at 01:09:49 UTC
+clang symcrypt.c -o symcrypt
+strip symcrypt
+clang hexcheck.c -o hexcheck
+strip hexcheck
+clang hexify.c -o hexify
+strip hexify
 Installed TokenCrypt utilities in /usr/local/bin
 ncrpt testing: 40863 => testingcrypt: 17865 (43.76 %)
 ncrpt encrypted testing into testingcrypt, keys written to testingkey
