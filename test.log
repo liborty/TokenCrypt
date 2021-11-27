@@ -1,4 +1,4 @@
-crptest run on: 27.11.21 at 13:34:12 UTC
+crptest run on: 27.11.21 at 14:05:51 UTC
 clang symcrypt.c -o symcrypt
 strip symcrypt
 clang hexcheck.c -o hexcheck
