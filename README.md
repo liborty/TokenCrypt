@@ -97,7 +97,7 @@ The encrypted files (in outdir) are just meaningless random data and thus can be
 
 ## Background Scripts and Programs (not needed by the user)
 
-`hexcheck` (C executable) is invoked by `ncrpt`. It recognises hexadecimal (token) files and packs them to binary, which halves them in size. Hexadecimal files should only contain (0-9,a-f) ascii characters. There are some exceptions: upper case A-F are accepted but converted back always to lower case. Spaces and newlines just get deleted. This tolerant policy may result in some differences between the original and the reconstructed files. Then it is best to replace the original file with the cleaned up reconstructed one.
+`hexcheck` (C executable) is invoked by `ncrpt`. It recognises hexadecimal (token) files and packs them to binary, which exactly halves them in size. Hexadecimal files should be an even number of bytes long and only contain (0-9,a-f) ascii characters. There are some exceptions: upper case A-F are accepted but when converted back will always end up in lower case. Spaces and newlines just get deleted. This tolerant policy may result in some differences between the original and the reconstructed files. Then it is best to replace the original file with the cleaned up reconstructed one.
 
 `hexify` is invoked by `dcrpt` to unpack the binary files back to their original hexadecimal form.
 

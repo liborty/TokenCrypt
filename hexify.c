@@ -12,6 +12,5 @@ int main (void) {
       printf("%02x", bufin[i]);
     }
   }
- printf("\n");
  return 0;
 }
