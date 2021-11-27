@@ -94,7 +94,7 @@ function processdir {
 	done
 } # end of processdir
 
-function usage { printf "Usage: $PROGN [-h][-q][-r][-v] indir keydir outdir" >&2; }
+function usage { printf "Usage: $PROGN [-h][-q][-r][-v] indir keydir outdir\n" >&2; }
 
 # Main starts here
 # get options, including long options, extracted as arg to the last option '-'
@@ -106,11 +106,11 @@ while getopts hqrv-: OPT; do
  fi
  case "$OPT" in
     h | help ) usage; printf "\t%s\n" \
-		'-h | --help : print this text' \	
-		'-q | --quiet : turn off the final summary' \
-		'-r | --recurse : process also subdirectories' \
-		'-v | --verbose : detailed reporting' 	
-		exit 1;;
+	'-h | --help : print this text' \
+	'-q | --quiet : turn off the final summary' \
+	'-r | --recurse : process also subdirectories' \
+	'-v | --verbose : detailed reporting' 	
+	exit 1;;
 	# record all presented options
 	q | quiet ) QUIET=0;;
 	r | recurse ) RECURSE=0;;

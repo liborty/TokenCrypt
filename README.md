@@ -24,42 +24,41 @@ For similar trasport reasons, base64 encoding into printable characters is often
 Security tokens and other types of files may sometimes be
 all mixed up in one directory. This is not the best practice but
 it can arise and it could involve much work to separate them.
-`ncrpt` copes with such mixed directories contents automatically.
+`ncrpt` copes with such mixed directories contents by using automatic data type recognition.
 
 ## Installation
 
-When using a typical Linux, the local `make` compilation may be skipped entirely. Then the binaries `symcrypt`, `hexcheck` and `hexify` that are included in this repository will be installed by default. They are compiled from `C` sources and tested automatically at github.com.
-
-Otherwise a local installation should be repeated whenever the programs and scripts may have changed. Another good reason to perform a local compilation is if you suspect that the github binaries may have been compromised.
-
-This software was tested under Linux. Installation from source needs `make` utility and a `C` compiler, either `clang` or `gcc`. Download or clone this directory, cd into it and then:
-
-`sudo ./uninstall` will delete any previously installed programs and scripts and touch the local sources for recompilation.
-
-`make CC=clang` or if clang compiler is not installed, just use the default compiler (under Linux it is usually gcc) with plain: **`make`**
-
-`sudo ./install` copies all the executables for system-wide use into /usr/local/bin. Whether they were created by local compilation or just pulled from the repository.
-
-Alternatively, you can copy them manually to any of your own `bin` directories in your path. This does not require `sudo` privileges, e.g.:  
-`cp symcrypt hexcheck hexify ncrpt dcrpt keygen crptest ~/bin`
-
-The simplest complete installation method is to `touch *.c` and then, at the root of the repository, invoke:  
+This software was developed and tested under Linux. Installation from source needs `make` utility and a `C` compiler, either `clang` or `gcc`. Download or clone this directory and cd into it. Then, for complete fresh installation, run:  
 `./crptest testing`  
-This will compile the programs and, after asking for su priviledges, install them in `/usr/local/bin`.
-As an added benefit, it will also run locally the same test as is done on github.
+This will compile all the `C` programs and, after asking for su priviledges, install them and the bash scripts in `/usr/local/bin`. As an added benefit, it will also run locally the same test as is done on github.
+
+Manual alternatives:
+
+`sudo ./uninstall`  
+will delete any previously installed programs and scripts and touch the local sources for recompilation.
+
+`make CC=clang`  
+or if clang compiler is not installed, just plain `make` command will use the default compiler.  Under Linux it is usually gcc. When using a typical Linux, this local compilation may be skipped. Then the executables `symcrypt`, `hexcheck` and `hexify` that are included in this repository can be installed instead. They are compiled from `C` sources and tested automatically at github.com. Although, a good reason to perform local compilation is if you suspect that the github binaries may have been compromised or you have some diferent machine architecture.
+
+`sudo ./install`  
+Local installation should be repeated whenever the programs and scripts have changed, such as after successful `git pull`. Whether the executables were created by local compilation or just pulled from the repository, the installation just copies them for system-wide use into /usr/local/bin.  Alternatively, they can be copied manually to any other `bin` directories that are included in the path. This does not require `sudo` privileges, e.g.:  
+`cp symcrypt hexcheck hexify ncrpt dcrpt keygen crptest ~/bin`
 
 ## Dependencies
 
-Standard  **`base64`** tool which is normally pre-installed on Linux.
+Standard `du` (disk usage) tool which is normally part of Linux.
 
-**`lzma`** is the default compression. It is normally pre-installed, otherwise install it with:  
+Standard  `base64` tool which is normally pre-installed on Linux.
+
+`lzma` is the default compression. It is normally pre-installed. If not, install it with:  
 `sudo apt-get install lzma`
   
-**`zstd`** compression needs to be installed before you can explicitly select to use it with `-z` flag to `ncrpt`. To install: `sudo apt-get install zstd`.
+`zstd` an alternative compression, selected with `-z` option to `ncrpt`. It needs to be installed with:  
+`sudo apt-get install zstd`.
 
 `dcrpt` issues a warning if any of the utilities are not installed. It is probably best to install them all.
-There is not much difference between lzma and zstd but they both have their fans. lzma
-appears to have slightly better compression and zstd is slightly faster and more controllable.
+There is not much difference between lzma and zstd but they both have their fans. `lzma`
+appears to have slightly better compression rate and `zstd` is slightly faster and more controllable. Of course, to unpack/decrypt archives on a new machine, it must have the  compression/decompression utility installed, too.
 
 ## Usage
 
@@ -67,36 +66,36 @@ There are two command line interface bash scripts that do most of the work and a
 
 `ncrpt [-h][-x][-b][-q][-r][-v][-z] indir keydir outdir`
 
-The options mean, respectively: -h help, -x test for hexadecimal files, -b test for base64 files, -q quiet, -r recurse, -v verbose, -z zstd compression. Their -- long versions are also accepted.
+The options mean, respectively: -h help, -x test for hexadecimal files, -b test for base64 files, -q quiet, -r recurse, -v verbose, -z use zstd compression. Their -- long versions are also recognised.
 
-The tests for hexadecimal and base64 files only need to be invoked when the input directory contains such files. Should you forget to use them, everything will still work, only the output may take up more space than was strictly necessary.
+The tests for hexadecimal and base64 files only need to be selected when the input directory likely contains such files. They are cheap as they usually fail after reading only a few bytes from the diferent types of files. Should you forget to select them, everything will still work, only the output may take up more space than was strictly necessary.
 
-The last three arguments are mandatory: the input directory, the (output) keys directory and the output encrypted diretory. Both output directories will mirror the directories and filenames in `indir`. Thus keydir will hold the keys and outdir will hold the encrypted files.
+The last three arguments are mandatory: the input directory, the (output) keys directory and the output encrypted directory. Both output directories mirror `indir` in their structure and file names; keydir will hold the keys and outdir will hold the encrypted files.
 
-The summary at the end, such as the one shown in `test.log`, reports the sizes (in bytes) of input and output directories and the total compressed size as a percentage of the original size. The compression of 50% will  compensate for the creation  of the encryption keys. Sometimes it will be even better.
+The summary at the end, such as the one shown in `test.log`, reports the sizes (in bytes) of input and output directories and the total compressed size as a percentage of the original size. The compression to 50% will  compensate for the creation  of the encryption keys. Sometimes it will be even better.
 
-The quiet flag -q cancels the report.
-The verbose flag -v adds the details of compressing each file. Setting both
+The quiet flag `-q` cancels the report.
+The verbose flag `-v` adds the details of compressing each file. Setting both
 flags, contradictory as that may seem, turns on the individual files reports and
 turns off the final summary. The encryption itself is so unproblematic that it does not need any reports.
 
-Summary: `ncrpt` (encrypt without vowels) executes the tasks of data type analysis, compression selection, compression, key generation, key saving and encryption.
+Summary: `ncrpt` (encrypt with vowels left out) executes the tasks of data type analysis, optimal compression selection, compression, key generation, key saving and encryption.
 
 `dcrpt [-h][-q][-r][-v] indir keydir outdir`
 
-is the exact inverse of `ncrpt` and its operations are carried out in  the reverse order.  It reads the encrypted files from indir and their keys from keydir. They are paired up by their same filenames. So, never rename an encrypted file, unless you rename its corresponding key file as well! The two directories must always match.
+is the inverse of `ncrpt` and its operations are carried out in  the reverse order.  It reads the encrypted files from indir and their keys from keydir. They are paired up by their filenames. So, never rename an encrypted file, unless you rename its corresponding key file as well! The two directories must always match.
 
 Following decryption, the relevant decompression method(s) are applied to each file, so that the original files are exactly reconstructed. The compression methods are recorded for each file in the names of the extension(s) of its keyfile.
 
-The results are written into outdir.
+The results are written to outdir.
 
-Summary: dcrpt, (decrypt without vowels) matches the keys, decrypts the binary files with them, selects the right decompression methods and  decompresses, thus automatically reconstructing the exact contents of the original directory.
+Summary: `dcrpt` (decrypt with vowels left out) matches the keys, decrypts the binary files with them, selects the right decompression methods and  decompresses, thus reconstructing the exact contents of the original directory.
 
 `crptest` optionally performs an automated overall test, checking that not a single byte was corrupted anywhere.
 
-## Security Consideration
+## Security Advice
 
-The generated keys on their own are just meaningless random data and thus can be stored anywhere without compromising the security. The same applies to the encrypted files on their own. The security critical part is to prevent a potential eavesdropper from matching them up with each other.
+The encrypted files (in outdir) are just meaningless random data and thus can be stored anywhere ('on the cloud') without compromising the security. The same applies to the keys (in keydir), although these reveal the type of compression that was used. The security critical part is to prevent a potential eavesdropper from matching up those two directories with each other, as that is the only way to decrypt them.
 
 ## Background Scripts and Programs (not needed by the user)
 
@@ -120,11 +119,13 @@ The generated keys on their own are just meaningless random data and thus can be
 
 `crptest indir`
 
-Tests `ncrpt` and `dcrpt`. It first encrypts and then decrypts 
+Tests `ncrpt` and `dcrpt`. It first encrypts and then decrypts
 all the files in the given input directory and compares the results against the original files. It then cleans up all the created directories.
 
-`crptest` should report all the reconstructed files as being identical to the originals.
-Some differences may be reported for hexadecimal files because `hexcheck` converts a-f to A-F and cleans up spurious spaces and newlines, instead of just rejecting such almost hexadecimal files. API keys should be separated into their own  unique files. If the spaces/newlines turn out to be an unintended corruption, then the original file ought to be replaced by the cleaned up (reconstructed) version.
+The reported compression/decompression rates should exactly match.
+
+The reconstructed files should be reported as being identical to the originals.
+Some character differences may arise for hexadecimal files because `hexcheck` converts a-f to A-F (for consistency) and cleans up spurious spaces and newlines, instead of just rejecting such almost hexadecimal files. API keys should be separated into their own  unique files. If the spaces/newlines turn out to be an unintended corruption, then the original file ought to be replaced by the cleaned up (reconstructed) version.
 
 An automated github action compiles the C programs and runs **`crptest`** over the `testing` directory included in the repository.
 It tests all the main types of files: hexadecimal, base64, plain text and binary. It also tests reursive descent into a subdirectory.

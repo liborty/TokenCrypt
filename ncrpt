@@ -100,7 +100,7 @@ function processdir {
 	done
 } # end of processdir
 
-function usage { printf "Usage: $PROGN [-h][-b][-x][-q][-r][-v][-z] indir keydir outdir" >&2; }
+function usage { printf "Usage: $PROGN [-h][-b][-x][-q][-r][-v][-z] indir keydir outdir\n" >&2; }
 
 # Main starts here
 # get options, including long options, extracted as arg to the last option '-'

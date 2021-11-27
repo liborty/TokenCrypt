@@ -21,6 +21,7 @@ case $# in
 		exit 2;;
 esac
 
+touch *.c
 make CC=clang
 sudo ./install
 
