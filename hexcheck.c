@@ -2,11 +2,13 @@
 #include "stdlib.h"
 #include <stdbool.h>
 
+#define BUFSIZE 2*1024
+
 // some useful ascii codes
 const unsigned char ZERO = 48;
-const unsigned char SPACE = 32;
-const unsigned char LF = 10;
-const unsigned char NONHEX = 0;
+const unsigned char LF = 253;
+const unsigned char SPACE = 254;
+const unsigned char NONHEX = 255;
 
 // returns lower case ascii value of a
 // hexadecimal digit a-f turned into A-F
@@ -15,14 +17,12 @@ const unsigned char NONHEX = 0;
 // unacceptable hexadecimal data
 
 unsigned char ishex(unsigned char n) { 
-  if (n < ZERO) {
-    if (n == LF) return (LF); // allow LF
-    if (n == SPACE) return (SPACE); // allow space
-    return (NONHEX); // reject all others below the digit '0' (ascii 48)
-  }
-  if ((n > 96) && (n < 103)) return (n - 32); // accept a-f but change to upper case
-  if ((n > 64) && (n < 71))  return (n); // A-F
-  if (n < 58) return (n); // 0-9
+  if (n == 10) return (LF); // allow LF, encode here as 253
+  if (n == 32) return (SPACE); // allow space, encode as 254
+  if (n < ZERO) return (NONHEX); // reject all others below '0' (ascii 48)
+  if (n < 58) return (n-ZERO); // convert digits to numbers 0-9
+  if ((n > 96) && (n < 103)) return (n-87); // accept a-f, convert to 10-15
+  if ((n > 64) && (n < 71))  return (n-55); // accept A-F, also convert to 10-15
   return (NONHEX); // reject all others  
 }
   
@@ -36,6 +36,8 @@ int main(int argc, char *argv[]) {
   int cin;
   bool firsthex = false; // to pack bytes
   unsigned char uc, byteout;
+  unsigned char buff[BUFSIZE+1];
+  int numread, i;
 
   switch (argc) {
   case 3:
@@ -83,9 +85,13 @@ int main(int argc, char *argv[]) {
             progname, progname);
     exit(EXIT_FAILURE);
   }
-  while ((cin = fgetc(fin)) != EOF) {
-  
-    uc = ishex((unsigned char)cin);
+
+  while ((numread = fread(buff,1,BUFSIZE,fin)) > 0) {
+    for (i = 0; i < numread; i++) { 
+// while ((cin = fgetc(fin)) != EOF) {  
+//    uc = ishex((unsigned char)cin);
+    uc = ishex((unsigned char)buff[i]);
+//    fprintf(stderr,"%c:%u ", buff[i],uc);
     if (uc == NONHEX) // non hex character failure exit
     { 
     	fprintf(stderr, "%s invalid char %c\n", progname, (unsigned char)cin);
@@ -93,13 +99,11 @@ int main(int argc, char *argv[]) {
       fclose(fin);
       exit(EXIT_FAILURE);
     }
-    if ((uc == LF) || (uc == SPACE)) continue; // accept but delete
-    // turn ascii into binary   
-    if ( uc < 58 ) uc -= ZERO;  // turns character zero into numerical zero
-    else if ( uc < 71 ) uc -= 55; // turns A into 10
+    if ((uc == LF) || (uc == SPACE)) continue; // accept but ignore (delete)
+
     // pack one byte with two hexes
     if ( firsthex ) { // got full byte, write it out
-    	byteout = (byteout << 4) + uc;
+    	byteout |= uc; // bitwise or, packs two hex chars into a single byte
      	if (fputc(byteout, fout) == EOF) {
       	fprintf(stderr, "error in output\n");
       	fclose(fout);
@@ -108,9 +112,10 @@ int main(int argc, char *argv[]) {
 	  firsthex = false;
     } 
     else { // this is first hex, save it
-    	byteout = uc;
+    	byteout = uc << 4;
     	firsthex = true;
     }
+   }
   }
   fclose(fin);
   fclose(fout);

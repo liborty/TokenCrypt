@@ -85,9 +85,7 @@ Summary: `ncrpt` (encrypt with vowels left out) executes the tasks of data type 
 
 is the inverse of `ncrpt` and its operations are carried out in  the reverse order.  It reads the encrypted files from indir and their keys from keydir. They are paired up by their filenames. So, never rename an encrypted file, unless you rename its corresponding key file as well! The two directories must always match.
 
-Following decryption, the relevant decompression method(s) are applied to each file, so that the original files are exactly reconstructed. The compression methods are recorded for each file in the names of the extension(s) of its keyfile.
-
-The results are written to outdir.
+Following decryption, the relevant decompression method(s) are applied to each file, so that the original files are exactly reconstructed. The compression methods were recorded for each file in the names of the extension(s) of its keyfile. The results are then written to outdir.
 
 Summary: `dcrpt` (decrypt with vowels left out) matches the keys, decrypts the binary files with them, selects the right decompression methods and  decompresses, thus reconstructing the exact contents of the original directory.
 
@@ -99,7 +97,7 @@ The encrypted files (in outdir) are just meaningless random data and thus can be
 
 ## Background Scripts and Programs (not needed by the user)
 
-`hexcheck` (C executable) is invoked by `ncrpt`. It recognises hexadecimal (token) files and packs them to binary, which halves them in size. Hexadecimal files should only contain (0-9,A-F) ascii characters. There are some exceptions: lower case a-f are accepted but converted to A-F. Spaces and newlines just get deleted. This tolerant policy may result in some differences between the original and the reconstructed files. Then it is best to replace the original file with the cleaned up reconstructed one.
+`hexcheck` (C executable) is invoked by `ncrpt`. It recognises hexadecimal (token) files and packs them to binary, which halves them in size. Hexadecimal files should only contain (0-9,a-f) ascii characters. There are some exceptions: upper case A-F are accepted but converted back always to lower case. Spaces and newlines just get deleted. This tolerant policy may result in some differences between the original and the reconstructed files. Then it is best to replace the original file with the cleaned up reconstructed one.
 
 `hexify` is invoked by `dcrpt` to unpack the binary files back to their original hexadecimal form.
 
@@ -111,9 +109,9 @@ The encrypted files (in outdir) are just meaningless random data and thus can be
 
 `keygen file > key` writes to stdout random binary data of the same length as the given file. Called by `ncrpt`.
 
-`hexgen size`  writes to stdout `size` bytes of random hexadecimal data. No longer needed at all.
+`hexgen size`  writes to stdout `size` bytes of random hexadecimal data. Only useful for generating test data.
 
-`b64gen size` writes to stdout `size` bytes of random base64 data. No longer needed at all.
+`b64gen size` writes to stdout `size` bytes of random base64 data. Only useful for generating test data.
 
 ## Testing
 
@@ -125,7 +123,7 @@ all the files in the given input directory and compares the results against the 
 The reported compression/decompression rates should exactly match.
 
 The reconstructed files should be reported as being identical to the originals.
-Some character differences may arise for hexadecimal files because `hexcheck` converts a-f to A-F (for consistency) and cleans up spurious spaces and newlines, instead of just rejecting such almost hexadecimal files. API keys should be separated into their own  unique files. If the spaces/newlines turn out to be an unintended corruption, then the original file ought to be replaced by the cleaned up (reconstructed) version.
+Some character differences may arise for hexadecimal files because `hexcheck` converts both a-f and A-F to 10-15 and also it cleans up spurious spaces and newlines, instead of just rejecting such almost hexadecimal files. API keys should be separated into their own  unique files. If the spaces/newlines turn out to be an unintended corruption, then the original file ought to be replaced by the cleaned up (reconstructed) version (see FAQ).
 
 An automated github action compiles the C programs and runs **`crptest`** over the `testing` directory included in the repository.
 It tests all the main types of files: hexadecimal, base64, plain text and binary. It also tests reursive descent into a subdirectory.
@@ -133,6 +131,8 @@ The 'test' badge at the top of this document lights up green
 when all the tests were passed. Note that only the summary output `test.log` is saved in the repository after this automatic test, not the encrypted, decrypted or key directories.
 
 ## Releases Log
+
+**27Nov21** - Added buffering to further enhance perormance. Also, `hexgen` and `hexcheck` are now generating and converting all hex characters A-F consistently to a-f. Updated FAQ.md.
 
 **26Nov21** - Added `-r --recurse` option, so that we now have a proper archiver. Adopted `getopts` options processing. Generally fortified the code.
 
@@ -146,4 +146,6 @@ when all the tests were passed. Note that only the summary output `test.log` is 
 
 1. There is a blog [On Encryption and E-Democracy](https://oldmill.cz/2020-06-10-crypt.html) that describes in plain English the properties of XOR encryption and some interesting applications, primarily a model proposal for safe E-Democracy.
   
+1. Blog [Multithreading Automation](https://oldmill.cz/2021-11-24-joy-of-bashing2.html) describing the scheduling of the background tasks within this project.
+
 1. See also [FAQ.md](https://github.com/liborty/TokenCrypt/blob/master/FAQ.md) for frequently asked questions.

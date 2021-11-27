@@ -153,15 +153,8 @@ wait # for all sub proccesses to finish
 # optional final report
 if ! [ $QUIET ]; then
 	SIZES=( $( du -hbs $3 $1 ) ) # array of size,dir,size,dir
-	printf "$PROGN %s: %s => %s: %s " \
-	${SIZES[3]} ${SIZES[2]} ${SIZES[1]} ${SIZES[0]}  
-	# compession ratio x 10^5, to be printed as xx.xx% 
-	CR=$(( 10000*${SIZES[0]}/${SIZES[2]} )) 
-	if [ $CR -gt 99999 ]; then 
-		printf "no compression\n"
-	else 
-		CR=$(( $CR+5 )) # rounds to the nearest hundredth of percent
-		printf "(${CR: 0:2}.${CR: 2:4} %%)\n"
-	fi
+	CR=$(( (5+100000*${SIZES[0]}/${SIZES[2]})/10 )) # calculate percentage rounded to two d.p.	
+	printf "$PROGN ${SIZES[3]}: ${SIZES[2]} => ${SIZES[1]}: ${SIZES[0]} (${CR: 0:2}.${CR: 2:4} %%)\n"
+	# compression ratio printed as xx.xx% 
 	printf "$PROGN encrypted $1 into $3, keys written to $2\n"
 fi

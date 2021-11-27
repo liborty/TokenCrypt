@@ -1,14 +1,15 @@
 #include "stdio.h"
 #include <unistd.h>
 
-// reads from stdin, writes to stdout
+// reads binary from stdin using a small buffer,
+// writes hex characters to stdout
 int main (void) {
-  unsigned char buff[1024];
+  unsigned char bufin[1024];  
   int numread, i;
 
-  while ((numread = read(0, buff, 1024)) > 0) {
+  while ((numread = read(0, bufin, 1024)) > 0) {
     for (i = 0; i < numread; i++) {
-      printf("%02x", buff[i]);
+      printf("%02x", bufin[i]);
     }
   }
  printf("\n");
