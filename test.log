@@ -1,4 +1,12 @@
-crptest run on: 28.11.21 at 03:58:07 UTC
-strip symcrypt
-chmod 755 symcrypt
-cp symcrypt /usr/local/bin
+crptest run on: 28.11.21 at 06:24:20 UTC
+sudo cp keygen ncrpt dcrpt crptest /usr/local/bin
+ncrpt testing: 48814 => testingcrypt: 8192 (16.78 %)
+ncrpt encrypted testing into testingcrypt, keys written to testingkey
+dcrpt warning, hexify is not installed, will not unpack .hex files
+dcrpt testingcrypt: 8192 (10.000 %) => testingorg: 8192
+dcrpt decrypted testingcrypt into testingorg
+Only in testing: b64.code
+Only in testing: binf.bin
+Only in testing: hexf.api
+Only in testing/subdir: README.md
+Only in testing: textf.txt
