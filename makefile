@@ -6,7 +6,7 @@ DESTDIR = /usr/local/bin
 progs: symcrypt hexcheck hexify
 	strip $<
 	chmod 755 $<
-	sudo cp $< ${DESTDIR}
+	cp $< ${DESTDIR}
 
 scripts: keygen ncrpt dcrpt crptest
 	chmod 755 $<
