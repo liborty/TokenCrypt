@@ -5,12 +5,19 @@
 // the last one or two can be omitted to use
 // stdout and stdin respectively (suitable for use in a pipe)
 
+#define BUFSIZE 1024
+
 int main(int argc, char *argv[]) {
+
   FILE *fin1, *fin2, *fout;
   char *progname = argv[0], *filein1, *filein2, *fileout;
-  int c1, c2;
   unsigned char uc;
+  unsigned char bufin[BUFSIZE];
+  unsigned char bufkey[BUFSIZE];
+  unsigned char bufout[BUFSIZE];
+  int numread, keyread, i;
 
+  // parse file arguments
   switch (argc) {
   case 4:
     fileout = argv[3];
@@ -80,54 +87,34 @@ int main(int argc, char *argv[]) {
             progname, progname);
     return (1);
   }
-
-  while ((c2 = fgetc(fin2)) != EOF) {
-    if ((c1 = fgetc(fin1)) == EOF) {
-      if (!feof(fin1)) {
-        fprintf(stderr, "%s: error in reading keyfile\n", progname);
+ 
+  // read file chunks into bufin and bufkey
+  while ((numread = fread(bufin,1,BUFSIZE,fin2)) > 0) {
+    if ((keyread = fread(bufkey,1,BUFSIZE,fin1)) == 0) {    
+        fprintf(stderr,"%s: keyfile read error\n",progname);
         fclose(fout);
         fclose(fin2);
         fclose(fin1);
         return (1);
       }
-      if (fseek(fin1, 0, SEEK_SET)) {
-        fprintf(stderr, "%s: keyfile failed to seek to the beginning\n",
-                progname);
+    // both bufin and bufkey are now filled
+    if (numread != keyread) { // can happen on the last reads
+        fprintf(stderr,"%s: keyfile and infile differ in lengths\n",progname);
         fclose(fout);
         fclose(fin2);
         fclose(fin1);
         return (1);
       }
-      if ((c1 = fgetc(fin1)) == EOF) {
-        fprintf(stderr, "%s: error re-reading keyfile, or it is empty!\n",
-                progname);
-        fclose(fout);
-        fclose(fin2);
-        fclose(fin1);
-        return (1);
-      }
+    for (i = 0; i < numread; i++) { 
+      bufout[i] = bufin[i] ^ bufkey[i]; // this is where it is all done!
     }
-    uc = ((unsigned char)c1) ^ ((unsigned char)c2);
-    if (fputc(uc, fout) == EOF) {
-      fprintf(stderr, "%s: error in output\n", progname);
-      fclose(fout);
+    if ( fwrite(bufout,1,numread,fout) == 0 ) {
+      fprintf(stderr,"%s failed to write bufout\n", progname); 
+      fclose(fout); 
       fclose(fin2);
       fclose(fin1);
       return (1);
-    }
+    }     
   }
-  if (!feof(fin2)) {
-    fprintf(stderr, "%s: error in reading inputfile\n", progname);
-    fclose(fout);
-    fclose(fin2);
-    fclose(fin1);
-  }
-  if (fclose(fin2) == EOF)
-    fprintf(stderr, "%s: incorrectly closed inputfile\n", progname);
-  if (fclose(fin1) == EOF)
-    fprintf(stderr, "%s: incorrectly closed keyfile\n", progname);
-  if (fclose(fout) == EOF)
-    fprintf(stderr, "%s: incorrectly closed output\n", progname);
-  // fprintf(stderr,"%s %s finished\n",progname,filein1);
   return (0);
 }

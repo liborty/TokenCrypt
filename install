@@ -6,4 +6,3 @@ PROGS='symcrypt hexcheck hexify keygen ncrpt dcrpt crptest'
 chmod 755 $PROGS
 cp $PROGS /usr/local/bin
 printf "Installed TokenCrypt utilities in /usr/local/bin\n"
-

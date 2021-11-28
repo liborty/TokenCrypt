@@ -35,13 +35,15 @@ This will compile all the `C` programs and, after asking for su priviledges, ins
 Manual alternatives:
 
 `sudo ./uninstall`  
-will delete any previously installed programs and scripts and touch the local sources for recompilation.
+will delete previously installed programs and scripts and touch the local sources for recompilation (fresh start).
 
+`make`  
 `make CC=clang`  
-or if clang compiler is not installed, just plain `make` command will use the default compiler.  Under Linux it is usually gcc. When using a typical Linux, this local compilation may be skipped. Then the executables `symcrypt`, `hexcheck` and `hexify` that are included in this repository can be installed instead. They are compiled from `C` sources and tested automatically at github.com. Although, a good reason to perform local compilation is if you suspect that the github binaries may have been compromised or you have some diferent machine architecture.
+Will compile and install everything into `/usr/local/bin`. It may ask for su priviledges for the integrated installation step. Plain `make` command will use the default compiler.  Under Linux it is usually `gcc`. A good reason to perform local compilation is if you suspect that the github binaries may have been compromised or you have some diferent machine architecture. This step should be repeated whenever some programs and scripts have changed, such as after a fresh `git pull`. It will only install the programs that have actually changed.
 
 `sudo ./install`  
-Local installation should be repeated whenever the programs and scripts have changed, such as after successful `git pull`. Whether the executables were created by local compilation or just pulled from the repository, the installation just copies them for system-wide use into /usr/local/bin.  Alternatively, they can be copied manually to any other `bin` directories that are included in the path. This does not require `sudo` privileges, e.g.:  
+When using a typical Linux, the local compilation may even be skipped. Then the executables `symcrypt`, `hexcheck` and `hexify` that are included in the repository will be installed instead. They are compiled from `C` sources and tested automatically at github.com.  
+ Whether the executables were created by local compilation or just pulled from the repository, this installation script just copies them all for system-wide use into `/usr/local/bin`.  Alternatively, they can be copied manually to any other `bin` directories included in the search path. This does not require `sudo` privileges, e.g.:  
 `cp symcrypt hexcheck hexify ncrpt dcrpt keygen crptest ~/bin`
 
 ## Dependencies
@@ -99,13 +101,13 @@ The encrypted files (in outdir) are just meaningless random data and thus can be
 
 `hexcheck` (C executable) is invoked by `ncrpt`. It recognises hexadecimal (token) files and packs them to binary, which exactly halves them in size. Hexadecimal files should be an even number of bytes long and only contain (0-9,a-f) ascii characters. There are some exceptions: upper case A-F are accepted but when converted back will always end up in lower case. Spaces and newlines just get deleted. This tolerant policy may result in some differences between the original and the reconstructed files. Then it is best to replace the original file with the cleaned up reconstructed one.
 
-`hexify` is invoked by `dcrpt` to unpack the binary files back to their original hexadecimal form.
+`hexify` (C executable) is invoked by `dcrpt` to unpack the binary files back to their original hexadecimal form.
 
 `base64` recognises Base64 files, resulting in 25% size reduction in their case (before final compression). Base64 files should not contain any non base64 characters, such as newlines, as this test will then reject them.
 
 `lzma` or `zstd` are the third party general compression methods used here for the final compression, as long as it will result in size reduction. This is not necessarily the case for small and/or binary files. Such incomressible files will be encrypted as they are.
 
-`symcrypt` (C executable) applies fast symmetric XOR encryption (or decryption) to any type of file of any length, while using practically no memory.
+`symcrypt` (C executable) applies fast symmetric XOR encryption (or decryption). It XORs together two files of any kind but they must have the same length. The ordering of the input files does not even matter.
 
 `keygen file > key` writes to stdout random binary data of the same length as the given file. Called by `ncrpt`.
 
@@ -118,21 +120,23 @@ The encrypted files (in outdir) are just meaningless random data and thus can be
 `crptest indir`
 
 Tests `ncrpt` and `dcrpt`. It first encrypts and then decrypts
-all the files in the given input directory and compares the results against the original files. It then cleans up all the created directories.
+all the files in the given input directory and compares the results against the original files. Finally, it cleans up all the created directories.
 
 The reported compression/decompression rates should exactly match.
 
 The reconstructed files should be reported as being identical to the originals.
-Some character differences may arise for hexadecimal files because `hexcheck` converts both a-f and A-F to 10-15 and also it cleans up spurious spaces and newlines, instead of just rejecting such almost hexadecimal files. API keys should be separated into their own  unique files. If the spaces/newlines turn out to be an unintended corruption, then the original file ought to be replaced by the cleaned up (reconstructed) version (see FAQ).
+Some character differences may arise for hexadecimal files because `hexcheck` converts both a-f and A-F to 10-15 and also it cleans up spurious spaces and newlines, instead of just rejecting such almost hexadecimal files. API keys should be separated into their own  unique files. If the spaces/newlines turn out to be an unintended corruption, then the original file ought to be replaced by the cleaned up (reconstructed) version (see FAQ.md).
 
 An automated github action compiles the C programs and runs **`crptest`** over the `testing` directory included in the repository.
 It tests all the main types of files: hexadecimal, base64, plain text and binary. It also tests reursive descent into a subdirectory.
 The 'test' badge at the top of this document lights up green
-when all the tests were passed. Note that only the summary output `test.log` is saved in the repository after this automatic test, not the encrypted, decrypted or key directories.
+when all the tests were passed. Note that only the summary output `test.log` is saved in the repository, not the encrypted, decrypted or key directories.
 
 ## Releases Log
 
-**27Nov21** - Added buffering to further enhance perormance. Also, `hexgen` and `hexcheck` are now generating and converting all hex characters A-F consistently to a-f. Updated FAQ.md.
+**28Nov21** - Added buffering to `symcrypt`. It now for added security reason fails when the lengths of its two input files do not match. Also improved the `makefile`.
+
+**27Nov21** - Added buffering to further enhance performance. Also, `hexgen` and `hexcheck` are now generating and converting all hex characters A-F consistently to a-f. Updated FAQ.md.
 
 **26Nov21** - Added `-r --recurse` option, so that we now have a proper archiver. Adopted `getopts` options processing. Generally fortified the code.
 

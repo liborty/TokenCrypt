@@ -1,10 +1,9 @@
 #include "stdio.h"
-#include "stdlib.h"
 #include <stdbool.h>
-#define BUFSIZE 1024
+#define BUFSIZE 2048
 
 // This utility program fails on the first non-hexadecimal character.
-// Otherwise writes all verified hexadecimal data  to output as binary,
+// Otherwise writes all verified hexadecimal data is output as binary,
 // two hex chars per byte.
 
 // some useful ascii codes
@@ -36,43 +35,44 @@ int main(int argc, char *argv[]) {
   unsigned char *bufoutadr;
   int numread, i;
 
+  // parse file arguments
   switch (argc) {
   case 3:
     fileout = argv[2];
     if ((fout = fopen(fileout, "wb")) == NULL) {
       fprintf(stderr, "%s: failed to open output file %s\n", progname, fileout);
-      exit(EXIT_FAILURE);
+      return(1);
     }
     filein = argv[1];
     if ((fin = fopen(filein, "rb")) == NULL) {
       fprintf(stderr, "%s: failed to open input hexfile %s\n", progname,
               filein);
       fclose(fout);
-      exit(EXIT_FAILURE);
+      return(1);
     }
     break;
   case 2:
     if ((fout = fopen("/dev/stdout", "wb")) == NULL) {
       fprintf(stderr, "%s: failed to open /dev/stdout\n", progname);
-      exit(EXIT_FAILURE);
+      return(1);
     }
     filein = argv[1];
     if ((fin = fopen(filein, "rb")) == NULL) {
       fprintf(stderr, "%s: failed to open input hexfile %s\n", progname,
               filein);
       fclose(fout);
-      exit(EXIT_FAILURE);
+      return(1);
     }
     break;
   case 1:
     if ((fout = fopen("/dev/stdout", "wb")) == NULL) {
       fprintf(stderr, "%s: failed to open /dev/stdout\n", progname);
-      exit(EXIT_FAILURE);
+      return(1);
     }
     if ((fin = fopen("/dev/stdin", "rb")) == NULL) {
       fprintf(stderr, "%s: failed to open /dev/stdin\n", progname);
       fclose(fout);
-      exit(EXIT_FAILURE);
+      return(1);
     }
     break;
   default:
@@ -80,24 +80,25 @@ int main(int argc, char *argv[]) {
             "usage: %s [ hexfile [outfile]]\nomitted files mean stdin/out, "
             "e.g. in a pipe: .. | %s hexfile | ..\n",
             progname, progname);
-    exit(EXIT_FAILURE);
+    return(1);
   }
 
+  // read file chunks into bufin 
   while ((numread = fread(bufin,1,BUFSIZE,fin)) > 0) {
-    if (numread % 2 == 1) {
+    if (numread % 2 == 1) { // this may arise only for the last chunk
       fprintf(stderr, "%s: input is of odd length, quitting\n", progname);
       fclose(fin);
       fclose(fout);
-      exit(EXIT_FAILURE);
+      return(1);
     }
-    bufoutadr = bufout; // reset to the beginning
+    bufoutadr = bufout; // reset the output buffer pointer to the beginning
     for (i = 0; i < numread; i++) { 
-      uc = ishex((unsigned char)bufin[i]);
-      if (uc == NONHEX) { // non hex character, failure exit
-      	fprintf(stderr, "%s invalid char %c\n", progname, (unsigned char)bufin[i]);
+      uc = ishex(bufin[i]); // get hex values
+      if (uc == NONHEX) { // non hex, failure return
+      	fprintf(stderr, "%s invalid char %c\n", progname, bufin[i]);
         fclose(fin);
         fclose(fout); 
-        exit(EXIT_FAILURE);
+        return(1);
       }
       if ((uc == LF) || (uc == SPACE)) continue; // ignore (delete) these
       // pack one byte with two hexes
@@ -110,14 +111,17 @@ int main(int argc, char *argv[]) {
         bufoutadr += 1;
       }      
     }
+    // Output buffering has the added benefit here that on failing above 
+    // on first non-hex character, the output is not even written out.
+    // Whereas writing one char at a time would have uselessly written lots
     if ( fwrite(bufout,1,numread/2,fout) == 0 ) {
       fprintf(stderr,"%s failed to write bufout\n", progname);
       fclose(fin);
       fclose(fout); 
-      exit(EXIT_FAILURE);
+      return(1);
     }    
   }
   fclose(fin);
   fclose(fout);
-  exit(EXIT_SUCCESS);
+  return(0);
 }

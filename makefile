@@ -1,16 +1,15 @@
 CFLAGS = -O3 -I.
 
-all: symcrypt hexcheck hexify
+# DESTDIR is where the program should be installed
+DESTDIR = /usr/local/bin
 
-symcrypt: symcrypt.c
-	$(CC) symcrypt.c -o symcrypt
-	strip symcrypt
-	
-hexcheck: hexcheck.c
-	$(CC) hexcheck.c -o hexcheck
-	strip hexcheck
-	
-hexify: hexify.c
-	$(CC) hexify.c -o hexify
-	strip hexify
-	
+progs: symcrypt hexcheck hexify
+	strip $<
+	chmod 755 $<
+	sudo cp $< ${DESTDIR}
+
+scripts: keygen ncrpt dcrpt crptest
+	chmod 755 $<
+	sudo cp $< ${DESTDIR}
+
+all: progs scripts
