@@ -1,4 +1,4 @@
-crptest run on: 28.11.21 at 03:44:09 UTC
+crptest run on: 28.11.21 at 03:54:29 UTC
 strip symcrypt
 chmod 755 symcrypt
 sudo cp symcrypt /usr/local/bin
