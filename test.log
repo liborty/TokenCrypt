@@ -1,12 +1,12 @@
-crptest run on: 28.11.21 at 06:24:20 UTC
-sudo cp keygen ncrpt dcrpt crptest /usr/local/bin
-ncrpt testing: 48814 => testingcrypt: 8192 (16.78 %)
+crptest run on: 28.11.21 at 06:39:34 UTC
+make: Nothing to be done for 'progs'.
+Installed TokenCrypt utilities in /usr/local/bin
+ncrpt testing: 48814 => testingcrypt: 21841 (44.74 %)
 ncrpt encrypted testing into testingcrypt, keys written to testingkey
-dcrpt warning, hexify is not installed, will not unpack .hex files
-dcrpt testingcrypt: 8192 (10.000 %) => testingorg: 8192
+dcrpt testingcrypt: 21841 (44.74 %) => testingorg: 48814
 dcrpt decrypted testingcrypt into testingorg
-Only in testing: b64.code
-Only in testing: binf.bin
-Only in testing: hexf.api
-Only in testing/subdir: README.md
-Only in testing: textf.txt
+Files testing/b64.code and testingorg/b64.code are identical
+Files testing/binf.bin and testingorg/binf.bin are identical
+Files testing/hexf.api and testingorg/hexf.api are identical
+Files testing/subdir/README.md and testingorg/subdir/README.md are identical
+Files testing/textf.txt and testingorg/textf.txt are identical
