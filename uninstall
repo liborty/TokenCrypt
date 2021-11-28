@@ -1,10 +1,9 @@
 #!/bin/bash
-# invoke as: sudo ./uninstall
+# invoke as: ./uninstall
 # uninstalls TokenCrypt utilities from /usr/local/bin
 PROGS='symcrypt hexcheck hexify keygen ncrpt dcrpt crptest'
 for PROG in $PROGS; do
-    rm /usr/local/bin/$PROG
+    sudo rm /usr/local/bin/$PROG
 done
+rm symcrypt hexcheck hexify
 printf "Uninstalled TokenCrypt utilities from /usr/local/bin\n"
-touch *.c
-printf "Touched the source *.c files for fresh compilation\n"

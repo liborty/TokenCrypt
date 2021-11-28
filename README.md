@@ -40,7 +40,7 @@ will delete previously installed programs and scripts and touch the local source
 `make install`  
 Will compile and install everything into `/usr/local/bin`. It may ask for su priviledges for the integrated installation step. Appending `CC=clang` will deploy the clang compiler (if installed). A good reason to perform local compilation is if you suspect that the github binaries may have been compromised or you have some diferent machine architecture. This step should be repeated whenever some programs and scripts have changed, such as after a fresh `git pull`. It will only install the programs that have actually changed.
 
-`sudo ./install`  
+`./install`  
 When using a typical Linux, the local compilation may even be skipped. Then the executables `symcrypt`, `hexcheck` and `hexify` that are included in the repository will be installed instead. They are compiled from `C` sources and tested automatically at github.com.  
  Whether the executables were created by local compilation or just pulled from the repository, this installation script just copies them all for system-wide use into `/usr/local/bin`.  Alternatively, they can be copied manually to any other `bin` directories included in the search path. This does not require `sudo` privileges, e.g.:  
 `cp symcrypt hexcheck hexify ncrpt dcrpt keygen crptest ~/bin`
