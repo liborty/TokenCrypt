@@ -23,7 +23,6 @@ esac
 
 make CC=clang
 ./install
-
 # this is just for better readability of code
 INDIR="$1" 
 # directory names, preceding path is stripped off, so all output goes to ./
