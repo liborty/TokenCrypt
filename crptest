@@ -21,7 +21,8 @@ case $# in
 		exit 2;;
 esac
 
-make install CC=clang
+make CC=clang
+./install
 
 # this is just for better readability of code
 INDIR="$1" 
