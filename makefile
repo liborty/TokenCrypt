@@ -10,6 +10,6 @@ progs: symcrypt hexcheck hexify
 
 scripts: keygen ncrpt dcrpt crptest
 	chmod 755 $<
-	sudo cp $< ${DESTDIR}
+	cp $< ${DESTDIR}
 
 all: progs scripts
