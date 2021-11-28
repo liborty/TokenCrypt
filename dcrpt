@@ -1,14 +1,13 @@
 #!/bin/bash
-# decrypts all files in the specified directory 'indir' 
-# reads key files from directory 'keydir', extensions indicating compression methods 
-# writes restored files with the same names into directory 'outdir' 
+# decrypts all files in the specified readable directory 'indir' 
+# reads key files from  readable directory 'keydir', extensions indicating compression methods 
+# writes restored files with the same names into writeable directory 'outdir' 
 
 PROGN=${0##*/}
 BACKSZ=10000 # size of files to be encrypted in the subshells
 
-# function to decompress and decrypt one file
-# takes four arguments: ITEM INDIR KEYDIR OUTDIR
-# OUTDIR must be writeable
+# processfile will decompress and decrypt one file
+# it expects four arguments: ITEM INDIR KEYDIR OUTDIR
 function processfile {
 
 	local INFILE=$2/$1 

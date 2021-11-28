@@ -37,9 +37,8 @@ Manual alternatives:
 `sudo ./uninstall`  
 will delete previously installed programs and scripts and touch the local sources for recompilation (fresh start).
 
-`make`  
-`make CC=clang`  
-Will compile and install everything into `/usr/local/bin`. It may ask for su priviledges for the integrated installation step. Plain `make` command will use the default compiler.  Under Linux it is usually `gcc`. A good reason to perform local compilation is if you suspect that the github binaries may have been compromised or you have some diferent machine architecture. This step should be repeated whenever some programs and scripts have changed, such as after a fresh `git pull`. It will only install the programs that have actually changed.
+`make install`  
+Will compile and install everything into `/usr/local/bin`. It may ask for su priviledges for the integrated installation step. Appending `CC=clang` will deploy the clang compiler (if installed). A good reason to perform local compilation is if you suspect that the github binaries may have been compromised or you have some diferent machine architecture. This step should be repeated whenever some programs and scripts have changed, such as after a fresh `git pull`. It will only install the programs that have actually changed.
 
 `sudo ./install`  
 When using a typical Linux, the local compilation may even be skipped. Then the executables `symcrypt`, `hexcheck` and `hexify` that are included in the repository will be installed instead. They are compiled from `C` sources and tested automatically at github.com.  

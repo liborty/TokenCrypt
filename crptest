@@ -21,7 +21,7 @@ case $# in
 		exit 2;;
 esac
 
-make CC=clang # now installs as well (may ask for sudo)
+make install CC=clang
 
 # this is just for better readability of code
 INDIR="$1" 
@@ -44,10 +44,4 @@ ncrpt -x -b -r $INDIR $KEYDIR $OUTDIR
 dcrpt -r $OUTDIR $KEYDIR $ORGDIR
 diff -s -r $INDIR $ORGDIR
 
-# for INFILE in $INDIR/*; do
-# 	[ -f "$INFILE" ] || continue # check that a file is selected
-#  	let COUNT+=1
-#	diff -s $INFILE "$ORGDIR/${INFILE##*/}" 
-# done
-# tidy up 
 rm -rf $ORGDIR $OUTDIR $KEYDIR > /dev/null 2>&1
