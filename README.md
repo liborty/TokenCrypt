@@ -28,21 +28,21 @@ it can arise and it could involve much work to separate them.
 
 ## Installation
 
-This software was developed and tested under Linux. Installation from source needs `make` utility and a `C` compiler, either `clang` or `gcc`. Download or clone this directory and cd into it. Then, for complete fresh installation, run:  
+This software was developed and tested under Linux. Installation from source needs `make` utility and a `C` compiler, e.g. `clang` or `gcc`. Download or clone this repository and cd into it. Then, for complete fresh installation:  
 `./crptest testing`  
-This will compile all the `C` programs and, after asking for su priviledges, install them and the bash scripts in `/usr/local/bin`. As an added benefit, it will also run locally the same test as is done on github.
+This will compile all three `C` programs and, after asking for su priviledges, install them and the bash scripts in `/usr/local/bin`. As an added benefit, it will also run locally the same test as is done on github.
 
 Manual alternatives:
 
 `sudo ./uninstall`  
-will delete previously installed programs and scripts and touch the local sources for recompilation (fresh start).
+will delete previously installed programs and scripts. Use to force a completely fresh start. To be followed by:
 
 `make install`  
-Will compile and install everything into `/usr/local/bin`. It may ask for su priviledges for the integrated installation step. Appending `CC=clang` will deploy the clang compiler (if installed). A good reason to perform local compilation is if you suspect that the github binaries may have been compromised or you have some diferent machine architecture. This step should be repeated whenever some programs and scripts have changed, such as after a fresh `git pull`. It will only install the programs that have actually changed.
+Will compile and install everything into `/usr/local/bin`. It may ask for su priviledges for the integrated installation step. Appending `CC=clang` will deploy the clang compiler (if installed). A good reason to perform local compilation is if you suspect that the github binaries may have been compromised or you have some diferent machine architecture. This step should be repeated whenever some programs and scripts have changed, such as after a fresh `git pull`. It will only install the C programs that have actually changed.
 
 `./install`  
-When using a typical Linux, the local compilation may even be skipped. Then the executables `symcrypt`, `hexcheck` and `hexify` that are included in the repository will be installed instead. They are compiled from `C` sources and tested automatically at github.com.  
- Whether the executables were created by local compilation or just pulled from the repository, this installation script just copies them all for system-wide use into `/usr/local/bin`.  Alternatively, they can be copied manually to any other `bin` directories included in the search path. This does not require `sudo` privileges, e.g.:  
+This install everything while skipping the local compilation. Thus the executables `symcrypt`, `hexcheck` and `hexify` pulled from the repository can be installed. They are compiled from `C` sources and tested automatically at github.com (see the green badge).  
+Whether the executables were created by local compilation or just pulled from the repository, this script copies them all into `/usr/local/bin` for system-wide use.  Alternatively, they can be copied manually to any other `bin` directories included in the search path. This does not require `sudo` privileges, e.g.:  
 `cp symcrypt hexcheck hexify ncrpt dcrpt keygen crptest ~/bin`
 
 ## Dependencies
@@ -63,30 +63,30 @@ appears to have slightly better compression rate and `zstd` is slightly faster a
 
 ## Usage
 
-There are two command line interface bash scripts that do most of the work and automate the whole process:
+There are two command line interface (CLI) bash scripts that do most of the work and automate the whole process:
 
 `ncrpt [-h][-x][-b][-q][-r][-v][-z] indir keydir outdir`
 
-The options mean, respectively: -h help, -x test for hexadecimal files, -b test for base64 files, -q quiet, -r recurse, -v verbose, -z use zstd compression. Their -- long versions are also recognised.
+The options mean, respectively: -h help, -x test for hexadecimal files, -b test for base64 files, -q quiet, -r recursive, -v verbose, -z use zstd compression. Their -- long versions are also recognised.
 
-The tests for hexadecimal and base64 files only need to be selected when the input directory likely contains such files. They are cheap as they usually fail after reading only a few bytes from the diferent types of files. Should you forget to select them, everything will still work, only the output may take up more space than was strictly necessary.
+The tests for hexadecimal and base64 files only need to be selected when the input directory likely contains such files. They are quick, as they usually fail after reading only a few bytes (of other types of files). Should you forget to select them, everything will still work, only the output may take up more space than was strictly necessary.
 
-The last three arguments are mandatory: the input directory, the (output) keys directory and the output encrypted directory. Both output directories mirror `indir` in their structure and file names; keydir will hold the keys and outdir will hold the encrypted files.
+The last three arguments are mandatory: the input directory, the keys directory and the encrypted directory. Both output directories (`keydir` and `outdir`) will mirror `indir` in their structure and file names; `keydir` will hold the keys and `outdir` will hold the encrypted files.
 
 The summary at the end, such as the one shown in `test.log`, reports the sizes (in bytes) of input and output directories and the total compressed size as a percentage of the original size. The compression to 50% will  compensate for the creation  of the encryption keys. Sometimes it will be even better.
 
-The quiet flag `-q` cancels the report.
+The quiet flag `-q` cancels the final report.
 The verbose flag `-v` adds the details of compressing each file. Setting both
-flags, contradictory as that may seem, turns on the individual files reports and
+flags, contradictory as it may seem, turns on the individual files reports and
 turns off the final summary. The encryption itself is so unproblematic that it does not need any reports.
 
 Summary: `ncrpt` (encrypt with vowels left out) executes the tasks of data type analysis, optimal compression selection, compression, key generation, key saving and encryption.
 
 `dcrpt [-h][-q][-r][-v] indir keydir outdir`
 
-is the inverse of `ncrpt` and its operations are carried out in  the reverse order.  It reads the encrypted files from indir and their keys from keydir. They are paired up by their filenames. So, never rename an encrypted file, unless you rename its corresponding key file as well! The two directories must always match.
+is the inverse of `ncrpt` and its operations are carried out in  the reverse order.  It reads the encrypted files from `indir` and their keys from `keydir`. They are paired up by their filenames. So, never rename an encrypted file, unless you rename its corresponding key file as well! The two directories must always match.
 
-Following decryption, the relevant decompression method(s) are applied to each file, so that the original files are exactly reconstructed. The compression methods were recorded for each file in the names of the extension(s) of its keyfile. The results are then written to outdir.
+Following decryption, the relevant decompression method(s) are applied to each file, so that the original files are exactly reconstructed in `outdir`. The compression methods were recorded for each file in the names of the extension(s) of its keyfile.
 
 Summary: `dcrpt` (decrypt with vowels left out) matches the keys, decrypts the binary files with them, selects the right decompression methods and  decompresses, thus reconstructing the exact contents of the original directory.
 
@@ -94,19 +94,19 @@ Summary: `dcrpt` (decrypt with vowels left out) matches the keys, decrypts the b
 
 ## Security Advice
 
-The encrypted files (in outdir) are just meaningless random data and thus can be stored anywhere ('on the cloud') without compromising the security. The same applies to the keys (in keydir), although these reveal the type of compression that was used. The security critical part is to prevent a potential eavesdropper from matching up those two directories with each other, as that is the only way to decrypt them.
+The encrypted files (in outdir) are just meaningless random data and thus can be stored anywhere (even 'on the cloud'), without compromising the security. The same applies to the keys (in keydir), although these reveal the type of compression that was used. The critical part is to prevent a potential eavesdropper from matching up those two directories, as that is the only way to decrypt them.
 
 ## Background Scripts and Programs (not needed by the user)
 
-`hexcheck` (C executable) is invoked by `ncrpt`. It recognises hexadecimal (token) files and packs them to binary, which exactly halves them in size. Hexadecimal files should be an even number of bytes long and only contain (0-9,a-f) ascii characters. There are some exceptions: upper case A-F are accepted but when converted back will always end up in lower case. Spaces and newlines just get deleted. This tolerant policy may result in some differences between the original and the reconstructed files. Then it is best to replace the original file with the cleaned up reconstructed one.
+`hexcheck` (C executable) is invoked by `ncrpt`. It recognises hexadecimal (token) files and packs them to binary, which exactly halves them in size. Hexadecimal files should be an even number of bytes long and only contain (0-9,a-f) ascii characters. There are some allowed  exceptions: upper case A-F are accepted but when converted back will always end up in lower case. Spaces and newlines just get deleted. This forgiving policy may result in some differences between the original and the reconstructed files. Then it is best to replace the original file with its cleaned up, reconstructed version.
 
 `hexify` (C executable) is invoked by `dcrpt` to unpack the binary files back to their original hexadecimal form.
 
-`base64` recognises Base64 files, resulting in 25% size reduction in their case (before final compression). Base64 files should not contain any non base64 characters, such as newlines, as this test will then reject them.
+`base64` (linux utility) recognises base64 files, resulting in 25% size reduction in their case (before final compression). Base64 files should not contain any non base64 characters, such as newlines, as this test will reject them.
 
-`lzma` or `zstd` are the third party general compression methods used here for the final compression, as long as it will result in size reduction. This is not necessarily the case for small and/or binary files. Such incomressible files will be encrypted as they are.
+`lzma` or `zstd` (linux utilities) are general compression methods used here for the final compression, as long as it will result in size reduction. This is not necessarily the case for small and/or binary files, such as .jpg images. Such mostly incomressible files will be encrypted as they are.
 
-`symcrypt` (C executable) applies fast symmetric XOR encryption (or decryption). It XORs together two files of any kind but they must have the same length. The ordering of the input files does not even matter.
+`symcrypt` (C executable) applies fast symmetric XOR encryption (or decryption). It XORs together two files of any kind but they must have the same length. The ordering of the two input files does not even matter.
 
 `keygen file > key` writes to stdout random binary data of the same length as the given file. Called by `ncrpt`.
 
@@ -121,10 +121,10 @@ The encrypted files (in outdir) are just meaningless random data and thus can be
 Tests `ncrpt` and `dcrpt`. It first encrypts and then decrypts
 all the files in the given input directory and compares the results against the original files. Finally, it cleans up all the created directories.
 
-The reported compression/decompression rates should exactly match.
+The reported compression/decompression rates and sizes should exactly match.
 
 The reconstructed files should be reported as being identical to the originals.
-Some character differences may arise for hexadecimal files because `hexcheck` converts both a-f and A-F to 10-15 and also it cleans up spurious spaces and newlines, instead of just rejecting such almost hexadecimal files. API keys should be separated into their own  unique files. If the spaces/newlines turn out to be an unintended corruption, then the original file ought to be replaced by the cleaned up (reconstructed) version (see FAQ.md).
+Some character differences may arise for hexadecimal files because `hexcheck` converts both a-f and A-F to 10-15 and also it cleans up spurious spaces and newlines, instead of just rejecting files. API keys should be separated into their own  unique files. If the spaces/newlines turn out to be an unintended corruption, then the original file ought to be replaced by the cleaned up (reconstructed) version (see FAQ.md).
 
 An automated github action compiles the C programs and runs **`crptest`** over the `testing` directory included in the repository.
 It tests all the main types of files: hexadecimal, base64, plain text and binary. It also tests reursive descent into a subdirectory.
@@ -132,6 +132,8 @@ The 'test' badge at the top of this document lights up green
 when all the tests were passed. Note that only the summary output `test.log` is saved in the repository, not the encrypted, decrypted or key directories.
 
 ## Releases Log
+
+**29Nov21** - Fixed silent cleaning up of temp files. Added some minor clarifications to this file (README.md). This should be a stable version now. Enjoy!
 
 **28Nov21** - Added buffering to `symcrypt`. It now for added security reason fails when the lengths of its two input files do not match. Also improved the `makefile`.
 

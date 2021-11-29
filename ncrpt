@@ -21,7 +21,7 @@ function processfile {
     if [ $HEXTEST ]; then
    		hexcheck $INFILE $OUTFILE.tmp000 2>/dev/null # ignore failure messages
    		if [ "$?" -eq 0 ]; then	# status of hexcheck when INFILE is entirely hexadecimal
-			INFILE=$OUTFILE.tmp000 # now this becomes the binary file to further compress
+			INFILE="$OUTFILE".tmp000 # now this becomes the binary file to further compress
 			KEYFILE="$KEYFILE".hex # append .hex extension for hexadecimal origin
    		fi
    	fi
@@ -29,7 +29,7 @@ function processfile {
 	if [ $B64TEST ] && [ "$INFILE" = "$2/$1" ]; then #  test if not already hexfile
    		base64 -d -w 0 $INFILE > $OUTFILE.tmp000 2>/dev/null # turns base64 into binary, saving 25%
    		if [ "$?" -eq 0 ]; then	# status of base64 when INFILE was entirely in base64
-			INFILE=$OUTFILE.tmp000 # now this becomes the binary file to further compress
+			INFILE="$OUTFILE".tmp000 # now this becomes the binary file to further compress
 			KEYFILE="$KEYFILE".b64 # append .b64 extension for base64 origin
    		fi 
 	fi
@@ -40,14 +40,14 @@ function processfile {
 	local ORGS=$( stat -c%s $INFILE )  # and before compression
 	# use compressed version only if it is actually smaller
 	if [ "$CMPS" -lt "$ORGS" ]; then 
-		KEYFILE=$KEYFILE.$EXT # append compression extension to the keyfile to be generated
-		INFILE=$OUTFILE.tmp001  # assign the compressed file name, else stay with uncompressed
+		KEYFILE="$KEYFILE".$EXT # append compression extension to the keyfile to be generated
+		INFILE="$OUTFILE".tmp001  # assign the compressed file name, else stay with uncompressed
 	fi
 	# generate and write out the key of the same size as the infile
 	keygen $INFILE > $KEYFILE
 	# encrypt with it and write to OUTFILE 
 	symcrypt $KEYFILE $INFILE $OUTFILE
-	rm $OUTFILE.tmp000 $OUTFILE.tmp001 > /dev/null  #tidy up
+	rm $OUTFILE.tmp000 $OUTFILE.tmp001 2> /dev/null  #tidy up
 }
 
 # function to process a whole directory
