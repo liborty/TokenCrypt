@@ -40,8 +40,8 @@ if [ -d "$ORGDIR" ]; then
 	printf "$PROGN quitting, '$ORGDIR' already exists here!\n"; exit 2; fi
 
 # encrypt and decrypt
-ncrpt -x -b -r $INDIR $KEYDIR $OUTDIR
-dcrpt -r $OUTDIR $KEYDIR $ORGDIR
+time ncrpt -x -b -r $INDIR $KEYDIR $OUTDIR
+time dcrpt -r $OUTDIR $KEYDIR $ORGDIR
 diff -s -r $INDIR $ORGDIR
 
 rm -rf $ORGDIR $OUTDIR $KEYDIR > /dev/null 2>&1

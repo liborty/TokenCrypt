@@ -8,10 +8,15 @@
 
 ## Introduction
 
-`ncrpt` reads given input directory containing API tokens, base64 files and
-any other types of files. It recognises hexadecimal files and base64 files and converts them to compact binary data.
-It selects the best compression method individually for each file and finally encrypts them all with high security.
-Subdirectories are processed recursively with -r option.
+`ncrpt` reads given input directory (tree) containing API tokens, base64 files and
+any other types of files. Subdirectories are processed recursively with -r option.
+This script recognises hexadecimal files and base64 files and converts them to compact binary data.
+It then selects the best compression method individually for each file and finally encrypts them all with total security.
+
+Some well known compressed formats afford only minor further compression, if any.
+To save time, they are recognised here simply by their well known extensions:
+`jpg,mp4,zip,7z,lz,zst,gz,bz2` and their upper case versions.
+All attempts at compressing these particular files are avoided.
 
 Internet security tokens usually consist of 32, 64 or more hexadecimal characters.
 They are increasingly used to facilitate secure access over the internet protocols
@@ -133,9 +138,9 @@ when all the tests were passed. Note that only the summary output `test.log` is 
 
 ## Releases Log
 
-**29Nov21** - Fixed silent cleaning up of temp files. Added some minor clarifications to this file (README.md). This should be a stable version now. Enjoy!
+**29Nov21** - Added recognition of some well known compressed formats by their extensions, to avoid compressing them again (speed up). Fixed silent cleaning up of temp files. Added some minor clarifications to this file (README.md). Added timing to `crptest`. This should be a stable version now. Enjoy!
 
-**28Nov21** - Added buffering to `symcrypt`. It now for added security reason fails when the lengths of its two input files do not match. Also improved the `makefile`.
+**28Nov21** - Added buffering to `symcrypt`. It now for added security fails when the lengths of its two input files do not match. Also improved the `makefile`.
 
 **27Nov21** - Added buffering to further enhance performance. Also, `hexgen` and `hexcheck` are now generating and converting all hex characters A-F consistently to a-f. Updated FAQ.md.
 

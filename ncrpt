@@ -16,45 +16,52 @@ function processfile {
 
 	local INFILE=$2/$1 
 	local KEYFILE=$3/$1
-	local OUTFILE=$4/$1 
+	local OUTFILE=$4/$1
+	local EX="${1##*.}" # this file's extension
+	EX=${EX,,} # convert to lower case for ease of detecting either
 
-    if [ $HEXTEST ]; then
-   		hexcheck $INFILE $OUTFILE.tmp000 2>/dev/null # ignore failure messages
-   		if [ "$?" -eq 0 ]; then	# status of hexcheck when INFILE is entirely hexadecimal
-			INFILE="$OUTFILE".tmp000 # now this becomes the binary file to further compress
-			KEYFILE="$KEYFILE".hex # append .hex extension for hexadecimal origin
-   		fi
-   	fi
+	# if EX passes one of these tests, then avoid all compression 
+	[ "$EX" = 'jpg' ] || [ "$EX" = 'mp4' ] || [ "$EX" = 'zip' ] || [ "$EX" = '7z' ] || \
+	[ "$EX" = 'lz' ] || [ "$EX" = 'zst' ] || [ "$EX" = 'gz' ] || [ "$EX" = 'bz2' ] || {
 
-	if [ $B64TEST ] && [ "$INFILE" = "$2/$1" ]; then #  test if not already hexfile
-   		base64 -d -w 0 $INFILE > $OUTFILE.tmp000 2>/dev/null # turns base64 into binary, saving 25%
-   		if [ "$?" -eq 0 ]; then	# status of base64 when INFILE was entirely in base64
-			INFILE="$OUTFILE".tmp000 # now this becomes the binary file to further compress
-			KEYFILE="$KEYFILE".b64 # append .b64 extension for base64 origin
-   		fi 
-	fi
+    	[ $HEXTEST ] && {
+   			hexcheck $INFILE $OUTFILE.tmp000 2>/dev/null # ignore failure messages
+   			if [ "$?" -eq 0 ]; then	# status of hexcheck when INFILE is entirely hexadecimal
+				INFILE="$OUTFILE".tmp000 # now this becomes the binary file to further compress
+				KEYFILE="$KEYFILE".hex # append .hex extension for hexadecimal origin
+   			fi
+		}
+
+		[ $B64TEST ] && [ "$INFILE" = "$2/$1" ] && { #  still the original input file?
+   			base64 -d -w 0 $INFILE > $OUTFILE.tmp000 2>/dev/null # turns base64 into binary, saving 25%
+   			if [ "$?" -eq 0 ]; then	# status of base64 when INFILE was entirely in base64
+				INFILE="$OUTFILE".tmp000 # now this becomes the binary file to further compress
+				KEYFILE="$KEYFILE".b64 # append .b64 extension for base64 origin
+   			fi 
+		}
 	
-	# now, in all three cases, do binary compression	
-	$COMPRESSOR $FLAGS $INFILE > $OUTFILE.tmp001 
-	local CMPS=$( stat -c%s $OUTFILE.tmp001 ) # the size after compression
-	local ORGS=$( stat -c%s $INFILE )  # and before compression
-	# use compressed version only if it is actually smaller
-	if [ "$CMPS" -lt "$ORGS" ]; then 
-		KEYFILE="$KEYFILE".$EXT # append compression extension to the keyfile to be generated
-		INFILE="$OUTFILE".tmp001  # assign the compressed file name, else stay with uncompressed
-	fi
+		# regardless whether hexcheck or base64 tests succeeded or not, test general compression	
+		$COMPRESSOR $FLAGS $INFILE > $OUTFILE.tmp001 
+		local CMPS=$( stat -c%s $OUTFILE.tmp001 ) # the size after compression
+		local ORGS=$( stat -c%s $INFILE )  # and before compression
+		# use compressed version only if it is actually smaller
+		if [ "$CMPS" -lt "$ORGS" ]; then 
+			KEYFILE="$KEYFILE".$EXT # append compression extension to the keyfile to be generated
+			INFILE="$OUTFILE".tmp001  # assign the compressed file name, else stay with previous
+		fi
+	}
 	# generate and write out the key of the same size as the infile
 	keygen $INFILE > $KEYFILE
 	# encrypt with it and write to OUTFILE 
-	symcrypt $KEYFILE $INFILE $OUTFILE
-	rm $OUTFILE.tmp000 $OUTFILE.tmp001 2> /dev/null  #tidy up
+	symcrypt $INFILE $KEYFILE $OUTFILE
+	rm $OUTFILE.tmp000 $OUTFILE.tmp001 2> /dev/null  #tidy up if needed
 }
 
 # function to process a whole directory
 # takes three arguments: INDIR KEYDIR OUTDIR
 function processdir {
 
-	[ -n "$2" ] || { 
+	[ -z "$2" ] && { 
 		printf "$PROGN quitting, keydir is not set!\n" >&2
 		exit 2
 	}
@@ -62,7 +69,7 @@ function processdir {
 		printf "$PROGN quitting, keydir $2 already exists!\n" >&2
 		exit 2
 	}
-	[ -n "$3" ] || { 
+	[ -z "$3" ] && { 
 		printf "$PROGN quitting, outdir is not set!\n" >&2
 		exit 2
 	}
@@ -112,21 +119,21 @@ while getopts hbxqrvz-: OPT; do
  fi
  case "$OPT" in
     h | help ) usage; printf "\t%s\n" \
-		'-h | --help : print this text' \
 		'-b | --b64 : test for base64 encoded files' \
-		'-x | --hex : test for hexadecimal files' \
+		'-h | --help : print this text' \
 		'-q | --quiet : turn off the final summary' \
 		'-r | --recurse : process also subdirectories' \
 		'-v | --verbose : detailed reporting' \
+		'-x | --hex : test for hexadecimal files' \
 		'-z | --zstd : use zstd compression instead of lzma' 
 		exit 1;;
 	# record all presented options
 	b | b64 ) B64TEST=0;; 
 	x | hex ) HEXTEST=0;;
 	q | quiet ) QUIET=0;;
-	r | recurse ) RECURSE=0;;
 	v | verbose ) VERBOSE=0;; 
-   	z | zstd ) COMPRESSOR=zstd; EXT=zst;; #alternative compressor and its extension
+	r | recurse ) RECURSE=0;;
+  	z | zstd ) COMPRESSOR=zstd; EXT=zst;; #alternative compressor and its extension
     ??* ) printf "$PROGN quitting, invalid long option: $OPT\n" >&2; usage; exit 2;;  
 	*) exit 2;;  # invalid short option (error will be reported via getopts)
  esac
@@ -143,7 +150,7 @@ shift $((OPTIND-1)) # remove parsed options and args from $@ list
 	printf "$PROGN quitting, compressor utility $COMPRESSOR not found\n" >&2
 	exit 2
 }
-FLAGS='-c -z -q' # the default compressor flags
+FLAGS='-c -z -q' # the default lags to the compressor
 if [ $VERBOSE ]; then 
 	if [ "$COMPRESSOR" = 'lzma' ]; then FLAGS='-c -z -v';	else FLAGS='-c'; fi
 fi
@@ -153,8 +160,10 @@ wait # for all sub proccesses to finish
 # optional final report
 if ! [ $QUIET ]; then
 	SIZES=( $( du -hbs $3 $1 ) ) # array of size,dir,size,dir
-	CR=$(( (5+100000*${SIZES[0]}/${SIZES[2]})/10 )) # calculate percentage rounded to two d.p.	
-	printf "$PROGN ${SIZES[3]}: ${SIZES[2]} => ${SIZES[1]}: ${SIZES[0]} (${CR: 0:2}.${CR: 2:4} %%)\n"
-	# compression ratio printed as xx.xx% 
+	printf "$PROGN ${SIZES[3]}: ${SIZES[2]} => ${SIZES[1]}: ${SIZES[0]} "
+	if [ ${SIZES[0]} = ${SIZES[2]} ]; then printf "(100 %%)\n"; else
+		CR=$(( (5+100000*${SIZES[0]}/${SIZES[2]})/10 )) # calculate percentage rounded to two d.p.	
+		printf "(${CR: 0:2}.${CR: 2:4} %%)\n" # compression ratio printed as xx.xx%
+	fi 
 	printf "$PROGN encrypted $1 into $3, keys written to $2\n"
 fi

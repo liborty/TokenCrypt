@@ -50,7 +50,7 @@ function processfile {
 		symcrypt $KEYFILE.b64.lz $INFILE | lzma -d | base64 -w 0 > $OUTFILE
 		return
 	fi
-	printf "$PROGN failed to find a useful key for encrypted file $INFILE\n" 
+	printf "$PROGN failed to find key for: $INFILE\n" 
 }
 
 # function to process a whole directory
@@ -150,8 +150,11 @@ wait # for all sub proccesses to finish
 # optional final report
 if ! [ $QUIET ]; then
 	SIZES=( $( du -hbs $3 $1 ) ) # array of size,dir,size,dir
-	CR=$(( (5+100000*${SIZES[2]}/${SIZES[0]})/10 )) # calculate percentage rounded to two d.p.	
-	printf "$PROGN ${SIZES[3]}: ${SIZES[2]} (${CR: 0:2}.${CR: 2:4} %%) => ${SIZES[1]}: ${SIZES[0]}\n"
+	printf "$PROGN ${SIZES[3]}: ${SIZES[2]} "
+	if [ ${SIZES[0]} = ${SIZES[2]} ]; then printf "(100 %%) => ${SIZES[1]}: ${SIZES[0]}\n"; else
+		CR=$(( (5+100000*${SIZES[2]}/${SIZES[0]})/10 )) # calculate percentage rounded to two d.p.	
+		printf "(${CR: 0:2}.${CR: 2:4} %%) => ${SIZES[1]}: ${SIZES[0]}\n"
+	fi
 	# compressed size x 10^5, printed as xx.xx% 
 	printf "$PROGN decrypted $1 into $3\n"
 fi
