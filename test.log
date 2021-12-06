@@ -1,7 +1,9 @@
-crptest run on: 06.12.21 at 04:03:08 UTC
+crptest run on: 06.12.21 at 04:06:17 UTC
 make: Nothing to be done for 'progs'.
 Installed TokenCrypt utilities in /usr/local/bin
+ncrpt encrypting and compressing, using 2 cores
 ncrpt testing: 48814 => testingcrypt: 21841 (44.74 %)
 ncrpt encrypted testing into testingcrypt, keys written to testingkey
+dcrpt decrypting and decompressing, using 2 cores
 dcrpt testingcrypt: 21841 (44.74 %) => testingorg: 48814
 crptest: testing and testingorg are identical
