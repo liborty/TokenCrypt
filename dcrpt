@@ -144,7 +144,7 @@ if [ -z $( which hexify ) ]; then
 	printf "$PROGN warning, hexify is not installed, will not unpack .hex files\n" >&2
 fi
 
-printf "$PROGN decrypting and decompressing, using %d cores\n" $( grep -c ^processor /proc/cpuinfo ) >&2
+printf "$PROGN decrypting and decompressing, using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
 processdir $1 $2 $3
 wait # for all sub proccesses to finish
 
