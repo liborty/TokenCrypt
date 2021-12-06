@@ -40,8 +40,8 @@ if [ -d "$ORGDIR" ]; then
 	printf "$PROGN quitting, '$ORGDIR' already exists here!\n" >&2; exit 2; fi
 
 # encrypt and decrypt
-time ncrpt -x -b -r $INDIR $KEYDIR $OUTDIR
-time dcrpt -r $OUTDIR $KEYDIR $ORGDIR
+time ncrpt -x -b -r $INDIR $KEYDIR $OUTDIR 2>&1
+time dcrpt -r $OUTDIR $KEYDIR $ORGDIR 2>&1
 diff -q -r $INDIR $ORGDIR
 [ "$?" -eq 0 ] && printf "$PROGN: $INDIR and $ORGDIR are identical\n"
-rm -rf $ORGDIR $OUTDIR $KEYDIR > /dev/null 2>&1
+rm -rf $ORGDIR $OUTDIR $KEYDIR >&2
