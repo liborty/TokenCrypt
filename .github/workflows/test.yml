@@ -9,7 +9,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: test
-      run: ./crptest testing 2>&1 > test.log
+      run: ./crptest testing > test.log
       shell: bash
  
     - name: commitlog
