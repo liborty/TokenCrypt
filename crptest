@@ -10,14 +10,14 @@ printf "$PROGN run on: %s %s %s %s\n" $( date -u "+%d.%m.%y at %H:%M:%S %Z" )
 
 case $# in
 	0)
-		printf "$PROGN quitting, requires a path argument\n"
+		printf "$PROGN quitting, requires a path argument\n" >&2
 		exit 2;; 
 	1)
   		if ! [ -d "$1" ]; then
-		printf "$PROGN quitting, input directory name $1 not found\n"
+		printf "$PROGN quitting, input directory name $1 not found\n" >&2
 		exit 2; fi;;
 	*) 
-		printf "$PROGN quitting, too many arguments, needs just one input path\n" 
+		printf "$PROGN quitting, too many arguments, needs just one input path\n" >&2
 		exit 2;;
 esac
 
@@ -33,15 +33,15 @@ ORGDIR="$DIREND"org
 
 # check that outputs directories do not already exist
 if [ -d "$KEYDIR" ]; then
-	printf "$PROGN quitting, '$KEYDIR' already exists here!\n";	exit 2; fi
+	printf "$PROGN quitting, '$KEYDIR' already exists here!\n" >&2;	exit 2; fi
 if [ -d "$OUTDIR" ]; then 
-	printf "$PROGN quitting, '$OUTDIR' already exists here!\n"; exit 2; fi
+	printf "$PROGN quitting, '$OUTDIR' already exists here!\n" >&2; exit 2; fi
 if [ -d "$ORGDIR" ]; then 
-	printf "$PROGN quitting, '$ORGDIR' already exists here!\n"; exit 2; fi
+	printf "$PROGN quitting, '$ORGDIR' already exists here!\n" >&2; exit 2; fi
 
 # encrypt and decrypt
 time ncrpt -x -b -r $INDIR $KEYDIR $OUTDIR
 time dcrpt -r $OUTDIR $KEYDIR $ORGDIR
-diff -s -r $INDIR $ORGDIR
-
+diff -q -r $INDIR $ORGDIR
+[ "$?" -eq 0 ] && printf "$PROGN: $INDIR and $ORGDIR are identical\n"
 rm -rf $ORGDIR $OUTDIR $KEYDIR > /dev/null 2>&1

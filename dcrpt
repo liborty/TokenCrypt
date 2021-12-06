@@ -89,7 +89,7 @@ function processdir {
    		[ -f "$IND" ] || continue # only process genuine file now
  		# turn off subshells when file size falls below BACKSZ
    		[ -z "$BJ" ] || [ $( stat -c%s $IND ) -ge $BACKSZ ] || BJ='' 
-   		processfile $ITEM $1 $2 $3 $BJ 
+   		processfile $ITEM $1 $2 $3 $BJ
 	done
 } # end of processdir
 
@@ -132,18 +132,19 @@ shift $((OPTIND-1)) # remove already parsed options and args from $@ list
 }
 # Warn about missing decompressors
 if [ -z $( which zstd ) ]; then 
-	printf "$PROGN warning, zstd compressor is not installed, will not decompress .zst files\n"
+	printf "$PROGN warning, zstd compressor is not installed, will not decompress .zst files\n" >&2
 fi
 if [ -z $( which lzma ) ]; then 
-	printf "$PROGN warning, lzma compressor is not installed, will not decompress .lz files\n"
+	printf "$PROGN warning, lzma compressor is not installed, will not decompress .lz files\n" >&2
 fi
 if [ -z $( which base64 ) ]; then 
-	printf "$PROGN warning, base64 decoder is not installed, will not unpack .b64 files\n"
+	printf "$PROGN warning, base64 decoder is not installed, will not unpack .b64 files\n" >&2
 fi
 if [ -z $( which hexify ) ]; then 
-	printf "$PROGN warning, hexify is not installed, will not unpack .hex files\n"
+	printf "$PROGN warning, hexify is not installed, will not unpack .hex files\n" >&2
 fi
 
+printf "$PROGN decrypting and decompressing, using %d cores\n" $( grep -c ^processor /proc/cpuinfo ) >&2
 processdir $1 $2 $3
 wait # for all sub proccesses to finish
 
@@ -156,5 +157,5 @@ if ! [ $QUIET ]; then
 		printf "(${CR: 0:2}.${CR: 2:4} %%) => ${SIZES[1]}: ${SIZES[0]}\n"
 	fi
 	# compressed size x 10^5, printed as xx.xx% 
-	printf "$PROGN decrypted $1 into $3\n"
+	printf "$PROGN decrypted $1 into $3\n" >&2
 fi

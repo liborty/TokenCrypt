@@ -154,6 +154,7 @@ FLAGS='-c -z -q' # the default lags to the compressor
 if [ $VERBOSE ]; then 
 	if [ "$COMPRESSOR" = 'lzma' ]; then FLAGS='-c -z -v';	else FLAGS='-c'; fi
 fi
+printf "$PROGN encrypting and compressing, using %d cores\n" $( grep -c ^processor /proc/cpuinfo ) >&2
 processdir $1 $2 $3
 wait # for all sub proccesses to finish
 
