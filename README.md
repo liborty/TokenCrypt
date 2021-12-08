@@ -70,9 +70,9 @@ appears to have slightly better compression rate and `zstd` is slightly faster a
 
 There are two command line interface (CLI) bash scripts that do most of the work and automate the whole process:
 
-`ncrpt [-h][-x][-b][-q][-r][-v][-z] indir keydir outdir`
+`ncrpt [-h][-x][-b][-q][-r][-u][-v][-z] indir keydir outdir`
 
-The options mean, respectively: -h help, -x test for hexadecimal files, -b test for base64 files, -q quiet, -r recursive, -v verbose, -z use zstd compression. Their -- long versions are also recognised.
+The options mean, respectively: -h help, -x test for hexadecimal files, -b test for base64 files, -q quiet, -r recursive, -u update an existing archive, -v verbose, -z use zstd compression. Their -- long versions are also recognised.
 
 The tests for hexadecimal and base64 files only need to be selected when the input directory likely contains such files. They are quick, as they usually fail after reading only a few bytes (of other types of files). Should you forget to select them, everything will still work, only the output may take up more space than was strictly necessary.
 
@@ -85,7 +85,7 @@ The verbose flag `-v` adds the details of compressing each file. Setting both
 flags, contradictory as it may seem, turns on the individual files reports and
 turns off the final summary. The encryption itself is so unproblematic that it does not need any reports.
 
-Summary: `ncrpt` (encrypt with vowels left out) executes the tasks of data type analysis, optimal compression selection, compression, key generation, key saving and encryption.
+Summary: `ncrpt` (encrypt with vowels left out) executes the tasks of data type analysis, optimal compression selection, compression, key generation, key saving and encryption. Also recursive archiving.
 
 `dcrpt [-h][-q][-r][-v] indir keydir outdir`
 
@@ -137,6 +137,8 @@ The 'test' badge at the top of this document lights up green
 when all the tests were passed. Note that only the summary output `test.log` is saved in the repository, not the encrypted, decrypted or key directories.
 
 ## Releases Log
+
+**8Dec21** - Added option -u for updating compressed encrypted archives.
 
 **29Nov21** - Added recognition of some well known compressed formats by their extensions, to avoid compressing them again (speed up). Fixed silent cleaning up of temp files. Added some minor clarifications to this file (README.md). Added timing to `crptest`. This should be a stable version now. Enjoy!
 

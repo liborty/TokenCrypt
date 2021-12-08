@@ -73,9 +73,9 @@ function processdir {
 
 	# sort files in INDIR by size
 	# stripping the path path prior to using ls was done thus: FILEND=${INFILE##*/} 
-	ITEMS=$(ls -SAL $1)
+	local ITEMS=$(ls -SAL $1)
 	# prepare to fire off subshells
-	BJ=\&
+	local BJ=\&
 
 	# iterate through the listing
 	for ITEM in $ITEMS; do
