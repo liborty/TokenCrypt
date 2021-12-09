@@ -72,7 +72,8 @@ There are two command line interface (CLI) bash scripts that do most of the work
 
 `ncrpt [-b][-c][-h][-q][-r][-u][-v][-x][-z] indir keydir outdir`
 
-The options mean, respectively:
+The long versions introduced by `--` are also recognised.
+The options explained:
 
     -b --b64 test for base64 files, 
     -c --clean up the archive and the keys,
@@ -82,9 +83,7 @@ The options mean, respectively:
     -u --update an existing archive and keys,
     -v --verbose information on compressing each file
     -x --hex test for hexadecimal files, 
-    -z --zstd compression to be used. 
-    
-    Their long versions introduced by `--` are also recognised.
+    -z --zstd compression to be used.     
 
 The tests for hexadecimal and base64 files only need to be selected when the input directory likely contains such files. They are quick, as they usually fail after reading only a few bytes (of the wrong type of file). Should you forget to select them, everything will still work, only the output may take up more space than was strictly necessary.
 
@@ -95,22 +94,23 @@ The summary at the end, such as the one shown in `test.log`, reports the sizes (
 The quiet flag `-q` cancels the final report.
 The verbose flag `-v` adds details of compressing each file. Setting both flags, contradictory as it may seem, turns on the individual files reports and turns off the final summary. The encryption itself is so unproblematic that it does not need any reports.
 
-Once a directory has been compressed and encrypted, it is subsequently possible to update the keys and outdir directories (the archive) with the option -u. This will add or recode just the new and updated files. New files are added (marked with a:) and more recent existing files are updated (u:). When the recursive option -r is in use, the same will be applied to subdirectories. In that case, capital letters A,U denote these two operations when being applied to directories.
+Once a directory has been compressed and encrypted, it is subsequently possible to update the keys and outdir directories (the archive) with the option -u. This will add or recode just the new and updated files. New files are added (marked with a:) and more recent existing files are updated (u:). When the recursive option -r is in use, the same will be applied to subdirectories. Capital letters A,U denote these two operations when applied to whole directories.
 
-In order for the state of the new indir and its archive to match again perfectly, an archive can be cleaned up with option -c. Files no longer existing in indir can thus be deleted (d:) from the arhive. Or whole directories (D:), using -r -c options.
+In order for the state of the new indir and its archive to match again perfectly both ways, an archive can be cleaned up with option -c. Files no longer existing in indir will then be deleted (d:) from the arhive. Or whole directories (D:), using -r -c options.
 
 The most powerful use on an already existing archive (keydir outdir) is:
 
 ```bash
 ncrpt -r -u -c indir keydir outdir
 ```
+
 This will recursively update and clean the archive so that it is as if freshly created from the current state of indir. This is convenient for backup purposes.
 
 Summary: `ncrpt` (encrypt with vowels left out) executes the tasks of data type analysis, optimal compression selection, compression, key generation, key saving and encryption. Also recursive archiving and subsequent archive updating.
 
 `dcrpt [-h][-q][-r][-v] indir keydir outdir`
 
-is the conceptual inverse of `ncrpt`, although it is simpler. Its operations are carried out in  the reverse order.  It reads the encrypted files previously created by `ncrpt` and their keys from `keydir`. They are paired up by their filenames. So, never rename an encrypted file, unless you rename its corresponding key file as well! The two directories must always match.
+is the conceptual inverse of `ncrpt`, although it is simpler. Its operations are carried out in  the reverse order.  It reads from indir the encrypted files previously created by `ncrpt` and it also reads their associated keys from `keydir`. They are paired up by their filenames. So, never rename an encrypted file, unless you rename its corresponding key file as well! The two directories must always match.
 
 Following decryption, the relevant decompression method(s) are applied to each file, so that the original files are exactly reconstructed in `outdir`. The compression methods were recorded for each file in the names of the extension(s) of its keyfile.
 
