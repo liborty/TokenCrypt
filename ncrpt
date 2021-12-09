@@ -131,60 +131,84 @@ function updatedir {
 	local BJ=\&
 	# iterate through the listing checking for newer items
 	for ITEM in $ITEMS; do
-		local IND=$1/$ITEM # append $ITEM to $INDIR path
+		local ID=$1/$ITEM # append $ITEM to $INDIR path
 		local OD=$3/$ITEM # and corresponding $outdir path
 
-   		if [ -d "$IND" ]; then  # recursively process existing subdirectory?
-			if [ -n "$RECURSE" ]; then  # just push ITEM onto paths
+   		if [ -d "$ID" ]; then  # process existing subdirectory?
+			if [ -n "$RECURSE" ]; then # but only when recursing
 				[ -d "$OD" ] || { # here matching dir does not exist
-					printf "A: $IND\n" # so add it
-					processdir $IND $2/$ITEM $3/$ITEM &
+					printf "A: $ID\n" # so add it
+					# just push ITEM onto paths 
+					processdir $ID $2/$ITEM $OD $BJ
 					continue
 				}			
 				[ "$IND" -nt "$OD" ] && { # here input dir is newer
-					printf "U: $IND\n" # so update it
-					udpatedir $IND $2/$ITEM $3/$ITEM &
+					printf "U: $ID\n" # so update it
+					udpatedir $ID $2/$ITEM $OD $BJ
+					continue
 				}
-				cleandir $IND $2/$ITEM $OD # check deletions
+				continue # up to date, nothing needs to be done
 			fi
-			continue # either processed or ignored this subdir now
+			continue # not recursing, ignore this subdir 
 		fi
-   		[ -f "$IND" ] || continue # only process genuine files now
+   		[ -f "$ID" ] || continue # only process genuine files now
  		# turn off subshells when file size falls below BACKSZ
-   		[ -z "$BJ" ] || [ $( stat -c%s $IND ) -ge $BACKSZ ] || BJ='' 
-		[ "$IND" -nt "$OD" ] && { # here input file is newer 
-			printf "R: $IND\n" # so replace it
+   		[ -z "$BJ" ] || [ $( stat -c%s $ID ) -ge $BACKSZ ] || BJ='' 
+		[ -e "$OD" ] || { # here $OD file does not exist
+			printf "a: $ID\n" # so add it
+			processfile $ITEM $1 $2 $3 $BJ 
+		}
+		[ "$ID" -nt "$OD" ] && { # here input file is newer 
+			printf "u: $ID\n" # so update it
    			processfile $ITEM $1 $2 $3 $BJ 
 		} # otherwise just skip it
 	done
-	 # rm any dirs or files that are no longer in indir
-	 # from outdir and keydir
-	cleandir $1 $2 $3
 } # end of updatedir
 
-# cleans up any dirs and files from keydir, outdir 
-# that are no longer present in indir
+# function to clean up a whole directory
+# takes three arguments: INDIR KEYDIR OUTDIR
 function cleandir {
 
-	local ITEMS=$(ls -AL $3) # iterate through OUTDIR in any order
+	[ -d "$1" ] || {
+		printf "$PROGN quitting clean, input dir $1 is invalid\n" >&2
+		exit 2
+	}
+	[ -d "$2" ] || {
+		printf "$PROGN quitting clean, key dir $2 is invalid\n" >&2
+		exit 2
+	}
+	[ -d "$3" ] || {
+		printf "$PROGN quitting clean, output dir $3 is invalid\n" >&2
+		exit 2
+	}
+
+	# list all items in standard order
+	local ITEMS=$(ls -AL $3)
+	# iterate through the list checking for missing items
 	for ITEM in $ITEMS; do
-		local IND=$1/$ITEM # append $ITEM to $INDIR path
-		local OD=$3/$ITEM # and corresponding $outdir path
-	  	if [ -d "$OD" ]; then # it is a directory
-			[ -d "$IND" ] || { # no longer in IND
-				printf "D: $2/$ITEM $OD\n" # so delete them 
-				rm -rf $2/$ITEM $OD & # from KEYIR OUTDIR
-			}
+		local ID=$1/$ITEM # append $ITEM to $INDIR path
+		local KD=$2/$ITEM # append $ITEM to $KEYDIR path
+		local OD=$3/$ITEM # and the examined $OUTDIR path
+
+   		if [ -d "$OD" ]; then  # process existing subdirectory?
+			if [ -n "$RECURSE" ]; then # but only when recursing
+				[ -d "$ID" ] || { # here matching $INDIR dir does not exist
+					printf "D: $OD $KD\n" # so remove it 
+					rm -rf $OD $KD
+					continue
+				}			
+				cleandir $ID $KD $OD & # otherwise recurse
+			fi
+			continue # not recursing, ignore this subdir 
+		fi
+   		[ -f "$OD" ] || continue # only process genuine files now 
+		[ -e "$ID" ] || { # here $ID file does not exist
+			printf "d: $OD $KD.*\n" # so delete them
+			rm $OD $KD.* 
 			continue
-		fi 
-		if [ -f "$OD" ]; then # it is a file
-			[ -f "$IND" ] || { # no longer in IND				
-				printf "D: $2/$ITEM.* $OD\n" # so delete them 
-				rm "$2/$ITEM.*" "$OD"
-			}
-		fi 
-	done	
-}	
+		}
+	done
+} # end of cleandir
 
 function usage { printf "Usage: $PROGN [-h][-b][-x][-q][-r][-v][-z] indir keydir outdir\n" >&2; }
 
@@ -192,6 +216,7 @@ function helpmsg {
 	usage
 	printf "\t%s\n" \
 		'-b | --b64 : test for base64 encoded files' \
+		'-c | --cleanup : do deletions in the archive' \
 		'-h | --help : print this text' \
 		'-q | --quiet : turn off the final summary' \
 		'-r | --recurse : process also subdirectories' \
@@ -203,20 +228,21 @@ function helpmsg {
 }
 # Main starts here
 # get options, including long options, extracted as arg to the last option '-'
-while getopts hbxqruvz-: OPT; do
+while getopts hbcxqruvz-: OPT; do
  if [ "$OPT" = "-" ]; then   # long option: reset OPT and OPTARG
     OPT="${OPTARG%%=*}"      # extract long option name
     OPTARG="${OPTARG#$OPT}"  # extract long option argument (here empty)
     OPTARG="${OPTARG#=}"     # remove any assignments `=` from long options
  fi
  case "$OPT" in
-    h | help ) helpmsg;;
-	b | b64 ) B64TEST=0;; 
-	x | hex ) HEXTEST=0;;
+	b | b64 ) B64TEST=0;;
+	c | clean ) CLEAN=0;; 
+	h | help ) helpmsg;;
 	q | quiet ) QUIET=0;;
-	v | verbose ) VERBOSE=0;; 
 	r | recurse ) RECURSE=0;;
 	u | update ) UPDATE=0;;
+	v | verbose ) VERBOSE=0;; 
+	x | hex ) HEXTEST=0;;
   	z | zstd ) COMPRESSOR=zstd; EXT=zst;; #alternative compressor and its extension
     ??* ) printf "$PROGN quitting, invalid long option: $OPT\n" >&2; usage; exit 2;;  
 	*) exit 2;;  # invalid short option (error will be reported via getopts)
@@ -247,6 +273,7 @@ if [ $UPDATE ]; then
 else
 	processdir $1 $2 $3
 fi
+if [ $CLEAN ]; then cleandir $1 $2 $3; fi
 wait # for all sub proccesses to finish
 
 # optional final report
