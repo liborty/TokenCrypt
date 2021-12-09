@@ -62,19 +62,19 @@ function processfile {
 function processdir {
 
 	[ -z "$2" ] && { 
-		printf "$PROGN quitting, keydir is not set!\n" >&2
+		printf "$PROGN processdir: keydir not given!\n" >&2
 		exit 2
 	}
 	[ -e "$2" ] && { 
-		printf "$PROGN quitting, keydir $2 already exists!\n" >&2
+		printf "$PROGN processdir: keydir $2 already exists!\n" >&2
 		exit 2
 	}
 	[ -z "$3" ] && { 
-		printf "$PROGN quitting, outdir is not set!\n" >&2
+		printf "$PROGN processdir: outdir not given!\n" >&2
 		exit 2
 	}
 	[ -e "$3" ] && { 
-		printf "$PROGN quitting, outdir $3 already exists!\n" >&2
+		printf "$PROGN processdir: outdir $3 already exists!\n" >&2
 		exit 2
 	}
 
@@ -111,16 +111,12 @@ function processdir {
 # takes three arguments: INDIR KEYDIR OUTDIR
 function updatedir {
 
-	[ -d "$1" ] || {
-		printf "$PROGN quitting update, input dir $1 is invalid\n" >&2
-		exit 2
-	}
 	[ -d "$2" ] || {
-		printf "$PROGN quitting update, key dir $2 is invalid\n" >&2
+		printf "$PROGN updatedir: key dir $2 is invalid\n" >&2
 		exit 2
 	}
 	[ -d "$3" ] || {
-		printf "$PROGN quitting update, output dir $3 is invalid\n" >&2
+		printf "$PROGN updatedir: output dir $3 is invalid\n" >&2
 		exit 2
 	}
 
@@ -170,15 +166,15 @@ function updatedir {
 function cleandir {
 
 	[ -d "$1" ] || {
-		printf "$PROGN quitting clean, input dir $1 is invalid\n" >&2
+		printf "$PROGN clean: input dir $1 is invalid\n" >&2
 		exit 2
 	}
 	[ -d "$2" ] || {
-		printf "$PROGN quitting clean, key dir $2 is invalid\n" >&2
+		printf "$PROGN clean: key dir $2 is invalid\n" >&2
 		exit 2
 	}
 	[ -d "$3" ] || {
-		printf "$PROGN quitting clean, output dir $3 is invalid\n" >&2
+		printf "$PROGN clean: output dir $3 is invalid\n" >&2
 		exit 2
 	}
 
