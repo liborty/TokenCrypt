@@ -197,7 +197,7 @@ function cleandir {
 					rm -rf $OD $KD
 					continue
 				}			
-				cleandir $ID $KD $OD & # otherwise recurse
+				cleandir $ID $KD $OD &  # otherwise recurse
 			fi
 			continue # not recursing, ignore this subdir 
 		fi

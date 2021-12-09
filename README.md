@@ -24,7 +24,7 @@ to various Applications Programming Interfaces (APIs). Being plain text,
 they are easily transmitted but they need to be stored securely,
 that means strongly encrypted.
 
-For similar trasport reasons, base64 encoding into printable characters is often used to encode binary data.
+For similar transport reasons, base64 encoding into printable characters is often used to encode binary data.
 
 Security tokens and other types of files may sometimes be
 all mixed up in one directory. This is not the best practice but
@@ -70,30 +70,51 @@ appears to have slightly better compression rate and `zstd` is slightly faster a
 
 There are two command line interface (CLI) bash scripts that do most of the work and automate the whole process:
 
-`ncrpt [-h][-x][-b][-q][-r][-u][-v][-z] indir keydir outdir`
+`ncrpt [-b][-c][-h][-q][-r][-u][-v][-x][-z] indir keydir outdir`
 
-The options mean, respectively: -h help, -x test for hexadecimal files, -b test for base64 files, -q quiet, -r recursive, -u update an existing archive, -v verbose, -z use zstd compression. Their -- long versions are also recognised.
+The options mean, respectively:
 
-The tests for hexadecimal and base64 files only need to be selected when the input directory likely contains such files. They are quick, as they usually fail after reading only a few bytes (of other types of files). Should you forget to select them, everything will still work, only the output may take up more space than was strictly necessary.
+    -b --b64 test for base64 files, 
+    -c --clean up the archive and the keys,
+    -h --help,   
+    -q --quiet (suppress the final report),
+    -r --recurse descent into subdirectories,
+    -u --update an existing archive and keys,
+    -v --verbose information on compressing each file
+    -x --hex test for hexadecimal files, 
+    -z --zstd compression to be used. 
+    
+    Their long versions introduced by `--` are also recognised.
+
+The tests for hexadecimal and base64 files only need to be selected when the input directory likely contains such files. They are quick, as they usually fail after reading only a few bytes (of the wrong type of file). Should you forget to select them, everything will still work, only the output may take up more space than was strictly necessary.
 
 The last three arguments are mandatory: the input directory, the keys directory and the encrypted directory. Both output directories (`keydir` and `outdir`) will mirror `indir` in their structure and file names; `keydir` will hold the keys and `outdir` will hold the encrypted files.
 
-The summary at the end, such as the one shown in `test.log`, reports the sizes (in bytes) of input and output directories and the total compressed size as a percentage of the original size. The compression to 50% will  compensate for the creation  of the encryption keys. Sometimes it will be even better.
+The summary at the end, such as the one shown in `test.log`, reports the sizes (in bytes) of input and output directories and the total compressed size as a percentage of the original size. The compression to 50% will  compensate for the creation  of the encryption keys. Sometimes even better compression may be achieved.
 
 The quiet flag `-q` cancels the final report.
-The verbose flag `-v` adds the details of compressing each file. Setting both
-flags, contradictory as it may seem, turns on the individual files reports and
-turns off the final summary. The encryption itself is so unproblematic that it does not need any reports.
+The verbose flag `-v` adds details of compressing each file. Setting both flags, contradictory as it may seem, turns on the individual files reports and turns off the final summary. The encryption itself is so unproblematic that it does not need any reports.
 
-Summary: `ncrpt` (encrypt with vowels left out) executes the tasks of data type analysis, optimal compression selection, compression, key generation, key saving and encryption. Also recursive archiving.
+Once a directory has been compressed and encrypted, it is subsequently possible to update the keys and outdir directories (the archive) with the option -u. This will add or recode just the new and updated files. New files are added (marked with a:) and more recent existing files are updated (u:). When the recursive option -r is in use, the same will be applied to subdirectories. In that case, capital letters A,U denote these two operations when being applied to directories.
+
+In order for the state of the new indir and its archive to match again perfectly, an archive can be cleaned up with option -c. Files no longer existing in indir can thus be deleted (d:) from the arhive. Or whole directories (D:), using -r -c options.
+
+The most powerful use on an already existing archive (keydir outdir) is:
+
+```bash
+ncrpt -r -u -c indir keydir outdir
+```
+This will recursively update and clean the archive so that it is as if freshly created from the current state of indir. This is convenient for backup purposes.
+
+Summary: `ncrpt` (encrypt with vowels left out) executes the tasks of data type analysis, optimal compression selection, compression, key generation, key saving and encryption. Also recursive archiving and subsequent archive updating.
 
 `dcrpt [-h][-q][-r][-v] indir keydir outdir`
 
-is the inverse of `ncrpt` and its operations are carried out in  the reverse order.  It reads the encrypted files from `indir` and their keys from `keydir`. They are paired up by their filenames. So, never rename an encrypted file, unless you rename its corresponding key file as well! The two directories must always match.
+is the conceptual inverse of `ncrpt`, although it is simpler. Its operations are carried out in  the reverse order.  It reads the encrypted files previously created by `ncrpt` and their keys from `keydir`. They are paired up by their filenames. So, never rename an encrypted file, unless you rename its corresponding key file as well! The two directories must always match.
 
 Following decryption, the relevant decompression method(s) are applied to each file, so that the original files are exactly reconstructed in `outdir`. The compression methods were recorded for each file in the names of the extension(s) of its keyfile.
 
-Summary: `dcrpt` (decrypt with vowels left out) matches the keys, decrypts the binary files with them, selects the right decompression methods and  decompresses, thus reconstructing the exact contents of the original directory.
+Summary: `dcrpt` (decrypt with vowels left out) matches the keys, decrypts the binary indir files with them, selects the right decompression methods and  decompresses, thus reconstructing the exact contents of the original directory.
 
 `crptest` optionally performs an automated overall test, checking that not a single byte was corrupted anywhere.
 
@@ -138,7 +159,9 @@ when all the tests were passed. Note that only the summary output `test.log` is 
 
 ## Releases Log
 
-**8Dec21** - Added option -u for updating compressed encrypted archives.
+**9Dec21** - Added option -c for cleaning up archive and keys by removing direcories and files which are no longer in the input directory.
+
+**8Dec21** - Added option -u to `ncrpt` for updating compressed encrypted archives.
 
 **29Nov21** - Added recognition of some well known compressed formats by their extensions, to avoid compressing them again (speed up). Fixed silent cleaning up of temp files. Added some minor clarifications to this file (README.md). Added timing to `crptest`. This should be a stable version now. Enjoy!
 
