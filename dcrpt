@@ -144,18 +144,18 @@ if [ -z $( which hexify ) ]; then
 	printf "$PROGN warning, hexify is not installed, will not unpack .hex files\n" >&2
 fi
 
-printf "$PROGN decrypting and decompressing, using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
+printf "$PROGN: decrypting and decompressing, using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
 processdir $1 $2 $3
 wait # for all sub proccesses to finish
 
 # optional final report
 if ! [ $QUIET ]; then
 	SIZES=( $( du -hbs $3 $1 ) ) # array of size,dir,size,dir
-	printf "$PROGN ${SIZES[3]}: ${SIZES[2]} "
-	if [ ${SIZES[0]} = ${SIZES[2]} ]; then printf "(100 %%) => ${SIZES[1]}: ${SIZES[0]}\n"; else
+	printf "$PROGN ${SIZES[3]} ${SIZES[2]} "
+	if [ ${SIZES[0]} = ${SIZES[2]} ]; then printf "(100 %%) => ${SIZES[1]} ${SIZES[0]}\n"; else
 		CR=$(( (5+100000*${SIZES[2]}/${SIZES[0]})/10 )) # calculate percentage rounded to two d.p.	
 		printf "(${CR: 0:2}.${CR: 2:4} %%) => ${SIZES[1]}: ${SIZES[0]}\n"
 	fi
 	# compressed size x 10^5, printed as xx.xx% 
-	printf "$PROGN decrypted $1 into $3\n" >&2
+	printf "$PROGN: decrypted $1 into $3\n" >&2
 fi
