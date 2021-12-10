@@ -133,15 +133,15 @@ function updatedir {
    		if [ -d "$ID" ]; then  # process existing subdirectory?
 			if [ -n "$RECURSE" ]; then # but only when recursing
 				[ -d "$OD" ] || { # here matching dir does not exist
-					printf "A: $ID\n" # so add it
+					printf " A: $ID\n" # so add it
 					# just push ITEM onto paths 
 					processdir $ID $2/$ITEM $OD $BJ
 					continue
 				}
-				# test the dirs modification times is $ID more recent?
+				# test the dirs modification times
 				# note that -nt only works for additions/deletions to dirs			
 				if [ $(stat -c%Y $ID) -gt $(stat -c%Y $OD) ]; then 
-					printf "U: $ID\n" # so update it
+					printf " U: $ID\n" # so update it
 					updatedir $ID $2/$ITEM $OD $BJ
 					continue
 				fi
@@ -153,12 +153,12 @@ function updatedir {
  		# turn off subshells when file size falls below BACKSZ
    		[ -z "$BJ" ] || [ $( stat -c%s $ID ) -ge $BACKSZ ] || BJ='' 
 		[ -e "$OD" ] || { # here $OD file does not exist
-			printf "a: $ID\n" # so add it
+			printf "   a: $ID\n" # so add it
 			processfile $ITEM $1 $2 $3 $BJ 
 			continue
 		}
 		if [ "$ID" -nt "$OD" ]; then  # here the input file is newer 
-			printf "u: $ID\n" # so update it
+			printf "   u: $ID\n" # so update it
    			processfile $ITEM $1 $2 $3 $BJ 
 		fi # else just skip it
 	done
@@ -192,7 +192,7 @@ function cleandir {
    		if [ -d "$OD" ]; then  # process existing subdirectory?
 			if [ -n "$RECURSE" ]; then # but only when recursing
 				[ -d "$ID" ] || { # here matching $INDIR dir does not exist
-					printf "D: $OD $KD\n" # so remove it 
+					printf " D: $OD $KD\n" # so remove it 
 					rm -rf $OD $KD
 					continue
 				}			
@@ -202,7 +202,7 @@ function cleandir {
 		fi
    		[ -f "$OD" ] || continue # only process genuine files now 
 		[ -e "$ID" ] || { # here $ID file does not exist
-			printf "d: $OD $KD.*\n" # so delete them
+			printf "   d: $OD $KD.*\n" # so delete them
 			rm $OD $KD.* 
 			continue
 		}
@@ -266,23 +266,28 @@ if [ $VERBOSE ]; then
 	if [ "$COMPRESSOR" = 'lzma' ]; then FLAGS='-c -z -v';	else FLAGS='-c'; fi
 fi
 
-printf "$PROGN encrypting and compressing, using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
 if [ $UPDATE ]; then 
+	printf "$PROGN: updating archive $3, using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
 	updatedir $1 $2 $3
 else
+	printf "$PROGN: compressing and encrypting $1, using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
 	processdir $1 $2 $3
 fi
 wait # for all sub proccesses to finish
-if [ $CLEAN ]; then cleandir $1 $2 $3; fi
+if [ $CLEAN ]; then 
+	printf "$PROGN: cleaning up archive $3\n" 
+	cleandir $1 $2 $3
+fi
+
 wait # for all sub proccesses to finish
 
 # optional final report
 if ! [ $QUIET ]; then
 	SIZES=( $( du -hbs $3 $1 ) ) # array of size,dir,size,dir
-	printf "$PROGN ${SIZES[3]}: ${SIZES[2]} => ${SIZES[1]}: ${SIZES[0]} "
+	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} => ${SIZES[1]} ${SIZES[0]} "
 	if [ ${SIZES[0]} = ${SIZES[2]} ]; then printf "(100 %%)\n"; else
 		CR=$(( (5+100000*${SIZES[0]}/${SIZES[2]})/10 )) # calculate percentage rounded to two d.p.	
 		printf "(${CR: 0:2}.${CR: 2:4} %%)\n" # compression ratio printed as xx.xx%
 	fi 
-	printf "$PROGN encrypted $1 into $3, keys written to $2\n"
+	printf "$PROGN: keys are in $2\n"
 fi
