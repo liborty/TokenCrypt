@@ -174,7 +174,7 @@ when all the tests were passed. Note that only the summary output `test.log` is 
 
 ## Releases Log
 
-**10Dec21** - Minor improvements to readme manual.
+**10Dec21** - Minor improvements to readme manual. Fixed misspelling bug in updatedir in `ncrpt` and modification time tests for directories, so the archive updates properly now.
 
 **9Dec21** - Added option -c to `ncrpt` for cleaning up archive and keys by removing directories and files which had been deleted from the input directory. Added a report how many cores of the user's machine are being used.
 

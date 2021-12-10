@@ -96,7 +96,7 @@ function processdir {
 		local IND=$1/$ITEM # append $ITEM to $INDIR path
    		if [ -d "$IND" ]; then  # recursively process existing subdirectory?
 			if [ -n "$RECURSE" ]; then  # just push ITEM onto paths, no changing of directories
-				processdir $IND $2/$ITEM $3/$ITEM &
+				processdir $IND $2/$ITEM $3/$ITEM $BJ
 			fi
 			continue # either processed or ignored this subdir now
 		fi
@@ -137,13 +137,15 @@ function updatedir {
 					# just push ITEM onto paths 
 					processdir $ID $2/$ITEM $OD $BJ
 					continue
-				}			
-				[ "$IND" -nt "$OD" ] && { # here input dir is newer
-					printf "U: $ID\n" # so update it
-					udpatedir $ID $2/$ITEM $OD $BJ
-					continue
 				}
-				continue # up to date, nothing needs to be done
+				# test the dirs modification times is $ID more recent?
+				# note that -nt only works for additions/deletions to dirs			
+				if [ $(stat -c%Y $ID) -gt $(stat -c%Y $OD) ]; then 
+					printf "U: $ID\n" # so update it
+					updatedir $ID $2/$ITEM $OD $BJ
+					continue
+				fi
+				continue # up to date dir
 			fi
 			continue # not recursing, ignore this subdir 
 		fi
@@ -153,11 +155,12 @@ function updatedir {
 		[ -e "$OD" ] || { # here $OD file does not exist
 			printf "a: $ID\n" # so add it
 			processfile $ITEM $1 $2 $3 $BJ 
+			continue
 		}
-		[ "$ID" -nt "$OD" ] && { # here input file is newer 
+		if [ "$ID" -nt "$OD" ]; then  # here the input file is newer 
 			printf "u: $ID\n" # so update it
    			processfile $ITEM $1 $2 $3 $BJ 
-		} # otherwise just skip it
+		fi # else just skip it
 	done
 } # end of updatedir
 
@@ -269,6 +272,7 @@ if [ $UPDATE ]; then
 else
 	processdir $1 $2 $3
 fi
+wait # for all sub proccesses to finish
 if [ $CLEAN ]; then cleandir $1 $2 $3; fi
 wait # for all sub proccesses to finish
 
