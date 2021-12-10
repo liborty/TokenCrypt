@@ -109,11 +109,11 @@ The summary at the end, such as the one shown in `test.log`, reports the sizes (
 Option `-q` (`--quiet`) cancels the final report.
 Option `-v` (`--verbose`) adds details of compressing each file. Setting both flags, contradictory as it may seem, turns on the individual files reports and turns off the final summary. The encryption itself is so unproblematic that it does not require any reports.
 
-Once a directory has been compressed and encrypted, it is on subsequent ocassions possible to update the keys and outdir directories (the archive) with the option -u. This will add or recode just the new and updated files. New files are added (marked with a:) and more recent existing files are updated (u:). When the recursive option -r is in use, the same will be applied to subdirectories. Capital letters A,U denote these two operations when applied to whole directories.
+Once a directory has been compressed and encrypted, it is on subsequent occasions possible to update the keys and outdir directories (the archive) with the option -u. This will add or recode just the new and updated files. New files are added (marked with a:) and more recent existing files are updated (u:). When the recursive option -r is in use, the same will be applied to subdirectories. Capital letters A,U denote these two operations when applied to whole directories.
 
-In order for the state of the new indir and its archive to match again exactly and one-to-one, an archive can be also cleaned up with option -c. Files no longer existing in indir will then be deleted (d:) from the arhive. Or whole directories (D:), with -r -c options.
+In order for the state of the new indir and its archive to match again exactly and one-to-one, an archive can be also cleaned up with option -c. Files no longer existing in indir will then be deleted (d:) from the archive. With `-r -c` options, possibly whole directories can be deleted, reported with (D:).
 
-Caution is to be exercised when using the -c option, as any files inadvertently deleted from indir will then be removed from the archive as well. Option `-c` has been made explicit and separate from `-u` deliberately. Thus using `-u` alone is the *cautious updating mode*, which never deletes from the archives. However, it will still overwrite with new erroneous versions.
+Caution should be exercised when using the -c option, as any files that had been inadvertently deleted from indir will then be removed from the archive as well. For added safety, option `-c` is deliberately explicit and separate from `-u`. Thus using `-u` alone is the *cautious updating mode*, which never deletes from the archives. However, it will still overwrite with new erroneous versions of existing files.
 
 The most powerful use (on an existing archive: keydir outdir) is:
 
@@ -123,19 +123,19 @@ ncrpt -r -u -c indir keydir outdir
 
 This will recursively update and clean the archive so that it is as if freshly created from the current state of indir. This is convenient for backing up purposes.
 
-Summary: `ncrpt` (encrypt with vowels left out) executes the tasks of data type analysis, optimal compression selection, compression, key generation, key saving and encryption. Also recursive archiving and subsequent archive updating.
+Summary: `ncrpt` (encrypt with vowels left out) executes the tasks of data type analysis, optimal compression selection, compression, key generation, key saving and encryption. Also recursive archiving and subsequent archive maintenance.
 
 ### `dcrpt [-h][-q][-r][-v] indir keydir outdir`
 
 is the conceptual inverse of `ncrpt`, although it is simpler. Its operations are carried out in  the reverse order.  It reads from indir the encrypted files previously created by `ncrpt` and it also reads their associated keys from `keydir`. They are paired up by their filenames. So, never rename an encrypted file, unless you rename its corresponding key file as well! The two directories must always match.
 
-Following decryption, the relevant decompression method(s) are applied to each file, so that the original files are exactly reconstructed in `outdir`. The compression methods were recorded for each file in the names of the extension(s) of its keyfile.
+Following decryption, the relevant decompression method(s) are applied to each file, so that the original files are exactly reconstructed in `outdir`. The compression method(s) were recorded for each file in the names of the extension(s) of its keyfile.
 
 Summary: `dcrpt` (decrypt with vowels left out) matches the keys, decrypts the binary indir files with them, selects the right decompression methods and  decompresses, thus reconstructing the exact contents of the original directory.
 
-### `crptest testdir` 
+### `crptest testdir`
 
-optionally performs an automated overall test, checking that not a single byte was corrupted anywhere while encrypting and decrypting back the contents of `testdir`.
+optionally performs an automated overall test, checking that not a single byte was corrupted anywhere while encrypting and decrypting back the contents of (any) `testdir`.
 
 ## Background Scripts and Programs (not needed by the user)
 
