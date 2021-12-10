@@ -4,9 +4,11 @@
 
 **Disclaimer:** use at your own risk! No warranties are given or implied. By downloading this software, you agree not to use it for unethical purposes.
 
-**Warning:** the encryption keys and the encrypted files are written to two separate directories. Should you subsequently lose track of the association between them or lose the keys entirely, it will not be possible to reconstruct your original data! When encrypting many different directories, take care to record the mappings.
+**Warning:** the encryption keys and the encrypted files are written to two separate directories. If the association between them is lost/forgotten or the keys are lost entirely, then it is impossible to reconstruct the  original data! Therefore, when encrypting many different directories trees, it is recommended to record their mappings to their keys trees in a safe place, before deleting the original data.
 
 ## Introduction
+
+It is not an objective of TokenCrypt to replace `git` and to keep the complete histories of everything, with its significant costs in complexity and storage. The quest for being totally foolproof is subject to the law of diminishing returns. We do not know for sure if the universe is infinite but we do know that human foolishness certainly is. Therefore, TokenCrypt is more akin to `borg`; an efficient archiver and backing up tool. The key difference, if excuse the pun, lies in TokenCrypt deploying far more secure encryption and sometimes better compression as well.
 
 `ncrpt` reads given input directory (tree) containing API tokens, base64 files and
 any other types of files. Subdirectories are processed recursively with -r option.
@@ -27,28 +29,34 @@ that means strongly encrypted.
 For similar transport reasons, base64 encoding into printable characters is often used to encode binary data.
 
 Security tokens and other types of files may sometimes be
-all mixed up in one directory. This is not the best practice but
-it can arise and it could involve much work to separate them.
-`ncrpt` copes with such mixed directories contents by using automatic data type recognition.
+all mixed up in one common directory. This is not the best practice but
+it can arise and it could involve much work trying to separate them.
+`ncrpt` copes with such mixed directories contents by using automatic data type recognition for each file individually.
 
 ## Installation
 
 This software was developed and tested under Linux. Installation from source needs `make` utility and a `C` compiler, e.g. `clang` or `gcc`. Download or clone this repository and cd into it. Then, for complete fresh installation:  
-`./crptest testing`  
+### `./crptest testing`  
 This will compile all three `C` programs and, after asking for su priviledges, install them and the bash scripts in `/usr/local/bin`. As an added benefit, it will also run locally the same test as is done on github.
 
-Manual alternatives:
+### Manual alternatives:
 
-`sudo ./uninstall`  
+#### `sudo ./uninstall`  
 will delete previously installed programs and scripts. Use to force a completely fresh start. To be followed by:
 
-`make install`  
-Will compile and install everything into `/usr/local/bin`. It may ask for su priviledges for the integrated installation step. Appending `CC=clang` will deploy the clang compiler (if installed). A good reason to perform local compilation is if you suspect that the github binaries may have been compromised or you have some diferent machine architecture. This step should be repeated whenever some programs and scripts have changed, such as after a fresh `git pull`. It will only install the C programs that have actually changed.
+#### `./install`  
+This installs everything without the local compilation. Thus the ready made executables `symcrypt`, `hexcheck` and `hexify`, pulled from the repository, can be installed on `x86_64` architecture. They are compiled from `C` sources and tested automatically at github.com (see the green badge at the top of this document).
 
-`./install`  
-This install everything while skipping the local compilation. Thus the executables `symcrypt`, `hexcheck` and `hexify` pulled from the repository can be installed. They are compiled from `C` sources and tested automatically at github.com (see the green badge).  
-Whether the executables were created by local compilation or just pulled from the repository, this script copies them all into `/usr/local/bin` for system-wide use.  Alternatively, they can be copied manually to any other `bin` directories included in the search path. This does not require `sudo` privileges, e.g.:  
+Whether the executables were created by local compilation or just pulled from the repository, this script copies them all into `/usr/local/bin` for system-wide use.  Alternatively, they can be copied manually to any other `bin` directories and included in the search path. This does not require `sudo` privileges, e.g.:  
 `cp symcrypt hexcheck hexify ncrpt dcrpt keygen crptest ~/bin`
+
+#### `make install`  
+Will compile and install everything into `/usr/local/bin`. It may ask for su priviledges for the integrated installation step. Appending `CC=clang` will deploy the clang compiler (if installed). 
+
+A good reason to perform local compilation is if you suspect that the github binaries may have been compromised or you have some diferent machine architecture. This step should be repeated whenever some programs and scripts have changed, such as after a fresh `git pull`. It will only recompile the C programs that have actually changed.
+
+#### `make`
+This will only compile and install those C programs that have changed and none of the Bash scripts.
 
 ## Dependencies
 
@@ -60,11 +68,11 @@ Standard  `base64` tool which is normally pre-installed on Linux.
 `sudo apt-get install lzma`
   
 `zstd` an alternative compression, selected with `-z` option to `ncrpt`. It needs to be installed with:  
-`sudo apt-get install zstd`.
+`sudo apt-get install zstd`
 
 `dcrpt` issues a warning if any of the utilities are not installed. It is probably best to install them all.
 There is not much difference between lzma and zstd but they both have their fans. `lzma`
-appears to have slightly better compression rate and `zstd` is slightly faster and more controllable. Of course, to unpack/decrypt archives on a new machine, it must have the  compression/decompression utility installed, too.
+appears to have slightly better compression rate and `zstd` is slightly faster and more controllable. Of course, to unpack/decrypt archives on a new machine, it must have the same compression/decompression utility installed, too.
 
 ## Usage
 
@@ -79,24 +87,26 @@ The options explained:
     -c --clean up the archive and the keys,
     -h --help,   
     -q --quiet (suppress the final report),
-    -r --recurse descent into subdirectories,
+    -r --recurse descend into subdirectories,
     -u --update an existing archive and keys,
     -v --verbose information on compressing each file
     -x --hex test for hexadecimal files, 
     -z --zstd compression to be used.     
 
-The tests for hexadecimal and base64 files only need to be selected when the input directory likely contains such files. They are quick, as they usually fail after reading only a few bytes (of the wrong type of file). Should you forget to select them, everything will still work, only the output may take up more space than was strictly necessary.
+The tests for hexadecimal and base64 files only need to be selected when the input directory likely contains such files. They are quick, as they usually fail after reading only a few bytes (of the wrong type of file). Should you forget to select them, everything will still work, only the default compression may take up more space than was strictly necessary.
 
 The last three arguments are mandatory: the input directory, the keys directory and the encrypted directory. Both output directories (`keydir` and `outdir`) will mirror `indir` in their structure and file names; `keydir` will hold the keys and `outdir` will hold the encrypted files.
 
 The summary at the end, such as the one shown in `test.log`, reports the sizes (in bytes) of input and output directories and the total compressed size as a percentage of the original size. The compression to 50% will  compensate for the creation  of the encryption keys. Sometimes even better compression may be achieved.
 
-The quiet flag `-q` cancels the final report.
-The verbose flag `-v` adds details of compressing each file. Setting both flags, contradictory as it may seem, turns on the individual files reports and turns off the final summary. The encryption itself is so unproblematic that it does not need any reports.
+Option `-q` (`--quiet`) cancels the final report.
+Option `-v` (`--verbose`) adds details of compressing each file. Setting both flags, contradictory as it may seem, turns on the individual files reports and turns off the final summary. The encryption itself is so unproblematic that it does not require any reports.
 
-Once a directory has been compressed and encrypted, it is subsequently possible to update the keys and outdir directories (the archive) with the option -u. This will add or recode just the new and updated files. New files are added (marked with a:) and more recent existing files are updated (u:). When the recursive option -r is in use, the same will be applied to subdirectories. Capital letters A,U denote these two operations when applied to whole directories.
+Once a directory has been compressed and encrypted, it is on subsequent ocassions possible to update the keys and outdir directories (the archive) with the option -u. This will add or recode just the new and updated files. New files are added (marked with a:) and more recent existing files are updated (u:). When the recursive option -r is in use, the same will be applied to subdirectories. Capital letters A,U denote these two operations when applied to whole directories.
 
-In order for the state of the new indir and its archive to match again perfectly both ways, an archive can be cleaned up with option -c. Files no longer existing in indir will then be deleted (d:) from the arhive. Or whole directories (D:), using -r -c options.
+In order for the state of the new indir and its archive to match again exactly and one-to-one, an archive can be also cleaned up with option -c. Files no longer existing in indir will then be deleted (d:) from the arhive. Or whole directories (D:), with -r -c options.
+
+Caution is to be exercised when using the -c option, as any files inadvertently deleted from indir will then be removed from the archive as well. Option `-c` has been made explicit and separate from `-u` deliberately. Thus using `-u` alone is the *cautious updating mode*, which never deletes from the archives. However, it will still overwrite with new erroneous versions.
 
 The most powerful use on an already existing archive (keydir outdir) is:
 
@@ -159,7 +169,7 @@ when all the tests were passed. Note that only the summary output `test.log` is 
 
 ## Releases Log
 
-**9Dec21** - Added option -c for cleaning up archive and keys by removing direcories and files which are no longer in the input directory.
+**9Dec21** - Added option -c to `ncrpt` for cleaning up archive and keys by removing directories and files which had been deleted from the input directory. Added a report how many cores of the user's machine are being used.
 
 **8Dec21** - Added option -u to `ncrpt` for updating compressed encrypted archives.
 
