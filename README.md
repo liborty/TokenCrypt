@@ -4,7 +4,13 @@
 
 **Disclaimer:** use at your own risk! No warranties are given or implied. By downloading this software, you agree not to use it for unethical purposes.
 
-**Warning:** the encryption keys and the encrypted files are written to two separate directories. If the association between them is lost/forgotten or the keys are lost entirely, then it is impossible to reconstruct the  original data! Therefore, when encrypting many different directories trees, it is recommended to record their mappings to their keys trees in a safe place, before deleting the original data.
+## Security Advice
+
+The encryption keys and the encrypted files are written into two separate directories. If the association between them is lost/forgotten or the keys are lost entirely, then it is impossible to reconstruct the  original data! Therefore, when encrypting many different directories trees, it is recommended to record their key mappings and to store them in a safe place, before ever deleting the original data.
+
+When using TokenCrypt as a back up and archiving tool, the original data will normally be kept.
+
+The encrypted files (written to outdir) are just meaningless random data and thus can be stored anywhere (even 'on the cloud'), without compromising the security. The same applies to the keys (in keydir), although these reveal the type of compression that was used. The critical part is to prevent a potential eavesdropper from matching up those two directories, as that is the only way to decrypt them.
 
 ## Introduction
 
@@ -31,7 +37,8 @@ For similar transport reasons, base64 encoding into printable characters is ofte
 Security tokens and other types of files may sometimes be
 all mixed up in one common directory. This is not the best practice but
 it can arise and it could involve much work trying to separate them.
-`ncrpt` copes with such mixed directories contents by using automatic data type recognition for each file individually.
+`ncrpt -b -x` copes with such mixed directories contents by
+using automatic data type recognition for each file individually.
 
 ## Installation
 
@@ -78,20 +85,20 @@ appears to have slightly better compression rate and `zstd` is slightly faster a
 
 There are two command line interface (CLI) bash scripts that do most of the work and automate the whole process:
 
-`ncrpt [-b][-c][-h][-q][-r][-u][-v][-x][-z] indir keydir outdir`
+### `ncrpt [-b][-c][-h][-q][-r][-u][-v][-x][-z] indir keydir outdir`
 
-The long versions introduced by `--` are also recognised.
+The long options introduced by `--` are also recognised.
 The options explained:
 
     -b --b64 test for base64 files, 
     -c --clean up the archive and the keys,
     -h --help,   
-    -q --quiet (suppress the final report),
+    -q --quiet suppress the final report,
     -r --recurse descend into subdirectories,
     -u --update an existing archive and keys,
     -v --verbose information on compressing each file
     -x --hex test for hexadecimal files, 
-    -z --zstd compression to be used.     
+    -z --zstd compression to be used instead of lzma.     
 
 The tests for hexadecimal and base64 files only need to be selected when the input directory likely contains such files. They are quick, as they usually fail after reading only a few bytes (of the wrong type of file). Should you forget to select them, everything will still work, only the default compression may take up more space than was strictly necessary.
 
@@ -108,17 +115,17 @@ In order for the state of the new indir and its archive to match again exactly a
 
 Caution is to be exercised when using the -c option, as any files inadvertently deleted from indir will then be removed from the archive as well. Option `-c` has been made explicit and separate from `-u` deliberately. Thus using `-u` alone is the *cautious updating mode*, which never deletes from the archives. However, it will still overwrite with new erroneous versions.
 
-The most powerful use on an already existing archive (keydir outdir) is:
+The most powerful use (on an existing archive: keydir outdir) is:
 
 ```bash
 ncrpt -r -u -c indir keydir outdir
 ```
 
-This will recursively update and clean the archive so that it is as if freshly created from the current state of indir. This is convenient for backup purposes.
+This will recursively update and clean the archive so that it is as if freshly created from the current state of indir. This is convenient for backing up purposes.
 
 Summary: `ncrpt` (encrypt with vowels left out) executes the tasks of data type analysis, optimal compression selection, compression, key generation, key saving and encryption. Also recursive archiving and subsequent archive updating.
 
-`dcrpt [-h][-q][-r][-v] indir keydir outdir`
+### `dcrpt [-h][-q][-r][-v] indir keydir outdir`
 
 is the conceptual inverse of `ncrpt`, although it is simpler. Its operations are carried out in  the reverse order.  It reads from indir the encrypted files previously created by `ncrpt` and it also reads their associated keys from `keydir`. They are paired up by their filenames. So, never rename an encrypted file, unless you rename its corresponding key file as well! The two directories must always match.
 
@@ -126,11 +133,9 @@ Following decryption, the relevant decompression method(s) are applied to each f
 
 Summary: `dcrpt` (decrypt with vowels left out) matches the keys, decrypts the binary indir files with them, selects the right decompression methods and  decompresses, thus reconstructing the exact contents of the original directory.
 
-`crptest` optionally performs an automated overall test, checking that not a single byte was corrupted anywhere.
+### `crptest testdir` 
 
-## Security Advice
-
-The encrypted files (in outdir) are just meaningless random data and thus can be stored anywhere (even 'on the cloud'), without compromising the security. The same applies to the keys (in keydir), although these reveal the type of compression that was used. The critical part is to prevent a potential eavesdropper from matching up those two directories, as that is the only way to decrypt them.
+optionally performs an automated overall test, checking that not a single byte was corrupted anywhere while encrypting and decrypting back the contents of `testdir`.
 
 ## Background Scripts and Programs (not needed by the user)
 
@@ -168,6 +173,8 @@ The 'test' badge at the top of this document lights up green
 when all the tests were passed. Note that only the summary output `test.log` is saved in the repository, not the encrypted, decrypted or key directories.
 
 ## Releases Log
+
+**10Dec21** - Minor improvements to readme manual.
 
 **9Dec21** - Added option -c to `ncrpt` for cleaning up archive and keys by removing directories and files which had been deleted from the input directory. Added a report how many cores of the user's machine are being used.
 
