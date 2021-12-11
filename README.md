@@ -98,7 +98,10 @@ The options explained:
     -x --hex test for hexadecimal files, 
     -z --zstd compression to be used instead of lzma.     
 
-The tests for hexadecimal and base64 files only need to be selected when the input directory likely contains such files. They are quick, as they usually fail after reading only a few bytes (of the wrong type of file). Should you forget to select them, everything will still work, only the default compression may take up more space than was strictly necessary.
+When `-u` option is not given, then by default a new archive is created.  
+Option `-c` only makes sense in combination with `-u`. It will do nothing for a new archive.
+
+The tests for hexadecimal `-x` and base64 `-b` files only need to be selected when the input directory likely contains such files. They are quick, as they usually fail after reading only a few bytes (of the wrong type of file). When omitted by mistake, then everything will still work, only the default compression of these files will take up more space than was strictly necessary.
 
 The last three arguments are mandatory: the input directory, the keys directory and the encrypted directory. Both output directories (`keydir` and `outdir`) will mirror `indir` in their structure and file names; `keydir` will hold the keys and `outdir` will hold the encrypted files.
 
@@ -179,6 +182,14 @@ Then, after some new trivial push from your repository, go back and run:
 This will update only the file(s) that you changed. What may come as a surprise is also the number of files added/changed by git in `.git`.
 
 Note that TokenCrypt does not leave any such large hidden footprints on your filesystem.
+
+## To Do
+
+At the moment,  there is a vulnerability to specialist search engines going through the whole internet and detecting all the matching pairs of directory structures, file names and sizes. Thus possibly matching up keydir with outdir, even when they were uploaded to two unrelated places.
+
+This will be prevented in the next planned major release of TokenCrypt. All the keys for the whole archive will be packed into one common linear file. Keydir will then no longer record any directory structure or individual filenames and sizes.
+
+There will be some price to pay in terms of the execution time for the archive updates.
 
 ## Releases Log
 

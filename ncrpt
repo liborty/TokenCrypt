@@ -53,7 +53,7 @@ function processfile {
 	# generate and write out the key of the same size as the infile
 	keygen $INFILE > $KEYFILE
 	# encrypt with it and write to OUTFILE 
-	symcrypt $INFILE $KEYFILE $OUTFILE
+	symcrypt $INFILE $KEYFILE $OUTFILE &
 	rm $OUTFILE.tmp000 $OUTFILE.tmp001 2> /dev/null  #tidy up if needed
 }
 
@@ -87,9 +87,9 @@ function processdir {
 
 	# sort files in INDIR by size
 	# stripping the path path prior to using ls was done thus: FILEND=${INFILE##*/} 
-	local ITEMS=$(ls -SAL $1)
+	local ITEMS=$(ls -AL $1)		#$(ls -SAL $1)
 	# prepare to fire off subshells
-	local BJ=\&
+	# local BJ=\&
 
 	# iterate through the listing
 	for ITEM in $ITEMS; do
@@ -102,8 +102,8 @@ function processdir {
 		fi
    		[ -f "$IND" ] || continue # only process genuine file now
  		# turn off subshells when file size falls below BACKSZ
-   		[ -z "$BJ" ] || [ $( stat -c%s $IND ) -ge $BACKSZ ] || BJ='' 
-   		processfile $IND $2/$ITEM $3/$ITEM $BJ 
+   		# [ -z "$BJ" ] || [ $( stat -c%s $IND ) -ge $BACKSZ ] || BJ='' 
+   		processfile $IND $2/$ITEM $3/$ITEM & #$BJ 
 	done
 } # end of processdir
 
@@ -122,9 +122,9 @@ function updatedir {
 
 	# sort files in INDIR by size
 	# stripping the path path prior to using ls was done thus: FILEND=${INFILE##*/} 
-	local ITEMS=$(ls -SAL $1)
+	local ITEMS=$(ls -AL $1)  # $(ls -SAL $1)
 	# prepare to fire off subshells
-	local BJ=\&
+	# local BJ=\&
 	# iterate through the listing checking for newer items
 	for ITEM in $ITEMS; do
 		local ID=$1/$ITEM # append $ITEM to $INDIR path
@@ -135,14 +135,14 @@ function updatedir {
 				[ -d "$OD" ] || { # here matching dir does not exist
 					printf " A: $ID\n" # so add it
 					# just push ITEM onto paths 
-					processdir $ID $2/$ITEM $OD $BJ
+					processdir $ID $2/$ITEM $OD & #$BJ
 					continue
 				}
 				# test the dirs modification times
 				# note that -nt only works for additions/deletions to dirs			
 				if [ $(stat -c%Y $ID) -gt $(stat -c%Y $OD) ]; then 
 					printf " U: $ID\n" # so update it
-					updatedir $ID $2/$ITEM $OD $BJ
+					updatedir $ID $2/$ITEM $OD & #$BJ
 					continue
 				fi
 				continue # up to date dir
@@ -151,15 +151,15 @@ function updatedir {
 		fi
    		[ -f "$ID" ] || continue # only process genuine files now
  		# turn off subshells when file size falls below BACKSZ
-   		[ -z "$BJ" ] || [ $( stat -c%s $ID ) -ge $BACKSZ ] || BJ='' 
+   		# [ -z "$BJ" ] || [ $( stat -c%s $ID ) -ge $BACKSZ ] || BJ='' 
 		[ -e "$OD" ] || { # here $OD file does not exist
 			printf "   a: $ID\n" # so add it
-			processfile $ID $2/$ITEM $OD $BJ 
+			processfile $ID $2/$ITEM $OD & #$BJ 
 			continue
 		}
 		if [ "$ID" -nt "$OD" ]; then  # here the input file is newer 
 			printf "   u: $ID\n" # so update it
-   			processfile $ID $2/$ITEM $OD $BJ 
+   			processfile $ID $2/$ITEM $OD & #$BJ 
 		fi # else just skip it
 	done
 } # end of updatedir
@@ -193,7 +193,7 @@ function cleandir {
 			if [ -n "$RECURSE" ]; then # but only when recursing
 				[ -d "$ID" ] || { # here matching $INDIR dir does not exist
 					printf " D: $OD $KD\n" # so remove it 
-					rm -rf $OD $KD
+					rm -rf $OD $KD &
 					continue
 				}			
 				cleandir $ID $KD $OD &  # otherwise recurse
@@ -278,7 +278,6 @@ if [ $CLEAN ]; then
 	printf "$PROGN: cleaning up archive $3\n" 
 	cleandir $1 $2 $3
 fi
-
 wait # for all sub proccesses to finish
 
 # optional final report
