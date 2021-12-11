@@ -10,9 +10,9 @@ BACKSZ=10000 # size of files to be encrypted in the subshells
 # it expects four arguments: ITEM INDIR KEYDIR OUTDIR
 function processfile {
 
-	local INFILE=$2/$1 
-	local KEYFILE=$3/$1
-	local OUTFILE=$4/$1 
+	local INFILE=$1 
+	local KEYFILE=$2
+	local OUTFILE=$3 
 
    	if [ -f $KEYFILE ]; then # found key with no extra extensions
 		symcrypt $KEYFILE $INFILE $OUTFILE # just decrypt the infile and save it
@@ -89,7 +89,7 @@ function processdir {
    		[ -f "$IND" ] || continue # only process genuine file now
  		# turn off subshells when file size falls below BACKSZ
    		[ -z "$BJ" ] || [ $( stat -c%s $IND ) -ge $BACKSZ ] || BJ='' 
-   		processfile $ITEM $1 $2 $3 $BJ
+   		processfile $IND $2/$ITEM $3/$ITEM $BJ
 	done
 } # end of processdir
 

@@ -14,9 +14,9 @@ BACKSZ=10000 # size of files to be encrypted in the subshells
 # creates and cleans up two temporary files in OUTDIR
 function processfile {
 
-	local INFILE=$2/$1 
-	local KEYFILE=$3/$1
-	local OUTFILE=$4/$1
+	local INFILE=$1 
+	local KEYFILE=$2
+	local OUTFILE=$3
 	local EX="${1##*.}" # this file's extension
 	EX=${EX,,} # convert to lower case for ease of detecting either
 
@@ -32,7 +32,7 @@ function processfile {
    			fi
 		}
 
-		[ $B64TEST ] && [ "$INFILE" = "$2/$1" ] && { #  still the original input file?
+		[ $B64TEST ] && [ "$INFILE" = "$1" ] && { #  still the original input file?
    			base64 -d -w 0 $INFILE > $OUTFILE.tmp000 2>/dev/null # turns base64 into binary, saving 25%
    			if [ "$?" -eq 0 ]; then	# status of base64 when INFILE was entirely in base64
 				INFILE="$OUTFILE".tmp000 # now this becomes the binary file to further compress
@@ -96,14 +96,14 @@ function processdir {
 		local IND=$1/$ITEM # append $ITEM to $INDIR path
    		if [ -d "$IND" ]; then  # recursively process existing subdirectory?
 			if [ -n "$RECURSE" ]; then  # just push ITEM onto paths, no changing of directories
-				processdir $IND $2/$ITEM $3/$ITEM $BJ
+				processdir $IND $2/$ITEM $3/$ITEM &
 			fi
 			continue # either processed or ignored this subdir now
 		fi
    		[ -f "$IND" ] || continue # only process genuine file now
  		# turn off subshells when file size falls below BACKSZ
    		[ -z "$BJ" ] || [ $( stat -c%s $IND ) -ge $BACKSZ ] || BJ='' 
-   		processfile $ITEM $1 $2 $3 $BJ 
+   		processfile $IND $2/$ITEM $3/$ITEM $BJ 
 	done
 } # end of processdir
 
@@ -154,12 +154,12 @@ function updatedir {
    		[ -z "$BJ" ] || [ $( stat -c%s $ID ) -ge $BACKSZ ] || BJ='' 
 		[ -e "$OD" ] || { # here $OD file does not exist
 			printf "   a: $ID\n" # so add it
-			processfile $ITEM $1 $2 $3 $BJ 
+			processfile $ID $2/$ITEM $OD $BJ 
 			continue
 		}
 		if [ "$ID" -nt "$OD" ]; then  # here the input file is newer 
 			printf "   u: $ID\n" # so update it
-   			processfile $ITEM $1 $2 $3 $BJ 
+   			processfile $ID $2/$ITEM $OD $BJ 
 		fi # else just skip it
 	done
 } # end of updatedir
