@@ -46,7 +46,7 @@ function processfile {
 		symcrypt $KEYFILE.hex.lz $INFILE | lzma -d | hexify > $OUTFILE
 		return
 	fi
-	if [ -f $KEYFILE.base64.lz ]; then # found b64 and lz compressed
+	if [ -f $KEYFILE.b64.lz ]; then # found b64 and lz compressed
 		symcrypt $KEYFILE.b64.lz $INFILE | lzma -d | base64 -w 0 > $OUTFILE
 		return
 	fi
