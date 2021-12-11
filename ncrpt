@@ -53,7 +53,7 @@ function processfile {
 	# generate and write out the key of the same size as the infile
 	keygen $INFILE > $KEYFILE
 	# encrypt with it and write to OUTFILE 
-	symcrypt $INFILE $KEYFILE $OUTFILE &
+	symcrypt $INFILE $KEYFILE $OUTFILE 
 	rm $OUTFILE.tmp000 $OUTFILE.tmp001 2> /dev/null  #tidy up if needed
 }
 
