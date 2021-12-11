@@ -6,15 +6,13 @@
 
 ## Security Advice
 
-The encryption keys and the encrypted files are written into two separate directories. If the association between them is lost/forgotten or the keys are lost entirely, then it is impossible to reconstruct the  original data! Therefore, when encrypting many different directories trees, it is recommended to record their key mappings and to store them in a safe place, before ever deleting the original data.
+The encryption keys (keydir) and the encrypted files (outdir) are written into two separate directories with user specified names. Should the association between them be lost or forgotten or the keydir be lost entirely, then it will be impossible to reconstruct the original data! Therefore, it is recommended to record the chosen directories names and to store them in a safe place, before ever deleting the original data. When using TokenCrypt as a back up and archiving tool, then the original data will normally be kept in place.
 
-When using TokenCrypt as a back up and archiving tool, the original data will normally be kept.
-
-The encrypted files (written to outdir) are just meaningless random data and thus can be stored anywhere (even 'on the cloud'), without compromising the security. The same applies to the keys (in keydir), although these reveal the type of compression that was used. The critical part is to prevent a potential eavesdropper from matching up those two directories, as that is the only way to decrypt them.
+The encrypted files (written to outdir) are just meaningless random data and thus can be stored anywhere (even 'on the cloud'), without compromising security. The same applies to their keys (in keydir), although these reveal the type of compression that was used. The critical part is to prevent a potential eavesdropper from matching up those two directories, as that is the only way to decrypt them. That is why they are not given related names automatically. Normally, the user should choose unrelated names for them and keep them in separate places.
 
 ## Introduction
 
-It is not an objective of TokenCrypt to replace `git` and to keep the complete histories of everything, with its significant costs in complexity and storage. The quest for being totally foolproof is subject to the law of diminishing returns. We do not know for sure if the universe is infinite but we do know that human foolishness certainly is. Therefore, TokenCrypt is more akin to `borg`; an efficient archiver and backing up tool. The key difference, if excuse the pun, lies in TokenCrypt deploying far more secure encryption and sometimes better compression as well.
+It is not an objective of TokenCrypt to replace `git` and to keep the complete histories of everything, as that carries significant costs in complexity and storage. The quest for being totally foolproof is subject to the law of diminishing returns, as foolishness knows no bounds. TokenCrypt is more akin to `borg`; an efficient archiver and backing up tool. The key difference, if excuse the pun, lies in TokenCrypt deploying far more secure encryption and sometimes better compression as well. On the other hand, in its update mode, it only maintains the current version of the archive. Historical checkpoints are up to the user to create and keep, as and when wanted.
 
 `ncrpt` reads given input directory (tree) containing API tokens, base64 files and
 any other types of files. Subdirectories are processed recursively with -r option.
@@ -171,6 +169,16 @@ An automated github action compiles the C programs and runs **`crptest`** over t
 It tests all the main types of files: hexadecimal, base64, plain text and binary. It also tests reursive descent into a subdirectory.
 The 'test' badge at the top of this document lights up green
 when all the tests were passed. Note that only the summary output `test.log` is saved in the repository, not the encrypted, decrypted or key directories.
+
+Exercise for the reader:
+
+Suppose you maintain some git repository, say `mygitrepo`. Go one level up:  `cd ..`, and run:  
+`ncrpt -r mygitrepo mygitkeys gencrypted`  
+Then, after some new trivial push from your repository, go back and run:  
+`ncrpt -r -u -c mygitrepo mygitkeys gencrypted`  
+This will update only the file(s) that you changed. What may come as a surprise is also the number of files added/changed by git in `.git`.
+
+Note that TokenCrypt does not leave any such large hidden footprints on your filesystem.
 
 ## Releases Log
 
