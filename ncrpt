@@ -21,7 +21,7 @@ function processfile {
 	EX=${EX,,} # convert to lower case for ease of detecting either
 
 	# if EX passes one of these tests, then avoid all compression 
-	[ "$EX" = 'jpg' ] || [ "$EX" = 'mp4' ] || [ "$EX" = 'zip' ] || [ "$EX" = '7z' ] || \
+	[ "$EX" = 'jpg' ] || [ "$EX" = 'jpeg' ] || [ "$EX" = 'mp4' ] || [ "$EX" = 'zip' ] || [ "$EX" = '7z' ] || \
 	[ "$EX" = 'lz' ] || [ "$EX" = 'zst' ] || [ "$EX" = 'gz' ] || [ "$EX" = 'bz2' ] || {
 
     	[ $HEXTEST ] && {
@@ -282,7 +282,7 @@ wait # for all sub proccesses to finish
 
 # optional final report
 if ! [ $QUIET ]; then
-	SIZES=( $( du -hbs $3 $1 ) ) # array of size,dir,size,dir
+	SIZES=( $( du -bs $3 $1 ) ) # array of size,dir,size,dir
 	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} => ${SIZES[1]} ${SIZES[0]} "
 	if [ ${SIZES[0]} = ${SIZES[2]} ]; then printf "(100 %%)\n"; else
 		CR=$(( (5+100000*${SIZES[0]}/${SIZES[2]})/10 )) # calculate percentage rounded to two d.p.	
