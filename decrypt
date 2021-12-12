@@ -4,15 +4,13 @@
 # writes restored files with the same names into writeable directory 'outdir' 
 
 PROGN=${0##*/}
-BACKSZ=10000 # size of files to be encrypted in the subshells
 
 # processfile will decompress and decrypt one file
-# it expects four arguments: ITEM INDIR KEYDIR OUTDIR
+# it expects four arguments: ITEM INDIR KEYFILE OUTDIR
 function processfile {
 
 	local INFILE=$1 
-	local KEYFILE=$2
-	local OUTFILE=$3 
+	local OUTFILE=$2
 
    	if [ -f $KEYFILE ]; then # found key with no extra extensions
 		symcrypt $KEYFILE $INFILE $OUTFILE # just decrypt the infile and save it
@@ -56,44 +54,28 @@ function processfile {
 # function to process a whole directory
 # takes three arguments: INDIR KEYDIR OUTDIR
 function processdir {
-	[ -n "$3" ] || { 
-		printf "$PROGN quitting, outdir is not set!\n" >&2
-		exit 2
-	}
-	[ -e "$3" ] && { 
-		printf "$PROGN quitting, outdir $3 already exists!\n" >&2
-		exit 2
-	}
-	# create the ouput directory
-	mkdir $3
-	[ "$?" -ne 0 ] && {
-		printf "$PROGN quitting, failed to create output directory $3!\n" >&2
-		exit 2
-	}
 
-	# sort files in INDIR by size
-	# stripping the path path prior to using ls was done thus: FILEND=${INFILE##*/} 
-	local ITEMS=$(ls -SAL $1)
-	# prepare to fire off subshells
-	local BJ=\&
-
+	# create the ouput directory 
+	mkdir $2 || {
+		printf "$PROGN processdir: failed to create output directory '$2'!\n" >&2
+		exit 2
+	}
+	local ITEMS=$(ls -AL $1)
 	# iterate through the listing
 	for ITEM in $ITEMS; do
 		local IND=$1/$ITEM
    		if [ -d "$IND" ]; then  # recursively process existing subdirectory?
 			if [ -n "$RECURSE" ]; then  # just push ITEM onto paths, no changing of directories
-				processdir $IND $2/$ITEM $3/$ITEM &
+				processdir $IND $2/$ITEM &
 			fi
 			continue # either processed or ignored this subdir now
 		fi
    		[ -f "$IND" ] || continue # only process genuine file now
- 		# turn off subshells when file size falls below BACKSZ
-   		[ -z "$BJ" ] || [ $( stat -c%s $IND ) -ge $BACKSZ ] || BJ='' 
-   		processfile $IND $2/$ITEM $3/$ITEM $BJ
+   		processfile $IND $2/$ITEM 
 	done
 } # end of processdir
 
-function usage { printf "Usage: $PROGN [-h][-q][-r][-v] indir keydir outdir\n" >&2; }
+function usage { printf "Usage: $PROGN [-h][-q][-r][-v] indir keyfile outdir\n" >&2; }
 
 # Main starts here
 # get options, including long options, extracted as arg to the last option '-'
@@ -122,14 +104,28 @@ shift $((OPTIND-1)) # remove already parsed options and args from $@ list
 
 # Globally validate the input directory
 [ -d "$1" ] || { 
-	printf "$PROGN quitting, input directory $1 not found\n" >&2
+	printf "$PROGN quitting, input directory '$1' not found\n" >&2
 	exit 2
 }
-# Globally validate the key directory
-[ -d "$2" ] || { 
-	printf "$PROGN quitting, key directory $2 not found\n" >&2
+# Globally validate and set the key file
+[ -f "$2" ] || { 
+	printf "$PROGN quitting, key file '$2' not found\n" >&2
 	exit 2
 }
+KEYFILE=$2
+
+# Globally validate the output directory
+[ -n "$3" ] || { 
+	printf "$PROGN quitting, outdir not specified!\n" >&2
+	exit 2
+}
+
+[ -e "$3" ] && { 
+	printf "$PROGN quitting, output directory '$3' already exists!\n" >&2
+	exit 2
+}
+
+
 # Warn about missing decompressors
 if [ -z $( which zstd ) ]; then 
 	printf "$PROGN warning, zstd compressor is not installed, will not decompress .zst files\n" >&2
@@ -145,7 +141,7 @@ if [ -z $( which hexify ) ]; then
 fi
 
 printf "$PROGN: decrypting and decompressing, using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
-processdir $1 $2 $3
+processdir $1 $3
 wait # for all sub proccesses to finish
 
 # optional final report
