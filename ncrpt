@@ -282,7 +282,7 @@ wait # for all sub proccesses to finish
 # optional final report
 if ! [ $QUIET ]; then
 	SIZES=( $( du -bs $3 $1 ) ) # array of size,dir,size,dir
-	let "SIZES[0]-=4096" 
+	let "SIZES[0]-=4096"
 	let "SIZES[2]-=4096"	
 	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} => ${SIZES[1]} ${SIZES[0]} "
 	if [ ${SIZES[0]} = ${SIZES[2]} ]; then printf "(100 %%)\n"; else

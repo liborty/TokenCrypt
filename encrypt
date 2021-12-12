@@ -58,10 +58,10 @@ function processfile {
 	keygen $INFILE > $OUTFILE.key
 	# encrypt with it and write to final OUTFILE 
 	if [ "$INFILE" = "$OUTFILE" ]; then
-		symcrypt $OUTFILE.key $INFILE $OUTFILE.tmp
+		symcrypt < $INFILE $OUTFILE.key > $OUTFILE.tmp
 		mv $OUTFILE.tmp $OUTFILE
 	else
-		symcrypt $OUTFILE.key $INFILE $OUTFILE
+		symcrypt < $INFILE $OUTFILE.key > $OUTFILE
 	fi
 	# append the key to the global linear keyfile
 	cat $OUTFILE.key >> "$KEYFILE"
@@ -82,8 +82,7 @@ function processdir {
 	}
 
 	# create the ouput directory
-	mkdir $2 
-	[ "$?" -ne 0 ] && {
+	mkdir $2 || {
 		printf "$PROGN quitting, failed to create output directory '$2'!\n" >&2
 		exit 2
 	}
@@ -96,12 +95,12 @@ function processdir {
 		local IND=$1/$ITEM # append $ITEM to $INDIR path
    		if [ -d "$IND" ]; then  # recursively process existing subdirectory?
 			if [ -n "$RECURSE" ]; then  # just push ITEM onto paths, no changing of directories
-				processdir $IND $2/$ITEM &
+				processdir $IND $2/$ITEM 
 			fi
 			continue # either processed or ignored this subdir now
 		fi
    		[ -f "$IND" ] || continue # only process genuine file now
-   		processfile $IND $2/$ITEM & 
+   		processfile $IND $2/$ITEM  
 	done
 } # end of processdir
 
@@ -121,8 +120,6 @@ function updatedir {
 	# sort files in INDIR by size
 	# stripping the path path prior to using ls was done thus: FILEND=${INFILE##*/} 
 	local ITEMS=$(ls -AL $1)  # $(ls -SAL $1)
-	# prepare to fire off subshells
-	# local BJ=\&
 	# iterate through the listing checking for newer items
 	for ITEM in $ITEMS; do
 		local ID=$1/$ITEM # append $ITEM to $INDIR path
@@ -299,8 +296,8 @@ wait # for all sub proccesses to finish
 # optional final report
 if [ ! $QUIET ]; then
 	SIZES=( $( du -bs $3 $1 ) ) # array of size,dir,size,
-	let "SIZES[0]-=4096" # subtract the size of the top directory files
-	let "SIZES[2]-=4096" # as they are not actual data
+	let SIZES[0]-=4096 # subtract the size of the top directory files
+	let SIZES[2]-=4096 # as they are not actual data
 	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} => ${SIZES[1]} ${SIZES[0]} "
 	if [ ${SIZES[0]} = ${SIZES[2]} ]; then 
 		printf "(100 %%)\n"

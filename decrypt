@@ -11,44 +11,70 @@ function processfile {
 
 	local INFILE=$1 
 	local OUTFILE=$2
+	local FSIZE=`stat -c%s $INFILE`
+ 	local LASTEXT=${INFILE##*.}
+	local SANSEXT=${OUTFILE%.*}
 
-   	if [ -f $KEYFILE ]; then # found key with no extra extensions
-		symcrypt $KEYFILE $INFILE $OUTFILE # just decrypt the infile and save it
+	if [ "$LASTEXT" = 'hex' ]; then # found hex extension
+		dd skip=$KEYCOUNT count=1 bs=$FSIZE if=$KEYFILE 2>&- | \
+		symcrypt $INFILE | hexify > $SANSEXT
+		let "KEYCOUNT+=$FSIZE"
 		return
 	fi
-	if [ -f $KEYFILE.hex ]; then # found hex extension
-		symcrypt $KEYFILE.hex $INFILE | hexify > $OUTFILE
+	if [ "$LASTEXT" = 'b64' ]; then # found b64 extension
+		dd skip=$KEYCOUNT count=1 bs=$FSIZE if=$KEYFILE 2>&- | \
+		symcrypt $INFILE | base64 -w 0 > $SANSEXT
+		let "KEYCOUNT+=$FSIZE"
 		return
 	fi
-	if [ -f $KEYFILE.b64 ]; then # found b64 extension
-		symcrypt $KEYFILE.b64 $INFILE | base64 -w 0 > $OUTFILE
+
+	local PREVEXT=${SANSEXT##*.}
+	SANSEXT=${SANSEXT%.*}
+
+	if [ "$LASTEXT" = 'zst' ]; then
+		if [ "$PREVEXT" = 'hex' ]; then # found hex and zst
+			dd skip=$KEYCOUNT count=1 bs=$FSIZE if=$KEYFILE 2>&- | \
+			symcrypt $INFILE | zstd -d -c | hexify > $SANSEXT
+			let "KEYCOUNT+=$FSIZE"
+			return
+		fi
+		if [ "$PREVEXT" = 'b64' ]; then # found b64 and zst
+			dd skip=$KEYCOUNT count=1 bs=$FSIZE if=$KEYFILE 2>&- | \
+			symcrypt $INFILE | zstd -d -c | base64 -w 0 > $SANSEXT
+			let "KEYCOUNT+=$FSIZE"
+			return
+		fi
+		# unrecognised PREVEXT, must be plain zst
+		dd skip=$KEYCOUNT count=1 bs=$FSIZE if=$KEYFILE 2>&- | \
+		symcrypt $INFILE | zstd -d -c > $SANSEXT.$PREVEXT
+		let "KEYCOUNT+=$FSIZE"
 		return
 	fi
-	if [ -f $KEYFILE.zst ]; then # found compressed plain
-		symcrypt $KEYFILE.zst $INFILE | zstd -d -c > $OUTFILE
+
+	if [ "$LASTEXT" = 'lz' ]; then
+		if [ "$PREVEXT" = 'hex' ]; then # found hex and lz
+			dd skip=$KEYCOUNT count=1 bs=$FSIZE if=$KEYFILE 2>&- | \
+			symcrypt $INFILE | lzma -d | hexify > $SANSEXT
+			let "KEYCOUNT+=$FSIZE"
+			return
+		fi
+		if [ "$PREVEXT" = 'b64' ]; then # found b64 and zst
+			dd skip=$KEYCOUNT count=1 bs=$FSIZE if=$KEYFILE 2>&- | \
+			symcrypt $INFILE | lzma -d | base64 -w 0 > $SANSEXT
+			let "KEYCOUNT+=$FSIZE"
+			return
+		fi
+		# unrecognised PREVEXT, must be plain lz
+		dd skip=$KEYCOUNT count=1 bs=$FSIZE if=$KEYFILE 2>&- | \
+		symcrypt $INFILE | lzma -d > $SANSEXT.$PREVEXT
+		let "KEYCOUNT+=$FSIZE"
 		return
 	fi
-	if [ -f $KEYFILE.hex.zst ]; then # found hex and zst
-		symcrypt $KEYFILE.hex.zst $INFILE | zstd -d -c | hexify > $OUTFILE
-		return
-	fi
-	if [ -f $KEYFILE.b64.zst ]; then # found b64 and zst
-		symcrypt $KEYFILE.b64.zst $INFILE | zstd -d -c | base64 -w 0 > $OUTFILE
-		return
-	fi
-	if [ -f $KEYFILE.lz ]; then # found lzma compressed, plain
-		symcrypt $KEYFILE.lz $INFILE | lzma -d > $OUTFILE
-		return
-	fi
-	if [ -f $KEYFILE.hex.lz ]; then # found hex and lz compressed
-		symcrypt $KEYFILE.hex.lz $INFILE | lzma -d | hexify > $OUTFILE
-		return
-	fi
-	if [ -f $KEYFILE.b64.lz ]; then # found b64 and lz compressed
-		symcrypt $KEYFILE.b64.lz $INFILE | lzma -d | base64 -w 0 > $OUTFILE
-		return
-	fi
-	printf "$PROGN failed to find key for: $INFILE\n" 
+	# unrecognised LASTEXT, must be uncompressed
+	dd skip=$KEYCOUNT count=1 bs=$FSIZE if=$KEYFILE 2>&- | \
+	symcrypt $INFILE > $OUTFILE
+	let "KEYCOUNT+=$FSIZE"
+	return
 }
 
 # function to process a whole directory
@@ -66,7 +92,7 @@ function processdir {
 		local IND=$1/$ITEM
    		if [ -d "$IND" ]; then  # recursively process existing subdirectory?
 			if [ -n "$RECURSE" ]; then  # just push ITEM onto paths, no changing of directories
-				processdir $IND $2/$ITEM &
+				processdir $IND $2/$ITEM
 			fi
 			continue # either processed or ignored this subdir now
 		fi
@@ -113,6 +139,7 @@ shift $((OPTIND-1)) # remove already parsed options and args from $@ list
 	exit 2
 }
 KEYFILE=$2
+KEYCOUNT=0
 
 # Globally validate the output directory
 [ -n "$3" ] || { 
@@ -124,7 +151,6 @@ KEYFILE=$2
 	printf "$PROGN quitting, output directory '$3' already exists!\n" >&2
 	exit 2
 }
-
 
 # Warn about missing decompressors
 if [ -z $( which zstd ) ]; then 
@@ -147,8 +173,8 @@ wait # for all sub proccesses to finish
 # optional final report
 if ! [ $QUIET ]; then
 	SIZES=( $( du -hbs $3 $1 ) ) # array of size,dir,size,dir
-	let "SIZES[0]-=4096" # subtract the size of the top directory files
-	let "SIZES[2]-=4096" # as they are not actual data
+	let SIZES[0]-=4096 # subtract the size of the top directory files
+	let SIZES[2]-=4096 # as they are not actual data
 	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} "
 	if [ ${SIZES[0]} = ${SIZES[2]} ]; then printf "(100 %%) => ${SIZES[1]} ${SIZES[0]}\n"; else
 		CR=$(( (5+100000*${SIZES[2]}/${SIZES[0]})/10 )) # calculate percentage rounded to two d.p.	
