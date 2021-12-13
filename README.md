@@ -136,13 +136,13 @@ optionally performs an automated overall test, checking that not a single byte w
 
 ## Work in Progress
 
-At the moment,  there is a vulnerability to specialist search engines going through the whole internet and possibly finding all the matching pairs of directory structures, file names and sizes. Thus, in theory, they could match up keydir with outdir, even when they were uploaded to two unrelated places.
+At the moment,  there is a vulnerability to specialist search engines going through the whole internet and possibly finding  the matching pairs of directory structures, file names and sizes. Thus, in theory, they could match up keydir with outdir, even when they were uploaded to two unrelated places.
 
 Addressing this vulnarability, two new scripts are being introduced: `encrypt` and `decrypt`. They are intended as a more secure, albeit slower alternative. They will be available alongside `ncrpt` and `dcrpt` and behave similarly from the users' perspective.
 
-All the keys for the whole archive will be packed into one common linear file. Keydir will then no longer record any directory structure or individual filenames and sizes.
+All the keys for the whole archive will be packed into one common linear file. Keydir will then no longer record any directory structure or individual filenames and sizes. There will be just a single keyfile for the whole archive.
 
-There will be some price to pay in terms of the execution time.
+There will be some price to pay in terms of the execution time, as the whole tree structure will have to be traversed sequentially, thus reducing the opportunities for (current) parallel execution.
 
 These two scripts are currently in 'alpha stage'. They compress,encrypt, decrypt and decompress but do little else.
 Watch this space for announcements when they become fully operational.
