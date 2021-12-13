@@ -16,63 +16,47 @@ function processfile {
 	local SANSEXT=${OUTFILE%.*}
 
 	if [ "$LASTEXT" = 'hex' ]; then # found hex extension
-		dd skip=$KEYCOUNT count=1 bs=$FSIZE if=$KEYFILE 2>&- | \
+		dd skip=$KEYCOUNT count=$FSIZE bs=1 if=$KEYFILE 2>&- | \
 		symcrypt $INFILE | hexify > $SANSEXT
 		let "KEYCOUNT+=$FSIZE"
 		return
 	fi
 	if [ "$LASTEXT" = 'b64' ]; then # found b64 extension
-		dd skip=$KEYCOUNT count=1 bs=$FSIZE if=$KEYFILE 2>&- | \
+		dd skip=$KEYCOUNT count=$FSIZE bs=1 if=$KEYFILE 2>&- | \
 		symcrypt $INFILE | base64 -w 0 > $SANSEXT
 		let "KEYCOUNT+=$FSIZE"
 		return
 	fi
 
+	if [ "$LASTEXT" = 'zst' ]; then
+		local DEPRESS='zstd -d -c'
+	else if [ "$LASTEXT" = 'lz' ]; then
+		local DEPRESS='lzma -d'
+	else # unrecognised LASTEXT, must be uncompressed
+		dd skip=$KEYCOUNT count=$FSIZE bs=1 if=$KEYFILE 2>&- | \
+		symcrypt $INFILE > $OUTFILE
+		let "KEYCOUNT+=$FSIZE"
+		return
+	fi; fi
+
 	local PREVEXT=${SANSEXT##*.}
 	SANSEXT=${SANSEXT%.*}
 
-	if [ "$LASTEXT" = 'zst' ]; then
-		if [ "$PREVEXT" = 'hex' ]; then # found hex and zst
-			dd skip=$KEYCOUNT count=1 bs=$FSIZE if=$KEYFILE 2>&- | \
-			symcrypt $INFILE | zstd -d -c | hexify > $SANSEXT
-			let "KEYCOUNT+=$FSIZE"
-			return
-		fi
-		if [ "$PREVEXT" = 'b64' ]; then # found b64 and zst
-			dd skip=$KEYCOUNT count=1 bs=$FSIZE if=$KEYFILE 2>&- | \
-			symcrypt $INFILE | zstd -d -c | base64 -w 0 > $SANSEXT
-			let "KEYCOUNT+=$FSIZE"
-			return
-		fi
-		# unrecognised PREVEXT, must be plain zst
-		dd skip=$KEYCOUNT count=1 bs=$FSIZE if=$KEYFILE 2>&- | \
-		symcrypt $INFILE | zstd -d -c > $SANSEXT.$PREVEXT
+	if [ "$PREVEXT" = 'hex' ]; then # found hex 
+		dd skip=$KEYCOUNT count=$FSIZE bs=1 if=$KEYFILE 2>&- | \
+		symcrypt $INFILE | $DEPRESS | hexify > $SANSEXT
 		let "KEYCOUNT+=$FSIZE"
 		return
 	fi
-
-	if [ "$LASTEXT" = 'lz' ]; then
-		if [ "$PREVEXT" = 'hex' ]; then # found hex and lz
-			dd skip=$KEYCOUNT count=1 bs=$FSIZE if=$KEYFILE 2>&- | \
-			symcrypt $INFILE | lzma -d | hexify > $SANSEXT
-			let "KEYCOUNT+=$FSIZE"
-			return
-		fi
-		if [ "$PREVEXT" = 'b64' ]; then # found b64 and zst
-			dd skip=$KEYCOUNT count=1 bs=$FSIZE if=$KEYFILE 2>&- | \
-			symcrypt $INFILE | lzma -d | base64 -w 0 > $SANSEXT
-			let "KEYCOUNT+=$FSIZE"
-			return
-		fi
-		# unrecognised PREVEXT, must be plain lz
-		dd skip=$KEYCOUNT count=1 bs=$FSIZE if=$KEYFILE 2>&- | \
-		symcrypt $INFILE | lzma -d > $SANSEXT.$PREVEXT
+	if [ "$PREVEXT" = 'b64' ]; then # found b64 
+		dd skip=$KEYCOUNT count=$FSIZE bs=1 if=$KEYFILE 2>&- | \
+		symcrypt $INFILE | $DEPRESS | base64 -w 0 > $SANSEXT
 		let "KEYCOUNT+=$FSIZE"
 		return
 	fi
-	# unrecognised LASTEXT, must be uncompressed
-	dd skip=$KEYCOUNT count=1 bs=$FSIZE if=$KEYFILE 2>&- | \
-	symcrypt $INFILE > $OUTFILE
+	# unrecognised PREVEXT, must be default compressed
+	dd skip=$KEYCOUNT count=$FSIZE bs=1 if=$KEYFILE 2>&- | \
+	symcrypt $INFILE | $DEPRESS > $SANSEXT.$PREVEXT
 	let "KEYCOUNT+=$FSIZE"
 	return
 }
@@ -146,7 +130,6 @@ KEYCOUNT=0
 	printf "$PROGN quitting, outdir not specified!\n" >&2
 	exit 2
 }
-
 [ -e "$3" ] && { 
 	printf "$PROGN quitting, output directory '$3' already exists!\n" >&2
 	exit 2

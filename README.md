@@ -129,9 +129,23 @@ Following decryption, the relevant decompression method(s) are applied to each f
 
 Summary: `dcrpt` (decrypt with vowels left out) matches the keys, decrypts the binary indir files with them, selects the right decompression methods and  decompresses, thus reconstructing the exact contents of the original directory.
 
+
 ### `crptest testdir`
 
 optionally performs an automated overall test, checking that not a single byte was corrupted anywhere while encrypting and decrypting back the contents of (any) `testdir`.
+
+## Work in Progress
+
+At the moment,  there is a vulnerability to specialist search engines going through the whole internet and possibly finding all the matching pairs of directory structures, file names and sizes. Thus, in theory, they could match up keydir with outdir, even when they were uploaded to two unrelated places.
+
+Addressing this vulnarability, two new scripts are being introduced: `encrypt` and `decrypt`. They are intended as a more secure, albeit slower alternative. They will be available alongside `ncrpt` and `dcrpt` and behave similarly from the users' perspective.
+
+All the keys for the whole archive will be packed into one common linear file. Keydir will then no longer record any directory structure or individual filenames and sizes.
+
+There will be some price to pay in terms of the execution time.
+
+These two scripts are currently in 'alpha stage'. They compress,encrypt, decrypt and decompress but do little else.
+Watch this space for announcements when they become fully operational.
 
 ## Background Scripts and Programs (not needed by the user)
 
@@ -178,15 +192,9 @@ This will update only the file(s) that you changed. What may come as a surprise 
 
 Note that TokenCrypt does not leave any such large hidden footprints on your filesystem.
 
-## To Do
-
-At the moment,  there is a vulnerability to specialist search engines going through the whole internet and detecting all the matching pairs of directory structures, file names and sizes. Thus possibly matching up keydir with outdir, even when they were uploaded to two unrelated places.
-
-This will be prevented in the next planned major release of TokenCrypt. All the keys for the whole archive will be packed into one common linear file. Keydir will then no longer record any directory structure or individual filenames and sizes.
-
-There will be some price to pay in terms of the execution time for the archive updates.
-
 ## Releases Log
+
+**13Dec21** - First alpha release of more secure `encrypt` and `decrypt` scripts. Not yet ready for general use. Keep using `ncrpt` and `dcrpt` for now.
 
 **10Dec21** - Fixed misspelling bug in updatedir in `ncrpt` and modification time tests for directories, so the archive updates properly now. Improvements to readme manual. Prettier reports.
 
