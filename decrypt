@@ -16,26 +16,20 @@ function processfile {
 	local SANSEXT=${OUTFILE%.*}
 
 	if [ "$LASTEXT" = 'hex' ]; then # found hex extension
-		dd skip=$KEYCOUNT count=$FSIZE bs=1 if=$KEYFILE 2>&- | \
-		symcrypt $INFILE | hexify > $SANSEXT
-		let "KEYCOUNT+=$FSIZE"
+		head -c $FSIZE <&3 | symcrypt $INFILE | hexify > $SANSEXT
 		return
 	fi
 	if [ "$LASTEXT" = 'b64' ]; then # found b64 extension
-		dd skip=$KEYCOUNT count=$FSIZE bs=1 if=$KEYFILE 2>&- | \
-		symcrypt $INFILE | base64 -w 0 > $SANSEXT
-		let "KEYCOUNT+=$FSIZE"
+		head -c $FSIZE <&3 | symcrypt $INFILE | base64 -w 0 > $SANSEXT
 		return
 	fi
 
 	if [ "$LASTEXT" = 'zst' ]; then
-		local DEPRESS='zstd -d -c'
+		local UNPRESS='zstd -d -c'
 	else if [ "$LASTEXT" = 'lz' ]; then
-		local DEPRESS='lzma -d'
+		local UNPRESS='lzma -d'
 	else # unrecognised LASTEXT, must be uncompressed
-		dd skip=$KEYCOUNT count=$FSIZE bs=1 if=$KEYFILE 2>&- | \
-		symcrypt $INFILE > $OUTFILE
-		let "KEYCOUNT+=$FSIZE"
+		head -c $FSIZE <&3 | symcrypt $INFILE > $OUTFILE	
 		return
 	fi; fi
 
@@ -43,21 +37,15 @@ function processfile {
 	SANSEXT=${SANSEXT%.*}
 
 	if [ "$PREVEXT" = 'hex' ]; then # found hex 
-		dd skip=$KEYCOUNT count=$FSIZE bs=1 if=$KEYFILE 2>&- | \
-		symcrypt $INFILE | $DEPRESS | hexify > $SANSEXT
-		let "KEYCOUNT+=$FSIZE"
+		head -c $FSIZE <&3 | symcrypt $INFILE | $UNPRESS | hexify > $SANSEXT
 		return
 	fi
 	if [ "$PREVEXT" = 'b64' ]; then # found b64 
-		dd skip=$KEYCOUNT count=$FSIZE bs=1 if=$KEYFILE 2>&- | \
-		symcrypt $INFILE | $DEPRESS | base64 -w 0 > $SANSEXT
-		let "KEYCOUNT+=$FSIZE"
+		head -c $FSIZE <&3 | symcrypt $INFILE | $UNPRESS | base64 -w 0 > $SANSEXT
 		return
 	fi
 	# unrecognised PREVEXT, must be default compressed
-	dd skip=$KEYCOUNT count=$FSIZE bs=1 if=$KEYFILE 2>&- | \
-	symcrypt $INFILE | $DEPRESS > $SANSEXT.$PREVEXT
-	let "KEYCOUNT+=$FSIZE"
+	head -c $FSIZE <&3 | symcrypt $INFILE | $UNPRESS > $SANSEXT.$PREVEXT
 	return
 }
 
@@ -117,13 +105,16 @@ shift $((OPTIND-1)) # remove already parsed options and args from $@ list
 	printf "$PROGN quitting, input directory '$1' not found\n" >&2
 	exit 2
 }
-# Globally validate and set the key file
+# Globally validate the key file
 [ -f "$2" ] || { 
 	printf "$PROGN quitting, key file '$2' not found\n" >&2
 	exit 2
 }
-KEYFILE=$2
-KEYCOUNT=0
+# Globally open the key file
+exec 3<$2 || {
+	printf "$PROGN quitting, key file '$2' failed to open for reading\n" >&2
+	exit 2	
+}
 
 # Globally validate the output directory
 [ -n "$3" ] || { 

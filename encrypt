@@ -54,18 +54,16 @@ function processfile {
 			rm $OUTFILE.$EXT	
 		fi
 	}
-	# generate the key of the same size as the infile
-	keygen $INFILE > $OUTFILE.key
+	# generate the key of the same size as the infile,
 	# encrypt with it and write to final OUTFILE 
+	# append the key to the global linear keyfile
 	if [ "$INFILE" = "$OUTFILE" ]; then
-		symcrypt < $INFILE $OUTFILE.key > $OUTFILE.tmp
+		keygen $INFILE | tee -a "$KEYFILE" | symcrypt $INFILE > $OUTFILE.tmp
 		mv $OUTFILE.tmp $OUTFILE
 	else
-		symcrypt < $INFILE $OUTFILE.key > $OUTFILE
+		keygen $INFILE | tee -a "$KEYFILE" | symcrypt $INFILE > $OUTFILE
 	fi
-	# append the key to the global linear keyfile
-	cat $OUTFILE.key >> "$KEYFILE"
-	rm $OUTFILE.key # and remove it
+
 } # end of processfile
 
 # function to process a whole directory
