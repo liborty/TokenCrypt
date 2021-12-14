@@ -134,18 +134,19 @@ Summary: `dcrpt` (decrypt with vowels left out) matches the keys, decrypts the b
 
 optionally performs an automated overall test, checking that not a single byte was corrupted anywhere while encrypting and decrypting back the contents of (any) `testdir`.
 
-## Work in Progress
+## More Secure Design
 
-At the moment,  there is a vulnerability to specialist search engines going through the whole internet and possibly finding  the matching pairs of directory structures, file names and sizes. Thus, in theory, they could match up keydir with outdir, even when they were uploaded to two unrelated places.
+There is a vulnerability, inherent in `ncrpt` and `dcrpt` design, to specialist search engines sifting through the whole internet and possibly finding the matching pairs of keydir,outdir directories by their matching structures, file names and sizes. Thus, in theory, they could match them up, even if they were uploaded to two unrelated places.
 
-Addressing this vulnarability, two new scripts are being introduced: `encrypt` and `decrypt`. They are intended as a more secure, albeit slower alternative. They will be available alongside `ncrpt` and `dcrpt` and behave similarly from the users' perspective.
+Addressing this vulnarability, two new scripts have been introduced: `encrypt` and `decrypt`. They are intended as a more secure, albeit slower alternatives to `ncrpt` and `dcrpt`, respectively. They behave similarly from the users' perspective.
 
-All the keys for the whole archive will be packed into one common linear file. Keydir will then no longer record any directory structure or individual filenames and sizes. There will be just a single keyfile for the whole archive.
+All the keys for the whole archive are now packed into one sequential  `keyfile`, which replaces keydir. No filenames are now being duplicated or extra file extensions appended, which is a much cleaner solution.
 
-There will be some price to pay in terms of the execution time, as the whole tree structure will have to be traversed sequentially, thus reducing the opportunities for (current) parallel execution.
+The total of nine different combinations of compressions can be used, as before, depending on the input file. This information is now encoded into a single extra byte written into the keyfile record for each file.
 
-These two scripts are currently in 'alpha stage'. They compress,encrypt, decrypt and decompress but do little else.
-Watch this space for announcements when they become fully operational.
+There is some price to pay in terms of the execution time, as the directory tree structure now has to be traversed sequentially, thus reducing the opportunities for parallel execution, fully exploited in `ncrpt` and `dcrpt` .
+
+`Encrypt` and `decrypt` currently compress,encrypt,decrypt and decompress but do little else. Watch this space for further developments.
 
 ## Background Scripts and Programs (not needed by the user)
 
@@ -194,7 +195,7 @@ Note that TokenCrypt does not leave any such large hidden footprints on your fil
 
 ## Releases Log
 
-**14Dec21** - Significant redesign for `encrypt` and `decrypt`. 
+**14Dec21** - Significant redesign for `encrypt` and `decrypt`.
 
 **13Dec21** - First alpha release of more secure `encrypt` and `decrypt` scripts. Not yet ready for general use. Keep using `ncrpt` and `dcrpt` for now.
 
