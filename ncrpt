@@ -5,8 +5,8 @@
 
 PROGN=${0##*/}
 COMPRESSOR=lzma	# the default compression program
-EXT=lz				# and the extension that goes with it
-BACKSZ=10000 # size of files to be encrypted in the subshells
+EXT=lz			# and the extension that goes with it
+BACKSZ=10000 	# size of files to be encrypted in the subshells
 
 # function to compress and encrypt one file
 # takes four arguments: ITEM INDIR KEYDIR OUTDIR

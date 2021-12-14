@@ -12,41 +12,20 @@ function processfile {
 	local INFILE=$1 
 	local OUTFILE=$2
 	local FSIZE=`stat -c%s $INFILE`
- 	local LASTEXT=${INFILE##*.}
-	local SANSEXT=${OUTFILE%.*}
-
-	if [ "$LASTEXT" = 'hex' ]; then # found hex extension
-		head -c $FSIZE <&3 | symcrypt $INFILE | hexify > $SANSEXT
-		return
-	fi
-	if [ "$LASTEXT" = 'b64' ]; then # found b64 extension
-		head -c $FSIZE <&3 | symcrypt $INFILE | base64 -w 0 > $SANSEXT
-		return
-	fi
-
-	if [ "$LASTEXT" = 'zst' ]; then
-		local UNPRESS='zstd -d -c'
-	else if [ "$LASTEXT" = 'lz' ]; then
-		local UNPRESS='lzma -d'
-	else # unrecognised LASTEXT, must be uncompressed
-		head -c $FSIZE <&3 | symcrypt $INFILE > $OUTFILE	
-		return
-	fi; fi
-
-	local PREVEXT=${SANSEXT##*.}
-	SANSEXT=${SANSEXT%.*}
-
-	if [ "$PREVEXT" = 'hex' ]; then # found hex 
-		head -c $FSIZE <&3 | symcrypt $INFILE | $UNPRESS | hexify > $SANSEXT
-		return
-	fi
-	if [ "$PREVEXT" = 'b64' ]; then # found b64 
-		head -c $FSIZE <&3 | symcrypt $INFILE | $UNPRESS | base64 -w 0 > $SANSEXT
-		return
-	fi
-	# unrecognised PREVEXT, must be default compressed
-	head -c $FSIZE <&3 | symcrypt $INFILE | $UNPRESS > $SANSEXT.$PREVEXT
-	return
+	local CH=`head -c 1 <&3` 
+	case "$CH" in
+	# u can be for a listed extension, or because all compressions have failed
+	u ) head -c $FSIZE <&3 | symcrypt $INFILE > $OUTFILE; return;;
+	h ) head -c $FSIZE <&3 | symcrypt $INFILE | hexify > $OUTFILE; return;;
+	b ) head -c $FSIZE <&3 | symcrypt $INFILE | base64 -w 0 > $OUTFILE; return;;
+	i ) head -c $FSIZE <&3 | symcrypt $INFILE | lzma -d > $OUTFILE; return;;
+	j ) head -c $FSIZE <&3 | symcrypt $INFILE | lzma -d | hexify > $OUTFILE; return;;
+	k ) head -c $FSIZE <&3 | symcrypt $INFILE | lzma -d | base64 -w 0 > $OUTFILE; return;;
+	l ) head -c $FSIZE <&3 | symcrypt $INFILE | zstd -d -c > $OUTFILE; return;;
+	m ) head -c $FSIZE <&3 | symcrypt $INFILE | zstd -d -c | hexify > $OUTFILE; return;;
+	n ) head -c $FSIZE <&3 | symcrypt $INFILE | zstd -d -c | base64 -w 0 > $OUTFILE; return;;
+	* ) printf "$PROGN processfile: unrecognised ch\n"; exit 2;;
+	esac
 }
 
 # function to process a whole directory

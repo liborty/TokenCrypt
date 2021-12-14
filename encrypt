@@ -5,7 +5,6 @@
 
 PROGN=${0##*/}
 COMPRESSOR=lzma	# the default compression program
-EXT=lz			# and the extension that goes with it
 
 # function to compress and encrypt one file
 # takes four arguments: ITEM INDIR KEYDIR OUTDIR
@@ -16,54 +15,61 @@ function processfile {
 	local INFILE=$1 
 	local OUTFILE=$2
 	local EX="${1##*.}" # this file's extension
-	EX=${EX,,} # convert to lower case for ease of detecting either
+	local CH='u'
 
+	EX=${EX,,} # convert to lower case, to detect both cases
 	# if EX passes one of these tests, then avoid all compression 
 	[ "$EX" = 'jpg' ] || [ "$EX" = 'jpeg' ] || [ "$EX" = 'mp4' ] || [ "$EX" = 'zip' ] || [ "$EX" = '7z' ] || \
-	[ "$EX" = 'lz' ] || [ "$EX" = 'zst' ] || [ "$EX" = 'gz' ] || [ "$EX" = 'bz2' ] || {
-
-    	[ $HEXTEST ] && {
-   			hexcheck $INFILE $OUTFILE.hex 2>/dev/null # ignore failure messages
-   			if [ "$?" -eq 0 ]; then	# status of hexcheck when INFILE is entirely hexadecimal
-				OUTFILE=$OUTFILE.hex
-				INFILE="$OUTFILE"
-   			else rm $OUTFILE.hex
-			fi
-		}
-
-		[ $B64TEST ] && [ "$OUTFILE" = "$2" ] && { #  not already hexed
-   			base64 -d -w 0 $INFILE > $OUTFILE.b64 2>/dev/null # turns base64 into binary, saving 25%
-   			if [ "$?" -eq 0 ]; then	# status of base64 when INFILE was entirely in base64
-				OUTFILE=$OUTFILE.b64
-				INFILE="$OUTFILE"
-			else rm $OUTFILE.b64
-   			fi 
-		}
-	
-		# regardless whether hexcheck or base64 tests succeeded or not, apply general compression test	
-		$COMPRESSOR $FLAGS $INFILE > $OUTFILE.$EXT 
-		local CMPS=$( stat -c%s $OUTFILE.$EXT ) # the size after compression
-		local ORGS=$( stat -c%s $INFILE )  # and before compression
-		# use compressed version only if it is actually smaller
-		if [ "$CMPS" -lt "$ORGS" ]; then
-			# clean up outfile if it exists
-			if [ -e "$OUTFILE" ]; then rm $OUTFILE; fi 
-			OUTFILE=$OUTFILE.$EXT  # assign the better compressed file name
-			INFILE=$OUTFILE # make the final compressed file to be the infile
-		else # clean up and stay with the previous infile
-			rm $OUTFILE.$EXT	
-		fi
-	}
-	# generate the key of the same size as the infile,
-	# encrypt with it and write to final OUTFILE 
-	# append the key to the global linear keyfile
-	if [ "$INFILE" = "$OUTFILE" ]; then
-		keygen $INFILE | tee -a "$KEYFILE" | symcrypt $INFILE > $OUTFILE.tmp
-		mv $OUTFILE.tmp $OUTFILE
-	else
+	[ "$EX" = 'lz' ] || [ "$EX" = 'zst' ] || [ "$EX" = 'gz' ] || [ "$EX" = 'bz2' ] && {
+		printf 'u' >> $KEYFILE
 		keygen $INFILE | tee -a "$KEYFILE" | symcrypt $INFILE > $OUTFILE
+		return
+	}
+
+    if [ $HEXTEST ] && hexcheck $INFILE $OUTFILE.tmp 2>/dev/null; then 
+		CH='h'
+		INFILE=$OUTFILE.tmp 
+	else if [ $B64TEST ] &&	base64 -d -w 0 $INFILE > $OUTFILE.tmp 2>/dev/null; then 
+		CH='b'
+		INFILE=$OUTFILE.tmp 
+		fi
 	fi
 
+	# regardless whether hexcheck or base64 tests succeeded or not, apply general compression test	
+	$COMPRESSOR $FLAGS $INFILE > $OUTFILE.cmp 
+		local CMPS=$( stat -c%s $OUTFILE.cmp ) # the size after compression
+		local ORGS=$( stat -c%s $INFILE )  # and before compression
+		# use compressed version only if it is actually smaller
+		[ "$CMPS" -lt "$ORGS" ] && { # successful general compression
+			INFILE=$OUTFILE.cmp # make the final compressed file to be the infile
+			if [ "$COMPRESSOR" = 'lzma' ]; then
+			 case "$CH" in
+			 u ) CH='i';;
+			 h ) CH='j';;
+			 b ) CH='k';;
+			 * ) printf "$PROGN processfile: unrecognised ch\n"
+			 	 exit 2;;
+			 esac
+			else # compressor program is 'zstd'
+			 case "$CH" in
+			 u ) CH='l';;
+			 h ) CH='m';;
+			 b ) CH='n';;
+			 * ) printf "$PROGN processfile: unrecognised ch\n"
+			 	 exit 2;;
+			 esac
+			fi				
+		} # else no compression gain, keep the original codes: u,h,b
+		
+	# write the prepared compression encoding byte to $KEYFILE
+	printf "$CH" >> $KEYFILE
+	# generate the key of the same size as the infile,
+	# append the key to the global linear keyfile,
+	# encrypt with it and write to OUTFILE 
+	keygen $INFILE | tee -a "$KEYFILE" | symcrypt $INFILE > $OUTFILE
+	# clean up
+	if [ -e "$OUTFILE.tmp" ]; then rm $OUTFILE.tmp; fi 
+	if [ -e "$OUTFILE.cmp" ]; then rm $OUTFILE.cmp; fi 
 } # end of processfile
 
 # function to process a whole directory
@@ -107,35 +113,29 @@ function processdir {
 function updatedir {
 
 	[ -d "$2" ] || {
-		printf "$PROGN updatedir: key dir $2 is invalid\n" >&2
-		exit 2
-	}
-	[ -d "$3" ] || {
-		printf "$PROGN updatedir: output dir $3 is invalid\n" >&2
+		printf "$PROGN updatedir: output dir $2 is invalid\n" >&2
 		exit 2
 	}
 
-	# sort files in INDIR by size
-	# stripping the path path prior to using ls was done thus: FILEND=${INFILE##*/} 
 	local ITEMS=$(ls -AL $1)  # $(ls -SAL $1)
 	# iterate through the listing checking for newer items
 	for ITEM in $ITEMS; do
 		local ID=$1/$ITEM # append $ITEM to $INDIR path
-		local OD=$3/$ITEM # and corresponding $outdir path
+		local OD=$2/$ITEM # and corresponding $outdir path
 
    		if [ -d "$ID" ]; then  # process existing subdirectory?
 			if [ -n "$RECURSE" ]; then # but only when recursing
 				[ -d "$OD" ] || { # here matching dir does not exist
 					printf " A: $ID\n" # so add it
 					# just push ITEM onto paths 
-					processdir $ID $2/$ITEM $OD & #$BJ
+					processdir $ID $OD
 					continue
 				}
 				# test the dirs modification times
 				# note that -nt only works for additions/deletions to dirs			
 				if [ $(stat -c%Y $ID) -gt $(stat -c%Y $OD) ]; then 
 					printf " U: $ID\n" # so update it
-					updatedir $ID $2/$ITEM $OD & #$BJ
+					updatedir $ID $OD
 					continue
 				fi
 				continue # up to date dir
@@ -145,12 +145,12 @@ function updatedir {
    		[ -f "$ID" ] || continue # only process genuine files now 
 		[ -e "$OD" ] || { # here $OD file does not exist
 			printf "   a: $ID\n" # so add it
-			processfile $ID $OD &  
+			processfile $ID $OD  
 			continue
 		}
 		if [ "$ID" -nt "$OD" ]; then  # here the input file is newer 
 			printf "   u: $ID\n" # so update it
-   			processfile $ID $OD &  
+   			processfile $ID $OD  
 		fi # else just skip it
 	done
 } # end of updatedir
@@ -164,11 +164,7 @@ function cleandir {
 		exit 2
 	}
 	[ -d "$2" ] || {
-		printf "$PROGN clean: key dir $2 is invalid\n" >&2
-		exit 2
-	}
-	[ -d "$3" ] || {
-		printf "$PROGN clean: output dir $3 is invalid\n" >&2
+		printf "$PROGN clean: output dir $2 is invalid\n" >&2
 		exit 2
 	}
 
@@ -233,7 +229,7 @@ while getopts hbcxqruvz-: OPT; do
 	u | update ) UPDATE=0;;
 	v | verbose ) VERBOSE=0;; 
 	x | hex ) HEXTEST=0;;
-  	z | zstd ) COMPRESSOR=zstd; EXT=zst;; #alternative compressor and its extension
+  	z | zstd ) COMPRESSOR=zstd;; #alternative compressor and its extension
     ??* ) printf "$PROGN quitting, invalid long option: $OPT\n" >&2; usage; exit 2;;  
 	*) exit 2;;  # invalid short option (error will be reported via getopts)
  esac
@@ -249,7 +245,7 @@ shift $((OPTIND-1)) # remove parsed options and args from $@ list
 # Globally validate the -c option and keyfile
 if [ -z "$UPDATE" ]; then
 	[ -z "$CLEAN" ] || { 
-		printf "$PROGN create failed: option -c only makes sense with -u\n" >&2
+		printf "$PROGN clean failed: option -c only makes sense with -u\n" >&2
 		exit 2
 	}
 	[ -e "$2" ] && {
@@ -279,7 +275,7 @@ fi
 
 if [ $UPDATE ]; then 
 	printf "$PROGN: updating archive $3, using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
-	updatedir $1 $2 $3
+	updatedir $1 $3
 else
 	printf "$PROGN: compressing and encrypting $1, using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
 	processdir $1 $3
@@ -287,7 +283,7 @@ fi
 wait # for all sub proccesses to finish
 if [ $CLEAN ]; then 
 	printf "$PROGN: cleaning up archive $3\n" 
-	cleandir $1 $2 $3
+	cleandir $1 $3
 fi
 wait # for all sub proccesses to finish
 

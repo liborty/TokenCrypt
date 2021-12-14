@@ -194,6 +194,8 @@ Note that TokenCrypt does not leave any such large hidden footprints on your fil
 
 ## Releases Log
 
+**14Dec21** - Significant redesign for `encrypt` and `decrypt`. 
+
 **13Dec21** - First alpha release of more secure `encrypt` and `decrypt` scripts. Not yet ready for general use. Keep using `ncrpt` and `dcrpt` for now.
 
 **10Dec21** - Fixed misspelling bug in updatedir in `ncrpt` and modification time tests for directories, so the archive updates properly now. Improvements to readme manual. Prettier reports.
