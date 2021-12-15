@@ -9,7 +9,7 @@ EXT=lz			# and the extension that goes with it
 BACKSZ=10000 	# size of files to be encrypted in the subshells
 
 # function to compress and encrypt one file
-# takes four arguments: ITEM INDIR KEYDIR OUTDIR
+# takes three arguments: INDIR KEYDIR OUTDIR
 # KEYDIR OUTDIR must be writeable
 # creates and cleans up two temporary files in OUTDIR
 function processfile {
@@ -208,7 +208,7 @@ function cleandir {
 	done
 } # end of cleandir
 
-function usage { printf "Usage: $PROGN [-h][-b][-x][-q][-r][-v][-z] indir keydir outdir\n" >&2; }
+function usage { printf "Usage: $PROGN [-b][-c][-h][-q][-r][-u][-v][-x][-z] indir keydir outdir\n" >&2; }
 
 function helpmsg {
 	usage

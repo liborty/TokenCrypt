@@ -1,20 +1,21 @@
 #!/bin/bash
-# decrypts all files in the specified readable directory 'indir' 
-# reads key files from  readable directory 'keydir', extensions indicating compression methods 
-# writes restored files with the same names into writeable directory 'outdir' 
+# decrypts all files in the specified readable file 'infile' 
+# reads keys from keysfile 
+# writes restored, decompressed and decrypted files into writeable directory 'outdir' 
 
 PROGN=${0##*/}
 
 # processfile will decompress and decrypt one file
-# it expects four arguments: ITEM INDIR KEYFILE OUTDIR
+# it expects two arguments: INFILE OUTFILE
+# and it reads from fd 3 which is an open for reading KEYFILE
 function processfile {
 
 	local INFILE=$1 
 	local OUTFILE=$2
 	local FSIZE=`stat -c%s $INFILE`
-	local CH=`head -c 1 <&3` 
+	local CH=`head -c 1 <&3` # read the compression encoding char
 	case "$CH" in
-	# u can be for a listed extension, or because all compressions have failed
+	# u (uncomressed) can be for a listed extension, or because all compressions have failed
 	u ) head -c $FSIZE <&3 | symcrypt $INFILE > $OUTFILE; return;;
 	h ) head -c $FSIZE <&3 | symcrypt $INFILE | hexify > $OUTFILE; return;;
 	b ) head -c $FSIZE <&3 | symcrypt $INFILE | base64 -w 0 > $OUTFILE; return;;
@@ -79,29 +80,29 @@ while getopts hqrv-: OPT; do
 done
 shift $((OPTIND-1)) # remove already parsed options and args from $@ list
 
-# Globally validate the input directory
-[ -d "$1" ] || { 
-	printf "$PROGN quitting, input directory '$1' not found\n" >&2
+# Globally validate the input file
+[ -f "$1" ] || { 
+	printf "$PROGN: input file '$1' not found\n" >&2
 	exit 2
 }
-# Globally validate the key file
+# Globally validate the keyfile
 [ -f "$2" ] || { 
-	printf "$PROGN quitting, key file '$2' not found\n" >&2
+	printf "$PROGN: key file '$2' not found\n" >&2
 	exit 2
 }
-# Globally open the key file
+# Globally open the keyfile
 exec 3<$2 || {
-	printf "$PROGN quitting, key file '$2' failed to open for reading\n" >&2
+	printf "$PROGN: key file '$2' failed to open for reading\n" >&2
 	exit 2	
 }
 
 # Globally validate the output directory
 [ -n "$3" ] || { 
-	printf "$PROGN quitting, outdir not specified!\n" >&2
+	printf "$PROGN: outdir arg missing\n" >&2
 	exit 2
 }
 [ -e "$3" ] && { 
-	printf "$PROGN quitting, output directory '$3' already exists!\n" >&2
+	printf "$PROGN: output directory '$3' already exists!\n" >&2
 	exit 2
 }
 
@@ -119,15 +120,16 @@ if [ -z $( which hexify ) ]; then
 	printf "$PROGN warning, hexify is not installed, will not unpack .hex files\n" >&2
 fi
 
-printf "$PROGN: decrypting and decompressing, using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
-processdir $1 $3
-wait # for all sub proccesses to finish
+tar -xpJf $1 $1dir
+printf "$PROGN: decrypting and decompressing\n" 
+processdir $1dir $3
+rm -rf $1dir
 
 # optional final report
 if ! [ $QUIET ]; then
 	SIZES=( $( du -hbs $3 $1 ) ) # array of size,dir,size,dir
-	let SIZES[0]-=4096 # subtract the size of the top directory files
-	let SIZES[2]-=4096 # as they are not actual data
+	# let SIZES[0]-=4096 # subtract the size of the top directory files
+	# let SIZES[2]-=4096 # as they are not actual data
 	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} "
 	if [ ${SIZES[0]} = ${SIZES[2]} ]; then printf "(100 %%) => ${SIZES[1]} ${SIZES[0]}\n"; else
 		CR=$(( (5+100000*${SIZES[2]}/${SIZES[0]})/10 )) # calculate percentage rounded to two d.p.	

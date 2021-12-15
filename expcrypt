@@ -1,15 +1,15 @@
 #!/bin/bash
 # encrypts all files in the specified directory 'indir' 
-# writes keys into file 'key' 
-# writes encrypted binary files with the same names into directory 'outdir'
+# writes keys into file 'keyfile' 
+# writes encrypted binary files with the same names into tarred 'outfile'
 
 PROGN=${0##*/}
 COMPRESSOR=lzma	# the default compression program
 
 # function to compress and encrypt one file
-# takes four arguments: ITEM INDIR KEYDIR OUTDIR
-# KEYDIR OUTDIR must be writeable
-# creates and cleans up two temporary files in OUTDIR
+# takes two arguments: INFILE OUTFILE
+# writes into OUTFILE and global KEYFILE
+# creates and cleans up to two temporary files in OUTDIR
 function processfile {
 
 	local INFILE=$1 
@@ -42,7 +42,7 @@ function processfile {
 		# use compressed version only if it is actually smaller
 		[ "$CMPS" -lt "$ORGS" ] && { # successful general compression
 			INFILE=$OUTFILE.cmp # make the final compressed file to be the infile
-			if [ "$COMPRESSOR" = 'lzma' ]; then
+			if [ "$COMPRESSOR" = 'xz' ]; then
 			 case "$CH" in
 			 u ) CH='i';;
 			 h ) CH='j';;
@@ -59,7 +59,7 @@ function processfile {
 			 	 exit 2;;
 			 esac
 			fi				
-		} # else no compression gain, keep the original codes: u,h,b
+		} # else no general compression gain, keep the original INFILE and codes: u,h,b
 		
 	# write the prepared compression encoding byte to $KEYFILE
 	printf "$CH" >> $KEYFILE
@@ -73,21 +73,17 @@ function processfile {
 } # end of processfile
 
 # function to process a whole directory
-# takes three arguments: INDIR KEYDIR OUTDIR
-function processdir {
+# takes two arguments: INDIR OUTDIR
+function createdir {
 
-	[ -z "$2" ] && { 
-		printf "$PROGN processdir: outdir not given!\n" >&2
-		exit 2
-	}
 	[ -e "$2" ] && { 
-		printf "$PROGN processdir: outdir '$2' already exists!\n" >&2
+		printf "$PROGN createdir: outdir '$2' already exists!\n" >&2
 		exit 2
 	}
 
 	# create the ouput directory
 	mkdir $2 || {
-		printf "$PROGN quitting, failed to create output directory '$2'!\n" >&2
+		printf "$PROGN createdir: failed to create output directory '$2'!\n" >&2
 		exit 2
 	}
 
@@ -99,104 +95,16 @@ function processdir {
 		local IND=$1/$ITEM # append $ITEM to $INDIR path
    		if [ -d "$IND" ]; then  # recursively process existing subdirectory?
 			if [ -n "$RECURSE" ]; then  # just push ITEM onto paths, no changing of directories
-				processdir $IND $2/$ITEM 
+				createdir $IND $2/$ITEM 
 			fi
 			continue # either processed or ignored this subdir now
 		fi
    		[ -f "$IND" ] || continue # only process genuine file now
    		processfile $IND $2/$ITEM  
 	done
-} # end of processdir
+} # end of createdir
 
-# function to update a whole directory
-# takes three arguments: INDIR KEYDIR OUTDIR
-function updatedir {
-
-	[ -d "$2" ] || {
-		printf "$PROGN updatedir: output dir $2 is invalid\n" >&2
-		exit 2
-	}
-
-	local ITEMS=$(ls -AL $1)  # $(ls -SAL $1)
-	# iterate through the listing checking for newer items
-	for ITEM in $ITEMS; do
-		local ID=$1/$ITEM # append $ITEM to $INDIR path
-		local OD=$2/$ITEM # and corresponding $outdir path
-
-   		if [ -d "$ID" ]; then  # process existing subdirectory?
-			if [ -n "$RECURSE" ]; then # but only when recursing
-				[ -d "$OD" ] || { # here matching dir does not exist
-					printf " A: $ID\n" # so add it
-					# just push ITEM onto paths 
-					processdir $ID $OD
-					continue
-				}
-				# test the dirs modification times
-				# note that -nt only works for additions/deletions to dirs			
-				if [ $(stat -c%Y $ID) -gt $(stat -c%Y $OD) ]; then 
-					printf " U: $ID\n" # so update it
-					updatedir $ID $OD
-					continue
-				fi
-				continue # up to date dir
-			fi
-			continue # not recursing, ignore this subdir 
-		fi
-   		[ -f "$ID" ] || continue # only process genuine files now 
-		[ -e "$OD" ] || { # here $OD file does not exist
-			printf "   a: $ID\n" # so add it
-			processfile $ID $OD  
-			continue
-		}
-		if [ "$ID" -nt "$OD" ]; then  # here the input file is newer 
-			printf "   u: $ID\n" # so update it
-   			processfile $ID $OD  
-		fi # else just skip it
-	done
-} # end of updatedir
-
-# function to clean up a whole directory
-# takes three arguments: INDIR KEYDIR OUTDIR
-function cleandir {
-
-	[ -d "$1" ] || {
-		printf "$PROGN clean: input dir $1 is invalid\n" >&2
-		exit 2
-	}
-	[ -d "$2" ] || {
-		printf "$PROGN clean: output dir $2 is invalid\n" >&2
-		exit 2
-	}
-
-	# list all items in standard order
-	local ITEMS=$(ls -AL $3)
-	# iterate through the list checking for missing items
-	for ITEM in $ITEMS; do
-		local ID=$1/$ITEM # append $ITEM to $INDIR path
-		local KD=$2/$ITEM # append $ITEM to $KEYDIR path
-		local OD=$3/$ITEM # and the examined $OUTDIR path
-
-   		if [ -d "$OD" ]; then  # process existing subdirectory?
-			if [ -n "$RECURSE" ]; then # but only when recursing
-				[ -d "$ID" ] || { # here matching $INDIR dir does not exist
-					printf " D: $OD $KD\n" # so remove it 
-					rm -rf $OD $KD &
-					continue
-				}			
-				cleandir $ID $KD $OD &  # otherwise recurse
-			fi
-			continue # not recursing, ignore this subdir 
-		fi
-   		[ -f "$OD" ] || continue # only process genuine files now 
-		[ -e "$ID" ] || { # here $ID file does not exist
-			printf "   d: $OD $KD.*\n" # so delete them
-			rm $OD $KD.* 
-			continue
-		}
-	done
-} # end of cleandir
-
-function usage { printf "Usage: $PROGN [-h][-b][-x][-q][-r][-v][-z] indir keydir outdir\n" >&2; }
+function usage { printf "Usage: $PROGN [-h][-b][-x][-q][-r][-v][-z] indir keyfile outfile\n" >&2; }
 
 function helpmsg {
 	usage
@@ -206,7 +114,6 @@ function helpmsg {
 		'-h | --help : print this text' \
 		'-q | --quiet : turn off the final summary' \
 		'-r | --recurse : process also subdirectories' \
-		'-u | --update : update' \
 		'-v | --verbose : detailed reporting' \
 		'-x | --hex : test for hexadecimal files' \
 		'-z | --zstd : use zstd compression instead of lzma' >&2
@@ -214,7 +121,7 @@ function helpmsg {
 }
 # Main starts here
 # get options, including long options, extracted as arg to the last option '-'
-while getopts hbcxqruvz-: OPT; do
+while getopts hbxqrvz-: OPT; do
  if [ "$OPT" = "-" ]; then   # long option: reset OPT and OPTARG
     OPT="${OPTARG%%=*}"      # extract long option name
     OPTARG="${OPTARG#$OPT}"  # extract long option argument (here empty)
@@ -222,11 +129,9 @@ while getopts hbcxqruvz-: OPT; do
  fi
  case "$OPT" in
 	b | b64 ) B64TEST=0;;
-	c | clean ) CLEAN=0;; 
 	h | help ) helpmsg;;
 	q | quiet ) QUIET=0;;
 	r | recurse ) RECURSE=0;;
-	u | update ) UPDATE=0;;
 	v | verbose ) VERBOSE=0;; 
 	x | hex ) HEXTEST=0;;
   	z | zstd ) COMPRESSOR=zstd;; #alternative compressor and its extension
@@ -236,30 +141,31 @@ while getopts hbcxqruvz-: OPT; do
 done
 shift $((OPTIND-1)) # remove parsed options and args from $@ list
 
-# Globally validate the input directory
-[ -d "$1" ] || { 
-	printf "$PROGN quitting, input directory $1 not found\n" >&2
+# Globally validate the program arguments
+[ -z "$1" ] && { 
+	printf "$PROGN: the first argument (indir) is missing!\n" >&2
 	exit 2
 }
-
-# Globally validate the -c option and keyfile
-if [ -z "$UPDATE" ]; then
-	[ -z "$CLEAN" ] || { 
-		printf "$PROGN clean failed: option -c only makes sense with -u\n" >&2
-		exit 2
-	}
-	[ -e "$2" ] && {
-		printf "$PROGN create failed: keyfile '$2' already exists\n" >&2
-		exit 2
-	}
-else
-	[ -f "$2" ] || {
-		printf "$PROGN update failed: keyfile '$2' not found\n" >&2
-		exit 2
-	}
-fi
-# Set verified global key file
-KEYFILE=$2
+[ -d "$1" ] || { 
+	printf "$PROGN: input directory '$1' not found\n" >&2
+	exit 2
+}
+[ -z "$2" ] && { 
+	printf "$PROGN: the second argument (keyfile) is missing\n" >&2
+	exit 2
+}
+[ -e "$2" ] && {
+	printf "$PROGN: keyfile '$2' already exists\n" >&2
+	exit 2
+}
+[ -z "$3" ] && { 
+	printf "$PROGN: the third argument (outfile) is missing\n" >&2
+	exit 2
+}
+[ -e "$3" ] && {
+	printf "$PROGN: outfile '$3' already exists\n" >&2
+	exit 2
+}
 
 # Globally validate the compressor. It has been set either to lzma or zstd
 [ -z $( which "$COMPRESSOR" ) ] && { 
@@ -273,25 +179,23 @@ if [ $VERBOSE ]; then
 	if [ "$COMPRESSOR" = 'lzma' ]; then FLAGS='-c -z -v';	else FLAGS='-c'; fi
 fi
 
-if [ $UPDATE ]; then 
-	printf "$PROGN: updating archive $3, using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
-	updatedir $1 $3
-else
-	printf "$PROGN: compressing and encrypting $1, using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
-	processdir $1 $3
-fi
-wait # for all sub proccesses to finish
-if [ $CLEAN ]; then 
-	printf "$PROGN: cleaning up archive $3\n" 
-	cleandir $1 $3
-fi
-wait # for all sub proccesses to finish
+# Set verified global key file
+KEYFILE=$2
+# Create temporary OUTDIR, same root name as outfile
+OUTDIR=${3##*/}dir # $3 is outfile
+printf "$PROGN: compressing and encrypting $1 for export\n" 
+createdir $1 $OUTDIR
+tar -cJf $3 $OUTDIR
+rm -rf $OUTDIR || {
+	printf "$PROGN: failed to remove $OUTDIR\n" >&2
+	exit 2
+}
 
 # optional final report
 if [ ! $QUIET ]; then
 	SIZES=( $( du -bs $3 $1 ) ) # array of size,dir,size,
-	let SIZES[0]-=4096 # subtract the size of the top directory files
-	let SIZES[2]-=4096 # as they are not actual data
+	# let SIZES[0]-=4096 # subtract the size of the top directory files
+	# let SIZES[2]-=4096 # as they are not actual data
 	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} => ${SIZES[1]} ${SIZES[0]} "
 	if [ ${SIZES[0]} = ${SIZES[2]} ]; then 
 		printf "(100 %%)\n"

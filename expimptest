@@ -1,0 +1,45 @@
+#!/bin/bash
+# general encryption-decryption test
+# expcrypt encrypts all files in the given directory
+# impcrypt decrypts back all the encrypted files
+
+PROGN=${0##*/}
+# make this output unique to facilitate git commit working in 
+# automated tests run at github actions:
+printf "$PROGN run on: %s %s %s %s\n" $( date -u "+%d.%m.%y at %H:%M:%S %Z" )
+
+case $# in
+	0)
+		printf "$PROGN quitting, requires a path argument\n" >&2
+		exit 2;; 
+	1)
+  		if ! [ -d "$1" ]; then
+		printf "$PROGN quitting, input directory name $1 not found\n" >&2
+		exit 2; fi;;
+	*) 
+		printf "$PROGN quitting, too many arguments, needs just one input path\n" >&2
+		exit 2;;
+esac
+
+make install CC=clang
+# this is just for better readability of code
+INDIR="$1" 
+# filenames, preceding path is stripped off, so all output goes to ./
+DIREND=${1##*/} 
+KEYFILE="$DIREND"key # must separate _ from the variable name
+OUTFILE="$DIREND"crypt
+ORGDIR="$DIREND"org
+
+# check that output files do not already exist
+[ -f "$KEYFILE" ] && {
+	printf "$PROGN: '$KEYFILE' already exists here!\n" >&2;	exit 2; }
+[ -f "$OUTFILE" ] && { 
+	printf "$PROGN: '$OUTFILE' already exists here!\n" >&2; exit 2; }
+[ -d "$ORGDIR" ] && { 
+	printf "$PROGN: '$ORGDIR' already exists here!\n" >&2; exit 2; }
+
+# encrypt and decrypt
+time expcrypt -xbr $INDIR $KEYFILE $OUTFILE
+time impcrypt -r $OUTFILE $KEYFILE $ORGDIR
+diff -q -r $INDIR $ORGDIR && printf "$PROGN: $INDIR and $ORGDIR are identical\n"
+rm -rf $ORGDIR $OUTFILE $KEYFILE >&2

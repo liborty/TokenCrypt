@@ -12,4 +12,4 @@ symcrypt hexcheck hexify:
 	sudo cp $@ ${DESTDIR}
 	
 install: progs
-	sudo cp keygen ncrpt dcrpt crptest ${DESTDIR}
+	sudo cp keygen ncrpt dcrpt expcrypt impcrypt crptest expimptest ${DESTDIR}
