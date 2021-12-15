@@ -1,4 +1,4 @@
-crptest run on: 14.12.21 at 11:27:09 UTC
+crptest run on: 15.12.21 at 10:31:46 UTC
 make: Nothing to be done for 'progs'.
 Installed TokenCrypt utilities in /usr/local/bin
 ncrpt: compressing and encrypting testing, using 2 cores
@@ -7,3 +7,12 @@ ncrpt: keys are in testingkey
 dcrpt: decrypting and decompressing, using 2 cores
 dcrpt: testingcrypt 9077 (31.01 %) => testingorg: 29271
 crptest: testing and testingorg are identical
+expimptest run on: 15.12.21 at 10:31:46 UTC
+sudo cp keygen ncrpt dcrpt expcrypt impcrypt crptest expimptest /usr/local/bin
+expcrypt: compressing and encrypting testing for export
+expcrypt: testing 33367 => testingcrypt 9492 (28.45 %)
+expcrypt: keys are in testingkey
+impcrypt: decrypting and decompressing
+impcrypt: testingcrypt 9492 (58.80 %) => testingorg: 16144
+Files testing/binf.bin and testingorg/binf.bin differ
+Files testing/textf.txt and testingorg/textf.txt differ
