@@ -42,7 +42,7 @@ function processfile {
 		# use compressed version only if it is actually smaller
 		[ "$CMPS" -lt "$ORGS" ] && { # successful general compression
 			INFILE=$OUTFILE.cmp # make the final compressed file to be the infile
-			if [ "$COMPRESSOR" = 'xz' ]; then
+			if [ "$COMPRESSOR" = 'lzma' ]; then
 			 case "$CH" in
 			 u ) CH='i';;
 			 h ) CH='j';;
