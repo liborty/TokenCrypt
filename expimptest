@@ -23,12 +23,12 @@ esac
 
 make install CC=clang
 # this is just for better readability of code
-INDIR="$1" 
+# INDIR="$1" 
 # filenames, preceding path is stripped off, so all output goes to ./
-DIREND=${1##*/} 
-KEYFILE="$DIREND"key # must separate _ from the variable name
-OUTFILE="$DIREND"crypt
-ORGDIR="$DIREND"org
+# DIREND=${1##*/} 
+KEYFILE="$1"key # must separate _ from the variable name
+OUTFILE="$1"crp
+ORGDIR="$1"org
 
 # check that output files do not already exist
 [ -f "$KEYFILE" ] && {
@@ -39,7 +39,7 @@ ORGDIR="$DIREND"org
 	printf "$PROGN: '$ORGDIR' already exists here!\n" >&2; exit 2; }
 
 # encrypt and decrypt
-time expcrypt -xbr $INDIR $KEYFILE $OUTFILE
+time expcrypt -xbr $1 $KEYFILE $OUTFILE
 time impcrypt -r $OUTFILE $KEYFILE $ORGDIR
-diff -q -r $INDIR $ORGDIR && printf "$PROGN: $INDIR and $ORGDIR are identical\n"
+diff -q -r $1 $ORGDIR && printf "$PROGN: $1 and $ORGDIR are identical\n"
 rm -rf $ORGDIR $OUTFILE $KEYFILE >&2

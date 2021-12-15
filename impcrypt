@@ -120,7 +120,7 @@ if [ -z $( which hexify ) ]; then
 	printf "$PROGN warning, hexify is not installed, will not unpack .hex files\n" >&2
 fi
 
-tar -xpJf $1 $1dir
+tar -xpJf $1 $1dir # $1dir is temporary encrypted dir unpacked
 printf "$PROGN: decrypting and decompressing\n" 
 processdir $1dir $3
 rm -rf $1dir

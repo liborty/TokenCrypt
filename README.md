@@ -8,7 +8,9 @@
 
 The encryption keys (keydir) and the encrypted files (outdir) are written into two separate directories with user specified names. Should the association between them be lost or forgotten or the keydir be lost entirely, then it will be impossible to reconstruct the original data! Therefore, it is recommended to record the chosen directories names and to store them in a safe place, before ever deleting the original data. When using TokenCrypt as a back up and archiving tool, then the original data will normally be kept in place.
 
-The encrypted files (written to outdir) are just meaningless random data and thus can be stored anywhere (even 'on the cloud'), without compromising security. The same applies to their keys (in keydir), although these reveal the type of compression that was used. The critical part is to prevent a potential eavesdropper from matching up those two directories, as that is the only way to decrypt them. That is why they are not given related names automatically. Normally, the user should choose unrelated names for them and keep them in separate places.
+The encrypted files (written to outdir) are just meaningless random data and thus can be stored anywhere, even 'on the cloud'. The same applies to their keys (in keydir), although these reveal the type of compression that was used. The critical part is to prevent a potential eavesdropper from matching up those two directories, as that is the only way to decrypt them. That is why they are not given related names automatically. Normally, the user should choose unrelated names for them and keep them in separate places. 
+
+Before uploading anything to the internet, read the section below entitled More Secure Alternative.
 
 ## Introduction
 
@@ -70,7 +72,9 @@ Standard  `base64` tool which is normally pre-installed on Linux.
 `zstd` an alternative compression, selectable with `-z` option to `ncrpt`. It needs to be installed with:  
 `sudo apt-get install zstd`
 
-`dcrpt` issues a warning if any of the utilities are not installed. It is probably best to install them all.
+`tar` is used by `expcrypt` and `impcrypt` to pack the encrypted directory into a single archive file for more convenient and secure export/import.
+
+`dcrpt` issues a warning if any of the compression utilities are not installed. It is probably best to install them all.
 There is not much difference between lzma and zstd but they both have their fans. `lzma`
 appears to have slightly better compression rate and `zstd` is slightly faster and more controllable. Of course, to unpack/decrypt archives on a new machine, it must have the same compression/decompression utility installed, too.
 
@@ -136,7 +140,7 @@ optionally performs an automated overall test, checking that not a single byte w
 
 ## More Secure Alternative
 
-There is a vulnerability, inherent in `ncrpt` and `dcrpt` design, to specialist search engines sifting through the whole internet, possibly matching pairs of (keydir outdir) directories by their same structures, file names and sizes. Thus, in theory, such engines could pair them up, even if they were uploaded to two unrelated places.
+There is a vulnerability, inherent in `ncrpt` and `dcrpt` design, to specialist search engines sifting through the whole internet, possibly matching up pairs of (keydir outdir) directories by their same structures, file names and sizes. Thus, in theory, such engines could pair them up, even if they were uploaded to two unrelated places.
 
 Two alternative scripts, `expcrypt` and `impcrypt`, address this vulnarability. It is recommended that `expcrypt` be used prior to exporting snapshots of the local indir to any unsecure locations, such as the internet; `impcrypt` is for importing them back (for recovery purposes). It unpacks, decrypts and decompresses.
 
@@ -162,6 +166,10 @@ The total of nine different combinations of compressions can be used, as before,
 The compressed and encrypted files that used to go to outdir are now for convenience tarred together, also into a single file. If the individual filenames are confidential too, then this file should be encrypted again.
 
 There is a price to be paid in terms of the execution time. The entire indir tree structure now has to be traversed sequentially, thus reducing the opportunities for parallel execution (those are fully exploited by `ncrpt` and `dcrpt`).
+
+### `impcrypt [options] infile keyfile outdir`
+
+acts like `dcrpt`, except it interprets correctly the export files, here named infile,keyfile, created by `expcrypt`.
 
 ## Background Scripts and Programs (not needed by the user)
 
