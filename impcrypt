@@ -95,7 +95,6 @@ exec 3<$2 || {
 	printf "$PROGN: key file '$2' failed to open for reading\n" >&2
 	exit 2	
 }
-
 # Globally validate the output directory
 [ -n "$3" ] || { 
 	printf "$PROGN: outdir arg missing\n" >&2
