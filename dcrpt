@@ -7,7 +7,7 @@ PROGN=${0##*/}
 BACKSZ=10000 # size of files to be encrypted in the subshells
 
 # processfile will decompress and decrypt one file
-# it expects four arguments: ITEM INDIR KEYDIR OUTDIR
+# it expects three arguments: INDIR KEYDIR OUTDIR
 function processfile {
 
 	local INFILE=$1 
@@ -151,8 +151,8 @@ wait # for all sub proccesses to finish
 # optional final report
 if ! [ $QUIET ]; then
 	SIZES=( $( du -hbs $3 $1 ) ) # array of size,dir,size,dir
-	let "SIZES[0]-=4096" # subtract the size of the top directory files
-	let "SIZES[2]-=4096" # as they are not actual data
+	# let "SIZES[0]-=4096" # subtract the size of the top directory files
+	# let "SIZES[2]-=4096" # as they are not actual data
 	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} "
 	if [ ${SIZES[0]} = ${SIZES[2]} ]; then printf "(100 %%) => ${SIZES[1]} ${SIZES[0]}\n"; else
 		CR=$(( (5+100000*${SIZES[2]}/${SIZES[0]})/10 )) # calculate percentage rounded to two d.p.	

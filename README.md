@@ -6,34 +6,34 @@
 
 ## Security Advice
 
-The encryption keys (keydir) and the encrypted files (outdir) are written into two separate directories with user specified names. Should the association between them be lost or forgotten or the keydir be lost entirely, then it will be impossible to reconstruct the original data! Therefore, it is recommended to record the chosen directories names and to store them in a safe place, before ever deleting the original data. When using TokenCrypt as a back up and archiving tool, then the original data will normally be kept in place.
+TokenCrypt uses theoretically unbreakable symmetric encryption but some practical precautions need to be adhered to.
 
-The encrypted files (written to outdir) are just meaningless random data and thus can be stored anywhere, even 'on the cloud'. The same applies to their keys (in keydir), although these reveal the type of compression that was used. The critical part is to prevent a potential eavesdropper from matching up those two directories, as that is the only way to decrypt them. That is why they are not given related names automatically. Normally, the user should choose unrelated names for them and keep them in separate places. 
+The encryption keys and the encrypted files are packed and written into two separate output directories with user specified names. Optionally, and more securely, to two archive files.
 
-Before uploading anything to the internet, read the section below entitled More Secure Alternative.
+Should the association between them be later lost or forgotten or one of them be lost entirely, then it will not be possible to reconstruct the original data! Therefore, it is recommended to record the chosen output names and to store them in a safe place, before ever deleting the original data. While using TokenCrypt as a local archiving and backup tool, the original data will normally be kept in place.
+
+The encrypted archive file is just meaningless random data and thus can be stored anywhere, even 'on the cloud'. The same applies to the keys archive file. The critical part is to prevent a potential eavesdropper from matching up those two files, as that is the only way to decrypt them. That is why they are not given related names automatically. Normally, the user should choose unrelated paths/names for them and keep them in separate places. Same as with public and private keys in assymetric encryption.
 
 ## Introduction
 
-It is not an objective of TokenCrypt to replace `git` and to keep the complete histories of everything, as that carries significant costs in complexity and storage. The quest for being totally foolproof is subject to the law of diminishing returns, as foolishness knows no bounds. TokenCrypt is more akin to `borg`; an efficient archiver and backing up tool. The key difference, if excuse the pun, lies in TokenCrypt deploying far more secure encryption and sometimes better compression as well. On the other hand, in its update mode, it only maintains the current version of the archive. Historical checkpoints are up to the user to create and keep, as and when wanted.
+It is not an objective of TokenCrypt to replace `git` and to automatically keep the complete histories of everything, as that carries significant costs in complexity and storage. The quest for being totally foolproof is subject to the law of diminishing returns, as foolishness generally knows no bounds. TokenCrypt is more akin to `borg`; an efficient archiver and backing up tool. The key difference, if excuse the pun, lies in TokenCrypt deploying more secure encryption and sometimes better compression as well. On the other hand, in its update mode, it only maintains the current version of the archive. Historical checkpoints are up to the user to create and keep, as and when required.
 
-`ncrpt` reads given input directory (tree) containing API tokens, base64 files and
-any other types of files. Subdirectories are processed recursively with -r option.
-This script recognises hexadecimal files and base64 files and converts them to compact binary data.
-It then selects the best compression method individually for each file and finally encrypts them all with total security.
+`ncrpt` and `expcrypt` read given input directory (tree) containing API tokens, base64 files and any other types of files. Subdirectories are processed recursively with -r option. `ncrpt` creates two output directories, `expcrypt` two archive files.
 
-Some well known compressed formats afford only minor further compression, if any.
-To save time, they are recognised here simply by their well known extensions:
+Some well known compressed formats afford only minor further compression, if any. To save time, they are recognised simply by their well known extensions:
 `jpg,jpeg,mp4,zip,7z,lz,zst,gz,bz2` and their upper case versions.
-All attempts at compressing these particular files are avoided.
+All attempts at compressing these particular files are avoided. They are just encrypted as they are.
 
-Internet security tokens usually consist of 32, 64 or more hexadecimal characters. They are increasingly used to facilitate secure access over the internet protocols to various Applications Programming Interfaces (APIs). Being plain text, they are easily transmitted but they need to be stored securely, that means strongly encrypted.
+Given -xb options, these two scripts will recognise hexadecimal files and base64 files and convert them to more compact binary data. They then select the best compression method individually for each file and finally securely encrypt them all.
 
-Base64 encoding into printable characters is also used to encode binary data, for similar reasons.
+Internet security tokens usually consist of 32, 64 or more hexadecimal characters. They are increasingly used to facilitate secure access over the internet protocols to various Applications Programming Interfaces (APIs). Being plain text, they are easily transmitted but they need to be stored securely, that means strongly encrypted. Even git uses hexadecimal 'slugs'.
+
+Base64 encoding into printable characters is also generally used to encode binary data, for similar reasons.
 
 Hexadecimal security tokens, base64 files and other types of files may sometimes be all mixed up in one common directory. This is not the best practice but it can arise. It could involve much work trying to separate them all.
 
-`ncrpt -b -x` copes with such mixed directories contents by
-applying these two data type recognition tests to each file individually. In this case it does not rely on extension names, as that could lead to errors.
+`ncrpt` and `expcrypt` cope with such mixed contents directories by
+applying data type recognition tests to each file individually. In this case, they do not rely on extension names, as that could lead to errors.
 
 ## Installation
 
@@ -44,7 +44,7 @@ This will compile all three `C` programs and, after asking for su priviledges, i
 ### Manual alternatives:
 
 #### `sudo ./uninstall`  
-will delete previously installed programs and scripts. Use to force a completely fresh start. To be followed by:
+will delete previously installed programs and scripts. It can be used to force a completely fresh start. To be followed by:
 
 #### `./install`  
 This installs everything without the local compilation. Thus the ready made executables `symcrypt`, `hexcheck` and `hexify`, pulled from the repository, can be installed on `x86_64` architecture. They are compiled from `C` sources and tested automatically at github.com (see the green badge at the top of this document).
@@ -53,12 +53,12 @@ Whether the executables were created by local compilation or just pulled from th
 `cp symcrypt hexcheck hexify ncrpt dcrpt keygen crptest ~/bin`
 
 #### `make install`  
-Will compile and install everything into `/usr/local/bin`. It may ask for su priviledges for the integrated installation step. Appending `CC=clang` will deploy the clang compiler (if installed).
+Will locally compile and install everything into `/usr/local/bin`. It may ask for su priviledges for the integrated installation step. Appending `CC=clang` will deploy `clang` compiler (if installed).
 
-A good reason to perform local compilation is if you suspect that the github binaries may have been compromised or you have a different machine architecture from `x86_64`. This step should be repeated whenever some programs and scripts have changed, such as after a fresh `git pull`. It will only recompile the C programs that have actually changed.
+A good reason to perform local compilation is if it is suspected that the github binaries may have been compromised or when on a different machine architecture from `x86_64`. This step should be repeated whenever some programs and scripts have changed, such as after a fresh `git pull`. It will only recompile the C programs that have actually changed.
 
 #### `make`
-This will only compile and install those C programs that have changed but  none of the Bash scripts.
+will only compile and install those C programs that have changed and none of the Bash scripts.
 
 ## Dependencies
 
@@ -74,13 +74,13 @@ Standard  `base64` tool which is normally pre-installed on Linux.
 
 `tar` is used by `expcrypt` and `impcrypt` to pack the encrypted directory into a single archive file for more convenient and secure export/import.
 
-`dcrpt` issues a warning if any of the compression utilities are not installed. It is probably best to install them all.
+`impcrypt` issues a warning if any of the compression utilities are not installed. It is probably best to install them all.
 There is not much difference between lzma and zstd but they both have their fans. `lzma`
 appears to have slightly better compression rate and `zstd` is slightly faster and more controllable. Of course, to unpack/decrypt archives on a new machine, it must have the same compression/decompression utility installed, too.
 
 ## Usage
 
-There are two command line interface (CLI) bash scripts that do most of the work and automate the whole process:
+There are three main command line interface (CLI) bash scripts that do most of the work and automate the whole process:
 
 ### `ncrpt [options] indir keydir outdir`
 
@@ -124,52 +124,49 @@ ncrpt -ruc indir keydir outdir
 
 This will recursively update and clean the archive so that it is as if freshly created from the current state of indir. This is convenient for backing up purposes.
 
-Summary: `ncrpt` (encrypt with vowels left out) executes the tasks of data type analysis, optimal compression selection, compression, key generation, key saving and encryption. Also recursive archiving and subsequent archive maintenance.
+There is a vulnerability inherent in `ncrpt` creating directories. Specifically, specialist search engines sifting through the whole internet, possibly matching up pairs of (keydir outdir) directories by their same structures, file names and sizes, could in theory pair them up, even if they were uploaded to two unrelated places. Using `expcrypt` below is more secure. 
 
-### `dcrpt -[h][q][r][v] indir keydir outdir`
+It is recommended that `expcrypt` be used prior to exporting snapshots of the local indir to any unsecure locations, such as the internet.
 
-is the conceptual inverse of `ncrpt`, although it is simpler. Its operations are carried out in exactly the reverse order.  It reads from indir the encrypted files previously created by `ncrpt` and it also reads their associated keys from `keydir`. They are paired up by their filenames. So, never rename an encrypted file, unless you rename its corresponding key file as well! The two directories must always match.
+The only reason to ever prefer `ncrpt` over `expcrypt` is when there is a lot of frequent updating of bulky directories to be done. This is because `ncrpt`, working with the directories, is not tied to sequential processing and does fully utilise all the host computer cores for overall faster execution.
 
-Following decryption, the relevant decompression method(s) are applied to each file, so that the original files are exactly reconstructed in `outdir`. The compression method(s) were recorded for each file in the names of the extension(s) of its keyfile.
+Summary: `ncrpt` (encrypt with vowels left out) speedily executes the tasks of data type analysis, optimal compression selection, compression, key generation, key saving and encryption. Also recursive archiving and subsequent archive maintenance.
 
-Summary: `dcrpt` (decrypt with vowels left out) matches the keys, decrypts the binary indir files with them, selects the right decompression methods and  decompresses, thus reconstructing the exact contents of the original directory.
+### `expcrypt [options] indir keyfile outfile`
 
-### `crptest testdir`
+acts like `ncrpt` in the default 'create new archive' mode. Therefore,  the updating options -u and -c are not available here. The most important difference is that instead of creating two recognisable output directories, `expcrypt` creates two output files that betray no similarities. They even differ in size.
 
-optionally performs an automated overall test, checking that not a single byte was corrupted anywhere while encrypting and decrypting back the contents of (any) `testdir`.
+All the keys for the whole archive are now packed into one sequential keyfile, which replaces previous keydir. No filenames are any longer being duplicated or extra file extensions appended. This is overall a cleaner solution.
 
-## More Secure Alternative
+The total of nine different combinations of compressions can still be used, as before, depending on the input file nd its compressibility properties.
 
-There is a vulnerability, inherent in `ncrpt` and `dcrpt` design, to specialist search engines sifting through the whole internet, possibly matching up pairs of (keydir outdir) directories by their same structures, file names and sizes. Thus, in theory, such engines could pair them up, even if they were uploaded to two unrelated places.
+The compressed and encrypted files that used to go to outdir are now for convenience tarred together, also into a single file. If the individual filenames are confidential too, then this file should be encrypted once more.
 
-Two alternative scripts, `expcrypt` and `impcrypt`, address this vulnarability. It is recommended that `expcrypt` be used prior to exporting snapshots of the local indir to any unsecure locations, such as the internet; `impcrypt` is for importing them back (for recovery purposes). It unpacks, decrypts and decompresses.
+There is a price to be paid in terms of the execution time. The entire indir tree structure now has to be traversed sequentially, thus reducing the opportunities for parallel execution (those are fully exploited by `ncrpt`).
+
+### `impcrypt -[h][q][r][v] infile keyfile outdir`
+
+unpacks, decrypts and decompresses. It acts as the inverse operation for both `ncrpt` and `expcrypt`. Its operations are carried out in exactly the reverse order.  It reads from indir (or from a tar archive file) the encrypted files previously created by `ncrpt` or `expcrypt` and it also reads their associated keys from `keydir` (or from keys archive file). They are paired up by their filenames, so never rename an encrypted file, unless you rename its corresponding key file as well. The root filenames in both directories must match. Within archive files produced by `expcrypt`, this issue does not arise.
+
+Following decryption, the relevant decompression method(s) are applied to each file, so that the original files are exactly reconstructed in `outdir`.
 
 The following can now be done:
 
 * `expcrypt -r indir keyfile outfile`
-* upload keyfile and outfile to two different places on the internet 
+* upload `keyfile` and `outfile` to two different places on the internet 
 * delete everything locally, intentionally or by accident:  
 `rm -rf indir keydir outdir`
-* at any time and place later, download keyfile and outfile, then
+* at any time and place later, download back `keyfile` and `outfile`, then
 * `impcrypt -r outfile keyfile indir`
 
-This should result in recovered original state of indir. More securely saved in between.
+This should result in recovered original state of `indir`, securely saved in between.
 
-### `expcrypt [options] indir keyfile outfile`
 
-acts like `ncrpt` in the 'create new archive' mode. Therefore,  the updating options -u and -c no longer apply and have been removed from `expcrypt`. The most important difference is that instead of creating two matchable output directories, `expcrypt` creates two output files that betray no similarities. They even differ in size.
+Summary: `impcrypt` (import crypt) matches the keys, decrypts the indir files with them, selects the right decompression methods and  decompresses, thus reconstructing the exact contents of the original directory.
 
-All the keys for the whole archive are now packed into one sequential `keyfile`, which replaces previous keydir. No filenames are any longer being duplicated or extra file extensions appended, which is a cleaner solution.
+### `dcrpt -[h][q][r][v] indir keydir outdir`
 
-The total of nine different combinations of compressions can be used, as before, depending on the input file nd its compressibility properties.
-
-The compressed and encrypted files that used to go to outdir are now for convenience tarred together, also into a single file. If the individual filenames are confidential too, then this file should be encrypted again.
-
-There is a price to be paid in terms of the execution time. The entire indir tree structure now has to be traversed sequentially, thus reducing the opportunities for parallel execution (those are fully exploited by `ncrpt` and `dcrpt`).
-
-### `impcrypt [options] infile keyfile outdir`
-
-acts like `dcrpt`, except it interprets correctly the export files, here named infile,keyfile, created by `expcrypt`.
+Deprecated. Reads, decrypts and decompresses directories containing keys with the old style compression encoding extensions. Will be eventually withdrawn. In the meantime, use it to convert any existing archive directories to the new format.
 
 ## Background Scripts and Programs (not needed by the user)
 
@@ -191,25 +188,22 @@ acts like `dcrpt`, except it interprets correctly the export files, here named i
 
 ## Testing
 
-`crptest indir`
-
-Tests `ncrpt` and `dcrpt`. It first encrypts and then decrypts
-all the files in the given input directory and compares the results against the original files. Finally, it cleans up all the created directories.
-
-The reported compression/decompression rates and sizes should exactly match.
-
-The reconstructed files should be reported as being identical to the originals.
-Some character differences may arise for hexadecimal files because `hexcheck` converts both a-f and A-F to 10-15 and also it cleans up spurious spaces and newlines, instead of just rejecting files. API keys should be separated into their own  unique files. If the spaces/newlines turn out to be an unintended corruption, then the original file ought to be replaced by the cleaned up (reconstructed) version (see FAQ.md).
-
-`expimptest indir`
-
-Much like the above test but tests the export-import scripts `expcrypt` and `impcrypt` instead.
-
 An automated github action compiles the C programs and runs both `crptest`  and `expimptest` over the `testing` directory included in the repository.
 It tests all the main types of files: hexadecimal, base64, plain text and binary. It also tests reursive descent into a subdirectory. The 'test' badge at the top of this document lights up green
-when all the tests were passed. Note that only the summary output `test.log` is saved in the repository, not the encrypted, decrypted or key directories.
+when all the tests were passed. Note that only the summary output `test.log` is saved in the repository, everything else is tidied up (removed) after the tests.
 
-### Exercise
+Some character differences may arise for hexadecimal files because `hexcheck` converts both a-f and A-F to 10-15 and also it cleans up spurious spaces and newlines, instead of just rejecting such files. API keys should be separated into their own unique files. If the spaces/newlines turn out to be an unintended corruption, then the original file ought to be replaced by the cleaned up (reconstructed) version.
+
+### `crptest testdir`
+
+performs an automated test of `ncrpt`, creating directories, checking that not a single byte was corrupted anywhere while encrypting and decrypting back the contents of (any) `testdir`. The reported compression/decompression rates and sizes should also exactly match. Afterwards it cleans up all the created directories.
+
+### `expimptest testdir`
+
+is just like `crptest`, except it tests `expcrypt` and its creation of the archive files instead of directories. In both cases, `impcrypt` is used for unpacking, decrypting and decompressing back.
+The reconstructed files should be reported as being identical to the originals.
+
+## Exercise
 
 Suppose you maintain some git repository, say `mygitrepo`. Go one level up:  `cd ..`, and run:  
 `ncrpt -r mygitrepo mygitkeys gencrypted`  
@@ -220,6 +214,8 @@ This will update only the file(s) that you changed. What may come as a surprise 
 Note that TokenCrypt does not leave any such large hidden footprints on your filesystem.
 
 ## Releases Log
+
+**16Dec21** - Breaking change: `ncrpt` now appends a single, one letter extension onto the keyfiles. `dcrpt` still reads the old key directories with their old compression encodings. It is now deprecated but left here for legacy reasons. It will eventually be withdrawn. Please use it as soon as possible to convert any existing old archives to the new format. `impcrypt` now automatically recognises the new format keys extensions, as well as the packed archive files. The tests have been amended to reflect this change.
 
 **15Dec21** - `expcrypt` and `imcrypt` released for more secure and convenient exports and imports of archives snapshots.
 
