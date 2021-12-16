@@ -140,7 +140,7 @@ acts like `ncrpt` in the default 'create new archive' mode. Therefore,  the upda
 
 All the keys for the whole archive are now packed into one sequential keyfile, which replaces previous keydir. No filenames are any longer being duplicated or extra file extensions appended. This is overall a cleaner solution.
 
-The total of nine different combinations of compressions can still be used, as before, depending on the input file nd its compressibility properties.
+The total of nine different combinations of compressions can still be used, as before, depending on the input file and its compressibility properties.
 
 The compressed and encrypted files that used to go to outdir are now for convenience tarred together, also into a single file. If the individual filenames are confidential too, then this file should be encrypted once more.
 
@@ -148,7 +148,7 @@ There is a price to be paid in terms of the execution time. The entire indir tre
 
 ### `impcrypt -[h][q][r][v] infile keyfile outdir`
 
-unpacks, decrypts and decompresses. It acts as the inverse operation for both `ncrpt` and `expcrypt`. Its operations are carried out in exactly the reverse order.  It reads from indir (or from a tar archive file) the encrypted files previously created by `ncrpt` or `expcrypt` and it also reads their associated keys from `keydir` (or from keys archive file). They are paired up by their filenames, so never rename an encrypted file, unless you rename its corresponding key file as well. The root filenames in both directories must match. Within archive files produced by `expcrypt`, this issue does not arise.
+unpacks, decrypts and decompresses directories created by `ncrpt` or archive files created by `expcrypt`. Both of its first two input arguments must be directories or both must be files. Its operations are carried out in exactly the reverse order.  It reads from indir (or from a tar archive file) the encrypted files. It also reads their associated keys from `keydir` (or from keys archive file). Individual files in input directories are paired up by their names, so never rename an encrypted file, unless you rename its corresponding key file as well. The root filenames in both directories must match. Within archive files produced by `expcrypt`, this issue does not arise.
 
 Following decryption, the relevant decompression method(s) are applied to each file, so that the original files are exactly reconstructed in `outdir`.
 
@@ -157,7 +157,7 @@ The following can now be done:
 * `expcrypt -r indir keyfile outfile`
 * upload `keyfile` and `outfile` to two different places on the internet 
 * delete everything locally, intentionally or by accident:  
-`rm -rf indir keydir outdir`
+`rm -rf indir keyfile outfile`
 * at any time and place later, download back `keyfile` and `outfile`, then
 * `impcrypt -r outfile keyfile indir`
 
@@ -202,16 +202,15 @@ performs an automated test of `ncrpt`, creating directories, checking that not a
 
 ### `expimptest testdir`
 
-is just like `crptest`, except it tests `expcrypt` and its creation of the archive files instead of directories. In both cases, `impcrypt` is used for unpacking, decrypting and decompressing back.
-The reconstructed files should be reported as being identical to the originals.
+is just like `crptest`, except it tests `expcrypt` and its output archive files instead of directories. In both cases, `impcrypt` is used for unpacking, decrypting and decompressing back. The reconstructed files should be reported as being identical to the originals.
 
 ## Exercise
 
 Suppose you maintain some git repository, say `mygitrepo`. Go one level up:  `cd ..`, and run:  
 `ncrpt -r mygitrepo mygitkeys gencrypted`  
-Then, after some new trivial push from your repository, go back and run:  
-`ncrpt -r -u -c mygitrepo mygitkeys gencrypted`  
-This will update only the file(s) that you changed. What may come as a surprise is also the number of files added/changed by git in `.git`.
+Then, after some new trivial push from your repository, go back and run again:  
+`ncrpt -ruc mygitrepo mygitkeys gencrypted`  
+This will update only the file(s) that have changed. What may come as a surprise is the number of files added/changed by git in `.git`.
 
 Note that TokenCrypt does not leave any such large hidden footprints on your filesystem.
 
