@@ -10,8 +10,9 @@ jobs:
 
     - name: test
       run: |
-        ./crptest testing > test.log
-        ./expimptest testing >> test.log
+        crptest testing > test.log
+        echo
+        expimptest testing >> test.log
       shell: bash
  
     - name: commitlog
