@@ -1,4 +1,4 @@
-# TokenCrypt [<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/liborty/tokencrypt/HEAD?logo=github">](https://github.com/liborty/tokencrypt) [![Actions Status](https://github.com/liborty/TokenCrypt/workflows/test/badge.svg)](https://github.com/liborty/TokenCrypt/actions) 
+# TokenCrypt [<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/liborty/tokencrypt/HEAD?logo=github">](https://github.com/liborty/tokencrypt) [![Actions Status](https://github.com/liborty/TokenCrypt/workflows/test/badge.svg)](https://github.com/liborty/TokenCrypt/actions)
 
 **Efficiently compress and securely encrypt directories trees containing  hexadecimal security tokens, base64 data, text, binary and any other types of files. High security with ease of use.**
 
@@ -22,7 +22,7 @@ It is not an objective of TokenCrypt to replace `git` and to automatically keep 
 
 `ncrpt` and `expcrypt` read given input directory (tree) containing API tokens, base64 files and any other types of files. Subdirectories are processed recursively with -r option. `ncrpt` creates two output directories, `expcrypt` two archive files.
 
-Some well known compressed formats afford only minor further compression, if any. To save time, they are recognised simply by their well known extensions:
+Some already compressed files afford only minor further compression, if any. To save time, they are recognised simply by their well known extensions:
 `jpg,jpeg,mp4,zip,7z,lz,zst,gz,bz2` and their upper case versions.
 All attempts at compressing these particular files are avoided. They are just encrypted as they are.
 
@@ -86,7 +86,7 @@ There are three main command line interface (CLI) bash scripts that do most of t
 
 ### `ncrpt [options] indir keydir outdir`
 
-The long options introduced by `--` are also recognised.  
+Long options introduced by `--` are also recognised.  
 The options explained:
 
     -b --b64 test for base64 files, 
@@ -102,7 +102,7 @@ The options explained:
 When `-u` option is not given, then by default a new archive is created.  
 Option `-c` only makes sense in combination with `-u`. It can do nothing for a brand new archive.
 
-The tests for hexadecimal `-x` and base64 `-b` files should only be specified when the input directory likely contains such files. Even though these tests are relatively fast, as they usually fail after reading only a few bytes (of the wrong type of file). When omitted by mistake, then everything will still work, only the default compression of these types of files will take up more space than was strictly necessary.
+The tests for hexadecimal `-x` and base64 `-b` files should only be specified when the input directory likely contains such files. Though these tests are relatively fast. They usually fail after reading only a few bytes (of the wrong type of file). When these options are omitted by mistake, then everything will still work, only the default compression of these types of files will take up more space than was strictly necessary.
 
 The last three arguments are mandatory: the input directory, the keys directory and the encrypted directory. Both output directories (`keydir` and `outdir`) will mirror `indir` in their structure and file names; `keydir` will hold the keys and `outdir` will hold the encrypted files.
 
@@ -113,7 +113,7 @@ Option `-v` (`--verbose`) adds details of compressing each file. Selecting  both
 
 Once a directory has been compressed and encrypted, it is on subsequent occasions possible to update the keys and outdir directories (the archive) with option -u. This will add or recode just the new and updated files. New files are added (marked with a:) and more recent existing files are updated (marked with u:). When the recursive option -r is in use, the same will be applied to subdirectories. Capital letters A,U denote these two operations when applied to whole directories.
 
-In order for the state of the new indir and its archive to match again exactly one-to-one, an archive can be also cleaned up with option -c. Files no longer existing in indir will then be deleted (marked with d:) from the archive. With `-r -c` options, possibly whole directories can be deleted and marked with D:.
+In order for the state of the new indir and its archive to match again exactly one-to-one, an archive can be also cleaned up with option -c. Files no longer existing in indir will then be deleted (marked with d:) from the archive. With `-ruc` options, possibly whole directories can be deleted and marked with D:.
 
 Caution should be exercised when using the -c option, as any files that had been inadvertently deleted from indir will then be removed from the archive as well. For added safety, option `-c` is deliberately made explicit and separate from `-u`. Thus using `-u` alone is the *cautious updating mode*, which never deletes anything from the archive. However, it will still overwrite existing files with their new, possibly erroneus, versions. Beware that this can cause loss of previously useful content. Of course, this is true in general, whenever changing any files by any means, anywhere.
 
@@ -168,21 +168,21 @@ Summary: `impcrypt` (import crypt) matches the keys, decrypts the indir files wi
 
 ### `dcrpt -[h][q][r][v] indir keydir outdir`
 
-Deprecated. Reads, decrypts and decompresses directories containing keys with the old style compression encoding extensions. Will be eventually withdrawn. In the meantime, use it to convert any existing archive directories to the new format.
+Deprecated. Reads, decrypts and decompresses directories containing keys with the old style compression encoding extensions. This script will be eventually withdrawn. In the meantime, use it to convert any existing archive directories to the new format.
 
 ## Background Scripts and Programs (not needed by the user)
 
-`hexcheck` (C executable) is invoked by `ncrpt -x`. It recognises hexadecimal (token) files and packs them to binary, which exactly halves them in size. Hexadecimal files should be an even number of bytes long and only contain (0-9,a-f) ascii characters. There are a few allowed  exceptions: upper case A-F are accepted but when converted back, they will always end up in lower case. Spaces and newlines just get deleted. This tolerant policy may result in some differences being reported between the original and the reconstructed files. Then it is best to replace the original file with its cleaned up, reconstructed version.
+`hexcheck` (C executable) is invoked by `expcrypt -x`. It recognises hexadecimal (token) files and packs them to binary, which exactly halves them in size. Hexadecimal files should be an even number of bytes long and only contain (0-9,a-f) ascii characters. There are a few allowed  exceptions: upper case A-F are accepted but when converted back, they will always end up in lower case. Spaces and newlines just get deleted. This tolerant policy may result in some differences being reported between the original and the reconstructed files. Then it is best to replace the original file with its cleaned up, reconstructed version.
 
-`hexify` (C executable) is invoked by `dcrpt` to unpack the binary files back to their original hexadecimal form. In other words, it carries out an inverse operation to `hexcheck` above.
+`hexify` (C executable) is invoked by `impcrypt` to unpack the binary files back to their original hexadecimal form. In other words, it carries out an inverse operation to `hexcheck` above.
 
-`base64` (linux utility), invoked by `ncrpt -b`, recognises base64 files, resulting in 25% size reduction in their case (before final general compression). Base64 files should not contain any non base64 characters, such as newlines, otherwise this strict test will reject them. This utility is also deployed in inverse mode by `dcrpt`.
+`base64` (linux utility), invoked by `expcrypt -b`, recognises base64 files, resulting in 25% size reduction in their case (before final general compression). Base64 files should not contain any non base64 characters, such as newlines, otherwise this strict test will reject them. This utility is also deployed in inverse mode by `impcrypt`.
 
 `lzma` or `zstd` (linux utilities) are general compression methods used here for the final compression, as long as it will result in some size reduction. This is not necessarily the case for small and/or binary files. Any  incomressible files are detected and encrypted as they are, even if their extension name is not on the list. However, if it is on the list, the test  compression is avoided.
 
 `symcrypt` (C executable) applies fast symmetric XOR encryption (or decryption). It XORs together two files of any kind but they must have the same length. The ordering of the two input files does not even matter.
 
-`keygen file > key` writes to stdout random binary data of the same length as the given file. It is called by `ncrpt`.
+`keygen file > key` writes to stdout random binary data of the same length as the given file. It is called by `expcrypt`.
 
 `hexgen size`  writes to stdout `size` bytes of random hexadecimal data. It is only useful for generating test data.
 
