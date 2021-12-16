@@ -173,6 +173,12 @@ shift $((OPTIND-1)) # remove parsed options and args from $@ list
 	exit 2
 }
 
+# check that tar exists
+if [ -z $( which tar ) ]; then 
+	printf "$PROGN: tar is not installed\n" >&2
+	exit 2
+fi
+
 # Global options for the compressor
 FLAGS='-c -z -q' 
 if [ $VERBOSE ]; then 

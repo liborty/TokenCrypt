@@ -166,6 +166,10 @@ if [ -z $( which hexify ) ]; then
 fi
 
 if [ -f "$1" ] && [ -f "$2" ]; then
+	if [ -z $( which tar ) ]; then 
+		printf "$PROGN: tar is not installed, can not import archive file\n" >&2
+		exit 2
+	fi
 	# Globally open the keyfile
 	exec 3<$2 || {
 		printf "$PROGN: key file '$2' failed to open for reading\n" >&2

@@ -12,6 +12,8 @@ The encryption keys and the encrypted files are packed and written into two sepa
 
 Should the association between them be later lost or forgotten or one of them be lost entirely, then it will not be possible to reconstruct the original data! Therefore, it is recommended to record the chosen output names and to store them in a safe place, before ever deleting the original data. While using TokenCrypt as a local archiving and backup tool, the original data will normally be kept in place.
 
+Also, before deleting any data, check that you have not forgotten to apply the recurse option `-r`, as in that case all the subdirectories will be missing from the archive.
+
 The encrypted archive file is just meaningless random data and thus can be stored anywhere, even 'on the cloud'. The same applies to the keys archive file. The critical part is to prevent a potential eavesdropper from matching up those two files, as that is the only way to decrypt them. That is why they are not given related names automatically. Normally, the user should choose unrelated paths/names for them and keep them in separate places. Same as with public and private keys in assymetric encryption.
 
 ## Introduction
@@ -50,7 +52,7 @@ will delete previously installed programs and scripts. It can be used to force a
 This installs everything without the local compilation. Thus the ready made executables `symcrypt`, `hexcheck` and `hexify`, pulled from the repository, can be installed on `x86_64` architecture. They are compiled from `C` sources and tested automatically at github.com (see the green badge at the top of this document).
 
 Whether the executables were created by local compilation or just pulled from the repository, this script copies them all into `/usr/local/bin` for system-wide use.  Alternatively, they can be copied manually to any other `bin` directories and included in the search path. This does not require `sudo` privileges, e.g.:  
-`cp symcrypt hexcheck hexify ncrpt dcrpt keygen crptest ~/bin`
+`cp symcrypt hexcheck hexify ncrpt exprypt impcrypt keygen crptest expimptest ~/bin`
 
 #### `make install`  
 Will locally compile and install everything into `/usr/local/bin`. It may ask for su priviledges for the integrated installation step. Appending `CC=clang` will deploy `clang` compiler (if installed).
