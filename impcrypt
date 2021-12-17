@@ -14,9 +14,12 @@ function importfile {
 	local OUTFILE=$2
 	local FSIZE=`stat -c%s $INFILE`
 	local CH=`head -c 1 <&3` # read the compression encoding char
-	head -c $FSIZE <&3 | symcrypt $INFILE | case "$CH" in
 	# u (uncomressed) can be for a listed extension, or because all compressions have failed
-	u )  > $OUTFILE; return;;
+	[ "$CH" = 'u' ] && {		
+		head -c $FSIZE <&3 | symcrypt $INFILE > $OUTFILE
+		return
+	}
+	head -c $FSIZE <&3 | symcrypt $INFILE | case "$CH" in
 	h ) hexify > $OUTFILE; return;;
 	b ) base64 -w 0 > $OUTFILE; return;;
 	i ) lzma -d > $OUTFILE; return;;
@@ -38,9 +41,12 @@ function processfile {
 	local OUTFILE=$3
 	# the last keyfile extension encodes the compression type in dirs
 	local CH=${KEYFILE##*.}
-	cat $INFILE | symcrypt $KEYFILE | case "$CH" in
 	# u (uncomressed) can be for a listed extension, or because all compressions have failed
-	u ) > $OUTFILE; return;;
+	[ "$CH" = 'u' ] && {		
+		cat $INFILE | symcrypt $KEYFILE > $OUTFILE
+		return
+	}
+	cat $INFILE | symcrypt $KEYFILE | case "$CH" in
 	h ) hexify > $OUTFILE; return;;
 	b ) base64 -w 0 > $OUTFILE; return;;
 	i ) lzma -d > $OUTFILE; return;;

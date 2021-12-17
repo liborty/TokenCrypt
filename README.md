@@ -216,6 +216,8 @@ Note that TokenCrypt does not leave any such large hidden footprints on your fil
 
 ## Releases Log
 
+**17Dec21** - Release v1.0.1. Fixed a bug in importing uncompressed files.
+
 **16Dec21** - Breaking change: `ncrpt` now appends a single, one letter extension onto the keyfiles. `dcrpt` still reads the old key directories with their old compression encodings. It is now deprecated but left here for legacy reasons. It will eventually be withdrawn. Please use it as soon as possible to convert any existing old archives to the new format. `impcrypt` now automatically recognises the new format keys extensions, as well as the packed archive files. The tests have been amended to reflect this change.
 
 **15Dec21** - `expcrypt` and `imcrypt` released for more secure and convenient exports and imports of archives snapshots.
