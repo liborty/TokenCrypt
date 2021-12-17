@@ -1,4 +1,4 @@
-crptest run on: 16.12.21 at 08:48:25 UTC
+crptest run on: 17.12.21 at 01:58:04 UTC
 make: Nothing to be done for 'progs'.
 Installed TokenCrypt utilities in /usr/local/bin
 ncrpt: encrypting 'testing', using 2 cores
@@ -8,7 +8,7 @@ impcrypt: decrypting dirs using 2 cores
 impcrypt: testingcrypt 13173 (39.48 %) => testingorg: 33367
 crptest: 'testing' and 'testingorg' are identical
 
-expimptest run on: 16.12.21 at 08:48:25 UTC
+expimptest run on: 17.12.21 at 01:58:04 UTC
 sudo cp keygen ncrpt dcrpt expcrypt impcrypt crptest expimptest /usr/local/bin
 expcrypt: encrypting 'testing' for export
 expcrypt: testing 33367 => testingcrp 9484 (28.42 %)
