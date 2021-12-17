@@ -39,28 +39,29 @@ applying data type recognition tests to each file individually. In this case, th
 
 ## Installation
 
-This software was developed and tested under Linux. Installation from source needs `make` utility and a `C` compiler, e.g. `clang` or `gcc`. Download or clone this repository and cd into it. Then, for complete fresh installation:  
-### `./crptest testing`  
-This will compile all three `C` programs and, after asking for su priviledges, install them and the bash scripts in `/usr/local/bin`. As an added benefit, it will also run locally the same test as is done on github.
+This software was developed and tested under Linux. Installation from source needs `make` utility and a `C` compiler, e.g. `clang` or `gcc`. Download or clone this repository and cd into it. Then, for complete fresh installation: 
 
-### Manual alternatives:
+### `make && make install`
 
-#### `sudo ./uninstall`  
-will delete previously installed programs and scripts. It can be used to force a completely fresh start. To be followed by:
-
-#### `./install`  
-This installs everything without the local compilation. Thus the ready made executables `symcrypt`, `hexcheck` and `hexify`, pulled from the repository, can be installed on `x86_64` architecture. They are compiled from `C` sources and tested automatically at github.com (see the green badge at the top of this document).
-
-Whether the executables were created by local compilation or just pulled from the repository, this script copies them all into `/usr/local/bin` for system-wide use.  Alternatively, they can be copied manually to any other `bin` directories and included in the search path. This does not require `sudo` privileges, e.g.:  
-`cp symcrypt hexcheck hexify ncrpt exprypt impcrypt keygen crptest expimptest ~/bin`
-
-#### `make install`  
 Will locally compile and install everything into `/usr/local/bin`. It may ask for su priviledges for the integrated installation step. Appending `CC=clang` will deploy `clang` compiler (if installed).
 
-A good reason to perform local compilation is if it is suspected that the github binaries may have been compromised or when on a different machine architecture from `x86_64`. This step should be repeated whenever some programs and scripts have changed, such as after a fresh `git pull`. It will only recompile the C programs that have actually changed.
+A good reason to perform local compilation is if it is suspected that the github binaries may have been compromised or when on a different machine architecture than `x86_64`. This step should be repeated whenever some programs and scripts have changed, such as after a fresh `git pull`. It will only recompile the C programs that have actually changed.
 
 #### `make`
+
 will only compile and install those C programs that have changed and none of the Bash scripts.
+
+#### `sudo ./uninstall`
+
+will delete previously installed programs and scripts. It can be used to force a completely fresh start. To be followed by:
+
+#### `./install`
+
+will install everything without the local compilation. Thus the ready made executables `symcrypt`, `hexcheck` and `hexify`, pulled from the repository, can be installed on `x86_64` architecture. They are compiled from `C` sources and tested automatically at github.com (see the green badge at the top of this document).
+
+Whether the executables were created by local compilation or just pulled from the repository, this script copies them all into `/usr/local/bin` for system-wide use.  Alternatively, they can be copied manually to any other `bin` directories and included in the search path. This does not require `sudo` privileges, e.g.:
+
+#### `cp symcrypt hexcheck hexify ncrpt exprypt impcrypt keygen crptest expimptest ~/bin`
 
 ## Dependencies
 
