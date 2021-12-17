@@ -10,7 +10,7 @@ jobs:
 
     - name: test
       run: |
-        make install > test.log
+        make && make install > test.log
         ./crptest testing >> test.log
         echo >> test.log
         ./expimptest testing >> test.log
