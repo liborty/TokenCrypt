@@ -41,5 +41,5 @@ ORGDIR="$1"org
 # encrypt and decrypt
 time expcrypt -xbr $1 $KEYFILE $OUTFILE
 time impcrypt -r $OUTFILE $KEYFILE $ORGDIR
-diff -q -r $1 $ORGDIR && printf "$PROGN: '$1' and '$ORGDIR' are identical\n"
+diff -qr $1 $ORGDIR && printf "$PROGN: '$1' and '$ORGDIR' are identical\n"
 rm -rf $ORGDIR $OUTFILE $KEYFILE >&2
