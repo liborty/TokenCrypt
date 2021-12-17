@@ -41,7 +41,7 @@ applying data type recognition tests to each file individually. In this case, th
 
 This software was developed and tested under Linux. Installation from source needs `make` utility and a `C` compiler, e.g. `clang` or `gcc`. Download or clone this repository and cd into it. Then, for complete fresh installation: 
 
-### `make && make install`
+### `make install`
 
 Will locally compile and install everything into `/usr/local/bin`. It may ask for su priviledges for the integrated installation step. Appending `CC=clang` will deploy `clang` compiler (if installed).
 
@@ -53,7 +53,7 @@ will only compile and install those C programs that have changed and none of the
 
 #### `sudo ./uninstall`
 
-will delete previously installed programs and scripts. It can be used to force a completely fresh start. To be followed by:
+will delete previously installed programs and scripts. It can be used to force a completely fresh start.
 
 #### `./install`
 
@@ -127,7 +127,7 @@ ncrpt -ruc indir keydir outdir
 
 This will recursively update and clean the archive so that it is as if freshly created from the current state of indir. This is convenient for backing up purposes.
 
-There is a vulnerability inherent in `ncrpt` creating directories. Specifically, specialist search engines sifting through the whole internet, possibly matching up pairs of (keydir outdir) directories by their same structures, file names and sizes, could in theory pair them up, even if they were uploaded to two unrelated places. Using `expcrypt` below is more secure. 
+There is a vulnerability inherent in `ncrpt` creating directories. Specifically, specialist search engines sifting through the whole internet, possibly matching up pairs of (keydir outdir) directories by their same structures, file names and sizes, could in theory pair them up, even if they were uploaded to two unrelated places. Using `expcrypt` below is more secure.
 
 It is recommended that `expcrypt` be used prior to exporting snapshots of the local indir to any unsecure locations, such as the internet.
 
