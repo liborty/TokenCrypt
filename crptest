@@ -40,6 +40,5 @@ if [ -d "$ORGDIR" ]; then
 # encrypt and decrypt
 time ncrpt -xbr $INDIR $KEYDIR $OUTDIR
 time impcrypt -r $OUTDIR $KEYDIR $ORGDIR
-diff -qr $INDIR $ORGDIR
-[ "$?" -eq 0 ] && printf "$PROGN: '$INDIR' and '$ORGDIR' are identical\n"
+diff -qr $INDIR $ORGDIR && printf "$PROGN: '$INDIR' and '$ORGDIR' are identical\n"
 rm -rf $ORGDIR $OUTDIR $KEYDIR >&2
