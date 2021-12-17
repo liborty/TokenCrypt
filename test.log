@@ -11,18 +11,18 @@ strip hexify
 chmod 755 hexify
 sudo cp hexify /usr/local/bin
 sudo cp keygen ncrpt dcrpt expcrypt impcrypt crptest expimptest /usr/local/bin
-crptest run on: 17.12.21 at 12:26:55 UTC
+crptest run on: 17.12.21 at 13:12:11 UTC
 ncrpt: encrypting 'testing', using 2 cores
-ncrpt: testing 33367 => testingcrypt 13173 (39.48 %)
+ncrpt: testing 159382 => testingcrypt 139188 (87.33 %)
 ncrpt: keys are in 'testingkey'
 impcrypt: decrypting dirs using 2 cores
-impcrypt: testingcrypt 13173 (39.48 %) => testingorg: 33367
+impcrypt: testingcrypt 139188 (37.153 %) => testingorg: 37463
 crptest: 'testing' and 'testingorg' are identical
 
-expimptest run on: 17.12.21 at 12:26:55 UTC
+expimptest run on: 17.12.21 at 13:12:12 UTC
 expcrypt: encrypting 'testing' for export
-expcrypt: testing 33367 => testingcrp 9492 (28.45 %)
+expcrypt: testing 159382 => testingcrp 132336 (83.03 %)
 expcrypt: keys are in 'testingkey'
 impcrypt: decrypting and decompressing archives files
-impcrypt: testingcrp 9492 (28.45 %) => testingorg: 33367
+impcrypt: testingcrp 132336 (83.03 %) => testingorg: 159382
 expimptest: 'testing' and 'testingorg' are identical
