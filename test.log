@@ -1,5 +1,5 @@
 sudo cp keygen ncrpt dcrpt expcrypt impcrypt crptest expimptest /usr/local/bin
-crptest run on: 17.12.21 at 12:10:05 UTC
+crptest run on: 17.12.21 at 12:11:54 UTC
 ncrpt: encrypting 'testing', using 2 cores
 ncrpt: testing 33367 => testingcrypt 4096 (12.28 %)
 ncrpt: keys are in 'testingkey'
@@ -10,15 +10,15 @@ Files testing/binf.bin and testingorg/binf.bin differ
 Files testing/hexf.api and testingorg/hexf.api differ
 Files testing/textf.txt and testingorg/textf.txt differ
 
-expimptest run on: 17.12.21 at 12:10:05 UTC
+expimptest run on: 17.12.21 at 12:11:54 UTC
 expcrypt: encrypting 'testing' for export
-expcrypt: testing 33367 => testingcrp 248 (74. %)
+expcrypt: testing 33367 => testingcrp 252 (76. %)
 expcrypt: keys are in 'testingkey'
 impcrypt: decrypting and decompressing archives files
 impcrypt importfile: unrecognised ch
 impcrypt importfile: unrecognised ch
 impcrypt importfile: unrecognised ch
-impcrypt: testingcrp 248 (60.5 %) => testingorg: 4096
+impcrypt: testingcrp 252 (61.5 %) => testingorg: 4096
 Files testing/b64.code and testingorg/b64.code differ
 Only in testing: binf.bin
 Only in testing: hexf.api
