@@ -14,7 +14,7 @@ function processfile {
 
 	local INFILE=$1 
 	local OUTFILE=$2
-	local EX="${1##*.}" # this file's extension
+	local EX="${1##*.}" # this file's last extension
 	local CH='u'
 
 	EX=${EX,,} # convert to lower case, to detect both cases
@@ -47,16 +47,14 @@ function processfile {
 			 u ) CH='i';;
 			 h ) CH='j';;
 			 b ) CH='k';;
-			 * ) printf "$PROGN processfile: unrecognised ch\n"
-			 	 exit 2;;
+			 * ) printf "$PROGN processfile: unrecognised ch\n"; exit 2;;
 			 esac
 			else # compressor program is 'zstd'
 			 case "$CH" in
 			 u ) CH='l';;
 			 h ) CH='m';;
 			 b ) CH='n';;
-			 * ) printf "$PROGN processfile: unrecognised ch\n"
-			 	 exit 2;;
+			 * ) printf "$PROGN processfile: unrecognised ch\n"; exit 2;;
 			 esac
 			fi				
 		} # else no general compression gain, keep the original INFILE and codes: u,h,b
@@ -187,8 +185,8 @@ fi
 
 # Set verified global key file
 KEYFILE=$2
-# Create OUTDIR, same root name as outfile
-OUTDIR=${3##*/}dir 
+# Create temporary OUTDIR, same root name as outfile
+OUTDIR=$3dir 
 printf "$PROGN: encrypting '$1' for export\n" 
 createdir $1 $OUTDIR  
 tar -cJf $3 $OUTDIR

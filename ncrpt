@@ -13,13 +13,13 @@ EXT=lz			# and the extension that goes with it
 # creates and cleans up two temporary files in OUTDIR
 function processfile {
 
-	local INFILE=$1
-	local KEYFILE=$2 
-	local OUTFILE=$3
+	local INFILE="$1"
+	local KEYFILE="$2" 
+	local OUTFILE="$3"
 	local EX="${1##*.}" # this file's extension
 	local CH='u'
 
-	EX=${EX,,} # convert to lower case, to detect both cases
+	local EX=${EX,,} # convert to lower case, to detect both cases
 	# if EX passes any one of these tests, then avoid all compression 
 	[ "$EX" = 'jpg' ] || [ "$EX" = 'jpeg' ] || [ "$EX" = 'mp4' ] || [ "$EX" = 'zip' ] || [ "$EX" = '7z' ] || \
 	[ "$EX" = 'lz' ] || [ "$EX" = 'zst' ] || [ "$EX" = 'gz' ] || [ "$EX" = 'bz2' ] && {
@@ -28,11 +28,11 @@ function processfile {
 	}
 
     if [ $HEXTEST ] && hexcheck $INFILE $OUTFILE.tmp 2>/dev/null; then 
-		CH='h'
-		INFILE=$OUTFILE.tmp 
+		local CH='h'
+		local INFILE=$OUTFILE.tmp 
 	else if [ $B64TEST ] &&	base64 -d -w 0 $INFILE > $OUTFILE.tmp 2>/dev/null; then 
-		CH='b'
-		INFILE=$OUTFILE.tmp 
+		local CH='b'
+		local INFILE=$OUTFILE.tmp 
 		fi
 	fi
 
@@ -42,20 +42,20 @@ function processfile {
 		local ORGS=$( stat -c%s $INFILE )  # and before compression
 		# use compressed version only if it is actually smaller
 		[ "$CMPS" -lt "$ORGS" ] && { # successful general compression
-			INFILE=$OUTFILE.cmp # make the final compressed file to be the infile
+			local INFILE=$OUTFILE.cmp # make the final compressed file to be the infile
 			if [ "$COMPRESSOR" = 'lzma' ]; then
 			 case "$CH" in
-			 u ) CH='i';;
-			 h ) CH='j';;
-			 b ) CH='k';;
+			 u ) local CH='i';;
+			 h ) local CH='j';;
+			 b ) local CH='k';;
 			 * ) printf "$PROGN processfile: unrecognised ch\n"
 			 	 exit 2;;
 			 esac
 			else # compressor program is 'zstd'
 			 case "$CH" in
-			 u ) CH='l';;
-			 h ) CH='m';;
-			 b ) CH='n';;
+			 u ) local CH='l';;
+			 h ) local CH='m';;
+			 b ) local CH='n';;
 			 * ) printf "$PROGN processfile: unrecognised ch\n"
 			 	 exit 2;;
 			 esac
@@ -92,7 +92,7 @@ function processdir {
 	}
 
 	# create the ouput directories
-	mkdir $2 $3 || {
+	mkdir "$2" "$3" || {
 		printf "$PROGN quitting, failed to create output directories '$2' '$3'!\n" >&2
 		exit 2
 	}
@@ -101,16 +101,17 @@ function processdir {
 
 	# iterate through the listing
 	for ITEM in $ITEMS; do
-		local IND=$1/$ITEM # append $ITEM to $INDIR path
+		local IND="$1/$ITEM" # append $ITEM to $INDIR path
    		if [ -d "$IND" ]; then  # recursively process existing subdirectory?
 			if [ -n "$RECURSE" ]; then  # just push ITEM onto paths, no changing of directories
-				processdir $IND $2/$ITEM $3/$ITEM &
+				processdir $IND "$2/$ITEM" "$3/$ITEM" &
 			fi
 			continue # either processed or ignored this subdir now
 		fi
    		[ -f "$IND" ] || continue # only process genuine file now
-   		processfile $IND $2/$ITEM $3/$ITEM &  
+   		processfile $IND "$2/$ITEM" "$3/$ITEM" &
 	done
+	wait
 } # end of processdir
 
 # function to update a whole directory
@@ -153,12 +154,12 @@ function updatedir {
    		[ -f "$ID" ] || continue # only process genuine files now 
 		[ -e "$OD" ] || { # here $OD file does not exist
 			printf "   a: $ID\n" # so add it
-			processfile $ID $2/$ITEM $OD & 
+			processfile $ID $2/$ITEM $OD  
 			continue
 		}
 		if [ "$ID" -nt "$OD" ]; then  # here the input file is newer 
 			printf "   u: $ID\n" # so update it
-   			processfile $ID $2/$ITEM $OD & 
+   			processfile $ID $2/$ITEM $OD  
 		fi # else just skip it
 	done
 } # end of updatedir
@@ -192,7 +193,7 @@ function cleandir {
 			if [ -n "$RECURSE" ]; then # but only when recursing
 				[ -d "$ID" ] || { # here matching $INDIR dir does not exist
 					printf " D: $OD $KD\n" # so remove it 
-					rm -rf $OD $KD &
+					rm -rf "$OD" "$KD" &
 					continue
 				}			
 				cleandir $ID $KD $OD &  # otherwise recurse
@@ -266,18 +267,19 @@ if [ $VERBOSE ]; then
 fi
 
 if [ $UPDATE ]; then 
+	if [ $CLEAN ]; then 
+		printf "$PROGN: cleaning up archive '$3'\n" 
+		cleandir $1 $2 $3
+		wait
+	fi
 	printf "$PROGN: updating archive '$3', using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
 	updatedir $1 $2 $3
+	wait
 else
 	printf "$PROGN: encrypting '$1', using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
 	processdir $1 $2 $3
+	wait
 fi
-wait # for all sub proccesses to finish
-if [ $CLEAN ]; then 
-	printf "$PROGN: cleaning up archive '$3'\n" 
-	cleandir $1 $2 $3
-fi
-wait # for all sub proccesses to finish
 
 # optional final report
 if ! [ $QUIET ]; then

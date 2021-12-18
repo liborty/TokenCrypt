@@ -21,13 +21,10 @@ case $# in
 		exit 2;;
 esac
 
-# this is just for better readability of code
-INDIR="$1" 
 # directory names, preceding path is stripped off, so all output goes to ./
-DIREND=${1##*/} 
-KEYDIR="$DIREND"key # must separate _ from the variable name
-OUTDIR="$DIREND"crypt
-ORGDIR="$DIREND"org
+KEYDIR="$1"key # must separate _ from the variable name
+OUTDIR="$1"crypt
+ORGDIR="$1"org
 
 # check that outputs directories do not already exist
 if [ -d "$KEYDIR" ]; then
@@ -38,7 +35,7 @@ if [ -d "$ORGDIR" ]; then
 	printf "$PROGN quitting, '$ORGDIR' already exists here!\n" >&2; exit 2; fi
 
 # encrypt and decrypt
-time ncrpt -xbr $INDIR $KEYDIR $OUTDIR
-time impcrypt -r $OUTDIR $KEYDIR $ORGDIR
-diff -qr $INDIR $ORGDIR && printf "$PROGN: '$INDIR' and '$ORGDIR' are identical\n"
+ncrpt -xbr $1 $KEYDIR $OUTDIR
+impcrypt -r $OUTDIR $KEYDIR $ORGDIR
+diff -bqr $1 $ORGDIR && printf "$PROGN: '$1' and '$ORGDIR' are identical\n"
 rm -rf $ORGDIR $OUTDIR $KEYDIR >&2
