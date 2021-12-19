@@ -217,6 +217,8 @@ Note that TokenCrypt does not leave any such large hidden footprints on your fil
 
 ## Releases Log
 
+**19Dec21** - Release 1.0.3. Some code tidying and minor simplifications. No change in functionality. 
+
 **18Dec21** - Release v1.0.2. Fixed orphaned jobs. Made tests more forgiving. They now tolerate changes in white space, which often happens with hex files.
 
 **17Dec21** - Release v1.0.1. Fixed a bug in importing uncompressed files.
