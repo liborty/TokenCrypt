@@ -3,7 +3,7 @@ if [ $# -ne 1 ]; then
 	printf "$0: needs file size argument, e.g. obtained by 'stat -c%s myfile'\n" 1>&2 
 	exit 2
 fi
-< /dev/urandom tr -dc 'a-zA-Z0-9+/' | head -c $1
+tr -dc 'a-zA-Z0-9+/' < /dev/urandom | head -c $1
 # finally pad with = to make output size a multiple of four
 REM=$(( $1%4 ))
 case $REM in

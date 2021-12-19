@@ -20,16 +20,16 @@ function importfile {
 		return
 	}
 	head -c $FSIZE <&3 | symcrypt $INFILE | case "$CH" in
-	h ) hexify > $OUTFILE; return;;
-	b ) base64 -w 0 > $OUTFILE; return;;
-	i ) lzma -d > $OUTFILE; return;;
-	j ) lzma -d | hexify > $OUTFILE; return;;
-	k ) lzma -d | base64 -w 0 > $OUTFILE; return;;
-	l ) zstd -d -c > $OUTFILE; return;;
-	m ) zstd -d -c | hexify > $OUTFILE; return;;
-	n ) zstd -d -c | base64 -w 0 > $OUTFILE; return;;
-	* ) printf "$PROGN importfile: unrecognised ch\n"; exit 2;;
-	esac
+		h ) hexify;;
+		b ) base64 -w 0;;
+		i ) lzma -d;;
+		j ) lzma -d | hexify;; 
+		k ) lzma -d | base64 -w 0;; 
+		l ) zstd -d -c;; 
+		m ) zstd -d -c | hexify;; 
+		n ) zstd -d -c | base64 -w 0;;
+		* ) printf "$PROGN importfile: unrecognised ch\n"; exit 2;;
+	esac > $OUTFILE
 }
 
 # processfile will decompress and decrypt one file
@@ -43,20 +43,20 @@ function processfile {
 	local CH=${KEYFILE##*.}
 	# u (uncomressed) can be for a listed extension, or because all compressions have failed
 	[ "$CH" = 'u' ] && {		
-		cat $INFILE | symcrypt $KEYFILE > $OUTFILE
+		symcrypt $INFILE $KEYFILE > $OUTFILE
 		return
 	}
-	cat $INFILE | symcrypt $KEYFILE | case "$CH" in
-	h ) hexify > $OUTFILE; return;;
-	b ) base64 -w 0 > $OUTFILE; return;;
-	i ) lzma -d > $OUTFILE; return;;
-	j ) lzma -d | hexify > $OUTFILE; return;;
-	k ) lzma -d | base64 -w 0 > $OUTFILE; return;;
-	l ) zstd -d -c > $OUTFILE; return;;
-	m ) zstd -d -c | hexify > $OUTFILE; return;;
-	n ) zstd -d -c | base64 -w 0 > $OUTFILE; return;;
-	* ) printf "$PROGN importfile: unrecognised ch\n"; exit 2;;
-	esac 
+	symcrypt $INFILE $KEYFILE | case "$CH" in
+		h ) hexify;;
+		b ) base64 -w 0;;
+		i ) lzma -d;; 
+		j ) lzma -d | hexify;;
+		k ) lzma -d | base64 -w 0;;
+		l ) zstd -d -c;;
+		m ) zstd -d -c | hexify;;
+		n ) zstd -d -c | base64 -w 0;;
+		* ) printf "$PROGN importfile: unrecognised ch\n"; exit 2;;
+	esac > $OUTFILE
 }
 
 # function to import a whole directory
@@ -68,17 +68,15 @@ function importdir {
 		printf "$PROGN importdir: failed to create output directory '$2'!\n" >&2
 		exit 2
 	}
-	local ITEMS=$(ls -AL $1)
 	# iterate through the listing
-	for ITEM in $ITEMS; do
+	for ITEM in $(ls -AL $1); do
 		local IND=$1/$ITEM
 		local OUTD=$2/$ITEM
    		if [ -d "$IND" ]; then  # recursively process existing subdirectory?
 			if [ -n "$RECURSE" ]; then importdir $IND $OUTD; fi
 			continue # done with this subdir
 		fi
-   		[ -f "$IND" ] || continue # only process genuine file now
-   		importfile $IND $OUTD 
+   		[ -f "$IND" ] && importfile $IND $OUTD # only process genuine files
 	done
 }
 
@@ -92,9 +90,8 @@ function processdir {
 		printf "$PROGN processdir: failed to create output directory $3!\n" >&2
 		exit 2
 	}
-	local KEYS=$( ls -AL $2 )
 	# iterate through the listing
-	for KEY in $KEYS; do
+	for KEY in $( ls -AL $2 ); do
 		local KD="$2/$KEY"
    		if [ -d "$KD" ]; then  # recursively process existing subdirectory?
 			[ -n "$RECURSE" ] && processdir "$1/$KEY" "$KD" "$3/$KEY" & 

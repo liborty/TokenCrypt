@@ -8,4 +8,4 @@ if [ $# -ne 1 ]; then
 	exit 2
 fi
 if [[ $(( $1 % 2 )) -eq 1 ]]; then SZ=$(( $1+1 )); else SZ=$1; fi
-tr -dc '0-9a-f' < /dev/urandom | head -c $SZ > /dev/stdout
+tr -dc '0-9a-f' < /dev/urandom | head -c $SZ

@@ -97,10 +97,8 @@ function processdir {
 		exit 2
 	}
 	
-	local ITEMS=$(ls -AL $1)		#$(ls -SAL $1)
-
 	# iterate through the listing
-	for ITEM in $ITEMS; do
+	for ITEM in $(ls -AL $1); do
 		local IND="$1/$ITEM" # append $ITEM to $INDIR path
    		if [ -d "$IND" ]; then  # recursively process existing subdirectory?
 			if [ -n "$RECURSE" ]; then  # just push ITEM onto paths, no changing of directories
@@ -108,8 +106,7 @@ function processdir {
 			fi
 			continue # either processed or ignored this subdir now
 		fi
-   		[ -f "$IND" ] || continue # only process genuine file now
-   		processfile $IND "$2/$ITEM" "$3/$ITEM" &
+   		[ -f "$IND" ] && processfile $IND "$2/$ITEM" "$3/$ITEM" & # only process genuine file now
 	done
 	wait
 } # end of processdir
@@ -126,9 +123,9 @@ function updatedir {
 		printf "$PROGN updatedir: output dir $3 is invalid\n" >&2
 		exit 2
 	}
-	local ITEMS=$(ls -AL $1)  # $(ls -SAL $1)
+
 	# iterate through the listing checking for newer items
-	for ITEM in $ITEMS; do
+	for ITEM in $(ls -AL $1); do
 		local ID=$1/$ITEM # append $ITEM to $INDIR path
 		local OD=$3/$ITEM # and corresponding $outdir path
 
@@ -162,6 +159,7 @@ function updatedir {
    			processfile $ID $2/$ITEM $OD  
 		fi # else just skip it
 	done
+	wait
 } # end of updatedir
 
 # function to clean up a whole directory
@@ -181,10 +179,8 @@ function cleandir {
 		exit 2
 	}
 
-	# list all items in standard order
-	local ITEMS=$(ls -AL $3)
 	# iterate through the list checking for missing items
-	for ITEM in $ITEMS; do
+	for ITEM in $(ls -AL $3); do
 		local ID=$1/$ITEM # append $ITEM to $INDIR path
 		local KD=$2/$ITEM # append $ITEM to $KEYDIR path
 		local OD=$3/$ITEM # and the examined $OUTDIR path
@@ -207,6 +203,7 @@ function cleandir {
 			continue
 		}
 	done
+	wait
 } # end of cleandir
 
 function usage { printf "Usage: $PROGN -[b][c][h][q][r][u][v][x][z] indir keydir outdir\n" >&2; }
@@ -270,15 +267,12 @@ if [ $UPDATE ]; then
 	if [ $CLEAN ]; then 
 		printf "$PROGN: cleaning up archive '$3'\n" 
 		cleandir $1 $2 $3
-		wait
 	fi
 	printf "$PROGN: updating archive '$3', using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
 	updatedir $1 $2 $3
-	wait
 else
 	printf "$PROGN: encrypting '$1', using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
 	processdir $1 $2 $3
-	wait
 fi
 
 # optional final report
