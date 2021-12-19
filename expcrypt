@@ -85,11 +85,8 @@ function createdir {
 		exit 2
 	}
 
-	# list indir contents in standard order
-	local ITEMS=$(ls -AL $1)
-
 	# iterate through the listing
-	for ITEM in $ITEMS; do
+	for ITEM in $(ls -AL $1); do
 		local IND=$1/$ITEM # append $ITEM to $INDIR path
    		if [ -d "$IND" ]; then  # recursively process existing subdirectory?
 			if [ -n "$RECURSE" ]; then  # just push ITEM onto paths, no changing of directories
@@ -97,8 +94,7 @@ function createdir {
 			fi
 			continue # either processed or ignored this subdir now
 		fi
-   		[ -f "$IND" ] || continue # only process genuine file now
-   		processfile $IND $2/$ITEM  
+   		[ -f "$IND" ] && processfile $IND $2/$ITEM  
 	done
 } # end of createdir
 
