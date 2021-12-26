@@ -20,15 +20,15 @@ The encrypted archive file is just meaningless random data and thus can be store
 
 It is not an objective of TokenCrypt to replace `git` and to automatically keep the complete histories of everything, as that carries significant costs in complexity and storage. The quest for being totally foolproof is subject to the law of diminishing returns, as foolishness generally knows no bounds. TokenCrypt is more akin to `borg`; an efficient archiver and backing up tool. The key difference, if excuse the pun, lies in TokenCrypt deploying more secure encryption and sometimes better compression as well. On the other hand, in its update mode, it only maintains the current version of the archive. Historical checkpoints are up to the user to create and keep, as and when required.
 
-`ncrpt` and `expcrypt` read given input directory (tree) containing API tokens, base64 files and any other types of files. Subdirectories are processed recursively with -r option. `ncrpt` creates two output directories, `expcrypt` two archive files.
+Scripts `ncrpt` and `expcrypt`read given input directory (tree) containing API tokens, base64 files and any other types of files. Subdirectories are processed recursively with -r option. `ncrpt` creates two output directories, `expcrypt` two archive files.
 
 Some already compressed files afford only minor further compression, if any. To save time, they are recognised simply by their well known extensions:
 `jpg,jpeg,mp4,zip,7z,lz,zst,gz,bz2` and their upper case versions.
 All attempts at compressing these particular files are avoided. They are just encrypted as they are.
 
-Given -xb options, these two scripts will recognise hexadecimal files and base64 files and convert them to more compact binary data. They then select the best compression method individually for each file and finally securely encrypt them all.
+Given -xb options, `ncrpt` and `expcrypt` scripts will recognise hexadecimal files and base64 files and convert them to more compact binary data. They then select the best compression method individually for each file and finally securely encrypt them all.
 
-Internet security tokens usually consist of 32, 64 or more hexadecimal characters. They are increasingly used to facilitate secure access over the internet protocols to various Applications Programming Interfaces (APIs). Being plain text, they are easily transmitted but they need to be stored securely, that means strongly encrypted. Even git uses hexadecimal 'slugs'.
+Internet security tokens usually consist of 32, 64 or more hexadecimal characters. They are increasingly used to facilitate secure access over the internet protocols to various Applications Programming Interfaces (APIs). Even git uses hexadecimal 'slugs'. Being plain text, they are easily transmitted but they need to be stored securely, that means strongly encrypted.
 
 Base64 encoding into printable characters is also generally used to encode binary data, for similar reasons.
 
@@ -112,11 +112,11 @@ The summary at the end, such as the one shown in `test.log`, reports the sizes (
 Option `-q` (`--quiet`) cancels the final report.
 Option `-v` (`--verbose`) adds details of compressing each file. Selecting  both options, contradictory as it may seem, turns on the individual files reports and turns off the final summary. The encryption itself is so unproblematic that it does not require any reports.
 
-Once a directory has been compressed and encrypted, it is on subsequent occasions possible to update the keys and outdir directories (the archive) with option -u. This will add or recode just the new and updated files. New files are added (marked with a:) and more recent existing files are updated (marked with u:). When the recursive option -r is in use, the same will be applied to subdirectories. Capital letters A,U denote these two operations when applied to whole directories.
+Once a directory has been compressed and encrypted, it is on subsequent occasions possible to update the keys and outdir directories (the archive) with option `-u`. This will any new files and recode updated ones. Added new files are marked with a: and more recent existing files are updated (marked with u:). When the recursive option -r is in use, the same actions will be applied to subdirectories. Capital letters A,U denote these two operations when applied to whole directories.
 
-In order for the state of the new indir and its archive to match again exactly one-to-one, an archive can be also cleaned up with option -c. Files no longer existing in indir will then be deleted (marked with d:) from the archive. With `-ruc` options, possibly whole directories can be deleted and marked with D:.
+In order for the state of the new input directory and its archive to match again exactly one-to-one, an archive can be also cleaned up with option -c. Files no longer existing in indir will then be deleted (marked with d:) from the archive. With `-ruc` options, possibly whole directories can be deleted and marked with D:.
 
-Caution should be exercised when using the -c option, as any files that had been inadvertently deleted from indir will then be removed from the archive as well. For added safety, option `-c` is deliberately made explicit and separate from `-u`. Thus using `-u` alone is the *cautious updating mode*, which never deletes anything from the archive. However, it will still overwrite existing files with their new, possibly erroneus, versions. Beware that this can cause loss of previously useful content. Of course, this is true in general, whenever changing any files by any means, anywhere.
+Caution should be exercised when using the -c option, as any files that had been inadvertently deleted from indir will then be removed from the archive as well. For added safety, option `-c` is deliberately made explicit and separate from `-u`. Thus using `-u` alone is the *cautious updating mode*, which never deletes anything from the archive. However, it will still overwrite existing files with their new, possibly erroneus, versions. Beware that this can cause a loss of previously useful content. Of course, this is true in general, whenever changing any files by any means, anywhere.
 
 The most powerful mode of operation on a previously created archive (keydir outdir) is 'recurse-update-clean'.
 Options can be run together:
@@ -125,19 +125,19 @@ Options can be run together:
 ncrpt -ruc indir keydir outdir
 ```
 
-This will recursively update and clean the archive so that it is as if freshly created from the current state of indir. This is convenient for backing up purposes.
+This will recursively update and clean the archive so that it is as if freshly created from the current state of indir but it runs much faster. This is convenient for backing up purposes.
 
-There is a vulnerability inherent in `ncrpt` creating directories. Specifically, specialist search engines sifting through the whole internet, possibly matching up pairs of (keydir outdir) directories by their same structures, file names and sizes, could in theory pair them up, even if they were uploaded to two unrelated places. Using `expcrypt` below is more secure.
+There is a vulnerability inherent in `ncrpt` creating directories. Specifically, specialist search engines sifting through the whole of the internet, possibly matching up pairs of (keydir outdir) directories by their same structures, file names and sizes, could in theory pair them up, even if they were uploaded to two unrelated places. Using `expcrypt` below is more secure.
 
 It is recommended that `expcrypt` be used prior to exporting snapshots of the local indir to any unsecure locations, such as the internet.
 
-The only reason to ever prefer `ncrpt` over `expcrypt` is when there is a lot of frequent updating of bulky directories to be done. This is because `ncrpt`, working with the directories, is not tied to sequential processing and does fully utilise all the host computer cores for overall faster execution.
+The only reason to ever prefer `ncrpt` over `expcrypt` is when there is a lot of frequent updating of bulky directories to be done. This is because `ncrpt`, working with the directories, does not have to recreate the entire archive, is not tied to sequential processing and does fully utilise all the host computer cores for overall faster parallel execution.
 
 Summary: `ncrpt` (encrypt with vowels left out) speedily executes the tasks of data type analysis, optimal compression selection, compression, key generation, key saving and encryption. Also recursive archiving and subsequent archive maintenance.
 
 ### `expcrypt [options] indir keyfile outfile`
 
-acts like `ncrpt` in the default 'create new archive' mode. Therefore,  the updating options -u and -c are not available here. The most important difference is that instead of creating two recognisable output directories, `expcrypt` creates two output files that betray no similarities. They even differ in size.
+works like `ncrpt` in the default 'create new archive' mode. Therefore,  the updating options `-u` and `-c` are no longer available here. All the other options are the same as in `ncrpt`. The most important difference is that instead of creating two recognisable output directories, `expcrypt` creates two output files that betray no similarities. They even differ in size.
 
 All the keys for the whole archive are now packed into one sequential keyfile, which replaces previous keydir. No filenames are any longer being duplicated or extra file extensions appended. This is overall a cleaner solution.
 
@@ -151,7 +151,7 @@ There is a price to be paid in terms of the execution time. The entire indir tre
 
 unpacks, decrypts and decompresses directories created by `ncrpt` or archive files created by `expcrypt`. Both of its first two input arguments must be directories or both must be files. Its operations are carried out in exactly the reverse order.  It reads from indir (or from a tar archive file) the encrypted files. It also reads their associated keys from `keydir` (or from keys archive file). Individual files in input directories are paired up by their names, so never rename an encrypted file, unless you rename its corresponding key file as well. The root filenames in both directories must match. Within archive files produced by `expcrypt`, this issue does not arise.
 
-Following decryption, the relevant decompression method(s) are applied to each file, so that the original files are exactly reconstructed in `outdir`.
+Following decryption, the relevant decompression method(s) are applied to each file, so that the original files are exactly reconstructed in `outdir`. Please note that any strange types of system files or symbolic links might not be saved. Only genuine files that respond `true` to Bash `-f` test or genuine directories that respond `true` to `-d` test are saved.
 
 The following can now be done:
 
