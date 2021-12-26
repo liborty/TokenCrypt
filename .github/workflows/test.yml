@@ -12,6 +12,7 @@ jobs:
       run: |
         touch *.c
         make install > test.log
+        echo >> test.log
         crptest testing >> test.log
         echo >> test.log
         expimptest testing >> test.log
