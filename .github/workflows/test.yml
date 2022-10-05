@@ -14,7 +14,7 @@ jobs:
           with:
             toolchain: stable
         - run: |
-          touch bin2hex/src/main.rs hex2bin/src/main.rs crypt/src/main.rs 
+            touch bin2hex/src/main.rs hex2bin/src/main.rs crypt/src/main.rs 
             make install > test.log
             echo >> test.log
             crptest testing >> test.log
