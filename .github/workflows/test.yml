@@ -1,8 +1,8 @@
 name: test
 
 on: push
-name: tokencrypt
-jobs:
+- name: tokencrypt
+  jobs:
   build:
     - name: rustbuild
       runs-on: ubuntu-latest
@@ -20,13 +20,13 @@ jobs:
             expimptest testing >> test.log
         shell: bash
  
-    - name: commitlog
+    name: commitlog
       run: |
         git config user.email "457124+liborty@users.noreply.github.com"
         git config user.name "liborty"
         git commit -am 'action:test.log'
 
-    - name: push
+    name: push
       uses: ad-m/github-push-action@master
       with: 
         github_token: ${{ secrets.GITHUB_TOKEN }}  
