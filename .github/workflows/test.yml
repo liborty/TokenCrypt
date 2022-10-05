@@ -2,23 +2,25 @@ name: test
 
 on: push
 
+name: test
+
 jobs:
-  build_and_test:
-    name: test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-      - run: |
+  build:
+    - name: rustbuild
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions-rs/toolchain@v1
+          with:
+            toolchain: stable
+        - run: |
           touch bin2hex/src/main.rs hex2bin/src/main.rs crypt/src/main.rs 
-          make install > test.log
-          echo >> test.log
-          crptest testing >> test.log
-          echo >> test.log
-          expimptest testing >> test.log
-        shell: bash
+            make install > test.log
+            echo >> test.log
+            crptest testing >> test.log
+            echo >> test.log
+            expimptest testing >> test.log
+        - shell: bash
  
     - name: commitlog
       run: |
