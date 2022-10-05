@@ -3,20 +3,23 @@ name: test
 on: push
 
 jobs:
-  build:   
+  build_and_test:
+
+    name: test
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-
-    - name: test
-      run: |
-        touch *.c
-        make install > test.log
-        echo >> test.log
-        crptest testing >> test.log
-        echo >> test.log
-        expimptest testing >> test.log
-      shell: bash
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - run: |
+          touch bin2hex/src/main.rs hex2bin/src/main.rs crypt/src/main.rs 
+          make install > test.log
+          echo >> test.log
+          crptest testing >> test.log
+          echo >> test.log
+          expimptest testing >> test.log
+        shell: bash
  
     - name: commitlog
       run: |
