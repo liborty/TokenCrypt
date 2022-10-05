@@ -1,32 +1,31 @@
-name: test
+on: [push]
 
-on: push
-- name: tokencrypt
-  jobs:
-  build:
-    - name: rustbuild
-      runs-on: ubuntu-latest
-      steps:
-        uses: actions/checkout@v2
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-        run: |
-            touch bin2hex/src/main.rs hex2bin/src/main.rs crypt/src/main.rs 
-            make install > test.log
-            echo >> test.log
-            crptest testing >> test.log
-            echo >> test.log
-            expimptest testing >> test.log
-        shell: bash
- 
-    name: commitlog
+name: tokencrypt
+
+jobs:
+  name: rustbuild
+  runs-on: ubuntu-latest
+  steps:
+    -uses: actions/checkout@v2
+    -uses: actions-rs/toolchain@v1
+    with:
+      toolchain: stable
       run: |
-        git config user.email "457124+liborty@users.noreply.github.com"
-        git config user.name "liborty"
-        git commit -am 'action:test.log'
+        touch bin2hex/src/main.rs hex2bin/src/main.rs crypt/src/main.rs 
+        make install > test.log
+        echo >> test.log
+        crptest testing >> test.log
+        echo >> test.log
+        expimptest testing >> test.log
+      shell: bash
+ 
+  name: commitlog
+    run: |
+      git config user.email "457124+liborty@users.noreply.github.com"
+      git config user.name "liborty"
+      git commit -am 'action:test.log'
 
-    name: push
-      uses: ad-m/github-push-action@master
-      with: 
-        github_token: ${{ secrets.GITHUB_TOKEN }}  
+  name: push
+    -uses: ad-m/github-push-action@master
+    with: 
+      github_token: ${{ secrets.GITHUB_TOKEN }}  
