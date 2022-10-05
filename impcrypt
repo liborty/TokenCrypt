@@ -43,10 +43,10 @@ function processfile {
 	local CH=${KEYFILE##*.}
 	# u (uncomressed) can be for a listed extension, or because all compressions have failed
 	[ "$CH" = 'u' ] && {		
-		symcrypt $INFILE $KEYFILE > $OUTFILE
+		symcrypt < $INFILE $KEYFILE > $OUTFILE
 		return
 	}
-	symcrypt $INFILE $KEYFILE | case "$CH" in
+	symcrypt < $INFILE $KEYFILE | case "$CH" in
 		h ) hexify;;
 		b ) base64 -w 0;;
 		i ) lzma -d;; 

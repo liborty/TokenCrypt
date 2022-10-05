@@ -18,7 +18,7 @@ The encrypted archive file is just meaningless random data and thus can be store
 
 ## Introduction
 
-It is not an objective of TokenCrypt to replace `git` and to automatically keep the complete histories of everything, as that carries significant costs in complexity and storage. The quest for being totally foolproof is subject to the law of diminishing returns, as foolishness generally knows no bounds. TokenCrypt is more akin to `borg`; an efficient archiver and backing up tool. The key difference, if excuse the pun, lies in TokenCrypt deploying more secure encryption and sometimes better compression as well. On the other hand, in its update mode, it only maintains the current version of the archive. Historical checkpoints are up to the user to create and keep, as and when required.
+It is not an objective of TokenCrypt to replace `git` and to keep the complete histories of everything, as that carries significant costs in complexity and storage. The quest for being totally foolproof is subject to the law of diminishing returns, as foolishness generally knows no bounds. TokenCrypt is more akin to `borg`; an efficient archiver and backing up tool. The key difference, if excuse the pun, lies in TokenCrypt deploying more secure encryption and sometimes better compression as well. In its update mode, it only maintains the current version of the archive. Historical checkpoints are up to the user to create and keep, as and when required.
 
 Scripts `ncrpt` and `expcrypt`read given input directory (tree) containing API tokens, base64 files and any other types of files. Subdirectories are processed recursively with -r option. `ncrpt` creates two output directories, `expcrypt` two archive files.
 
@@ -43,13 +43,13 @@ This software was developed and tested under Linux. Installation from source nee
 
 ### `make install`
 
-Will locally compile and install everything into `/usr/local/bin`. It may ask for su priviledges for the integrated installation step. Appending `CC=clang` will deploy `clang` compiler (if installed).
+Will locally compile and install everything into `/usr/local/bin`. It may ask for su priviledges for the integrated installation step.
 
-A good reason to perform local compilation is if it is suspected that the github binaries may have been compromised or when on a different machine architecture than `x86_64`. This step should be repeated whenever some programs and scripts have changed, such as after a fresh `git pull`. It will only recompile the C programs that have actually changed.
+A good reason to perform local compilation is if it is suspected that the github binaries may have been compromised or when on a different machine architecture than `x86_64`. This step should be repeated whenever some programs and scripts have changed, such as after a fresh `git pull`. It will only recompile the Rust programs that have actually changed.
 
 #### `make`
 
-will only compile and install those C programs that have changed and none of the Bash scripts.
+will only compile and install those Rust programs that have changed and none of the Bash scripts.
 
 #### `sudo ./uninstall`
 
@@ -57,7 +57,7 @@ will delete previously installed programs and scripts. It can be used to force a
 
 #### `./install`
 
-will install everything without the local compilation. Thus the ready made executables `symcrypt`, `hexcheck` and `hexify`, pulled from the repository, can be installed on `x86_64` architecture. They are compiled from `C` sources and tested automatically at github.com (see the green badge at the top of this document).
+will install everything without the local compilation. Thus the ready made executables `symcrypt`, `hexcheck` and `hexify`, pulled from the repository, can be installed on `x86_64` architecture. They are compiled from Rust  sources and tested automatically at github.com (see the green badge at the top of this document).
 
 Whether the executables were created by local compilation or just pulled from the repository, this script copies them all into `/usr/local/bin` for system-wide use.  Alternatively, they can be copied manually to any other `bin` directories and included in the search path. This does not require `sudo` privileges, e.g.:
 
@@ -137,7 +137,7 @@ Summary: `ncrpt` (encrypt with vowels left out) speedily executes the tasks of d
 
 ### `expcrypt [options] indir keyfile outfile`
 
-works like `ncrpt` in the default 'create new archive' mode. Therefore,  the updating options `-u` and `-c` are no longer available here. All the other options are the same as in `ncrpt`. The most important difference is that instead of creating two recognisable output directories, `expcrypt` creates two output files that betray no similarities. They even differ in size.
+Encrypt for export (expcrypt) works like `ncrpt` in the default 'create new archive' mode. Therefore,  the updating options `-u` and `-c` are no longer available here. All the other options are the same as in `ncrpt`. The most important difference is that instead of creating two recognisable output directories, `expcrypt` creates two output files that betray no similarities. They even differ in size.
 
 All the keys for the whole archive are now packed into one sequential keyfile, which replaces previous keydir. No filenames are any longer being duplicated or extra file extensions appended. This is overall a cleaner solution.
 
@@ -149,11 +149,11 @@ There is a price to be paid in terms of the execution time. The entire indir tre
 
 ### `impcrypt -[h][q][r][v] infile keyfile outdir`
 
-unpacks, decrypts and decompresses directories created by `ncrpt` or archive files created by `expcrypt`. Both of its first two input arguments must be directories or both must be files. Its operations are carried out in exactly the reverse order.  It reads from indir (or from a tar archive file) the encrypted files. It also reads their associated keys from `keydir` (or from keys archive file). Individual files in input directories are paired up by their names, so never rename an encrypted file, unless you rename its corresponding key file as well. The root filenames in both directories must match. Within archive files produced by `expcrypt`, this issue does not arise.
+Import and decrypt (impcrypt) unpacks, decrypts and decompresses directories created by `ncrpt` or archive files created by `expcrypt`. Both of its first two input arguments must be directories or both must be files. Its operations are carried out in exactly the reverse order.  It reads from indir (or from a tar archive file) the encrypted files. It also reads their associated keys from `keydir` (or from keys archive file). Individual files in input directories are paired up by their names, so never rename an encrypted file, unless you rename its corresponding key file as well. The root filenames in both directories must match. Within archive files produced by `expcrypt`, this issue does not arise.
 
 Following decryption, the relevant decompression method(s) are applied to each file, so that the original files are exactly reconstructed in `outdir`. Please note that any strange types of system files or symbolic links might not be saved. Only genuine files that respond `true` to Bash `-f` test or genuine directories that respond `true` to `-d` test are saved.
 
-The following can now be done:
+The following can be done:
 
 * `expcrypt -r indir keyfile outfile`
 * upload `keyfile` and `outfile` to two different places on the internet 
@@ -164,30 +164,33 @@ The following can now be done:
 
 This should result in recovered original state of `indir`, securely saved in between.
 
-
 Summary: `impcrypt` (import crypt) matches the keys, decrypts the indir files with them, selects the right decompression methods and  decompresses, thus reconstructing the exact contents of the original directory.
-
-### `dcrpt -[h][q][r][v] indir keydir outdir`
-
-Deprecated. Reads, decrypts and decompresses directories containing keys with the old style compression encoding extensions. This script will be eventually withdrawn. In the meantime, use it to convert any existing archive directories to the new format.
 
 ## Background Scripts and Programs (not needed by the user)
 
-`hexcheck` (C executable) is invoked by `expcrypt -x`. It recognises hexadecimal (token) files and packs them to binary, which exactly halves them in size. Hexadecimal files should be an even number of bytes long and only contain (0-9,a-f) ascii characters. There are a few allowed  exceptions: upper case A-F are accepted but when converted back, they will always end up in lower case. Spaces and newlines just get deleted. This tolerant policy may result in some differences being reported between the original and the reconstructed files. Then it is best to replace the original file with its cleaned up, reconstructed version.
+`hexcheck` (Rust executable)  
+is invoked by `expcrypt -x`. It recognises hexadecimal (token) files and packs them to binary, which exactly halves them in size. Hexadecimal files should be an even number of bytes long and only contain (0-9,a-f) ascii characters. There are a few allowed  exceptions: upper case A-F are accepted but when converted back, they will always end up in lower case. Spaces and newlines just get deleted. This tolerant policy may result in some differences being reported between the original and the reconstructed files. Then it is best to replace the original file with its cleaned up, reconstructed version.
 
-`hexify` (C executable) is invoked by `impcrypt` to unpack the binary files back to their original hexadecimal form. In other words, it carries out an inverse operation to `hexcheck` above.
+`hexify` (Rust executable)  
+is invoked by `impcrypt` to unpack the binary files back to their original hexadecimal form. In other words, it carries out an inverse operation to `hexcheck` above.
 
-`base64` (linux utility), invoked by `expcrypt -b`, recognises base64 files, resulting in 25% size reduction in their case (before final general compression). Base64 files should not contain any non base64 characters, such as newlines, otherwise this strict test will reject them. This utility is also deployed in inverse mode by `impcrypt`.
+`base64` (linux utility)  
+is invoked by `expcrypt -b`. It recognises base64 files, resulting in 25% size reduction before the final general compression. Base64 files should not contain any non base64 characters, such as newlines, otherwise this strict test will reject them. This utility is also deployed in inverse mode by `impcrypt`.
 
-`lzma` or `zstd` (linux utilities) are general compression methods used here for the final compression, as long as it will result in some size reduction. This is not necessarily the case for small and/or binary files. Any  incomressible files are detected and encrypted as they are, even if their extension name is not on the list. However, if it is on the list, the test  compression is avoided.
+`lzma` or `zstd` (linux utilities)  
+are general compression methods used here for the final compression, as long as it result in size reduction. This is not necessarily the case for small and/or binary files. Any incomressible files are detected and encrypted as they are, even if their extensions are not on the 'do not compress' list. However, for extensions on the list, this test compression is avoided.
 
-`symcrypt` (C executable) applies fast symmetric XOR encryption (or decryption). It XORs together two files of any kind but they must have the same length. The ordering of the two input files does not even matter.
+`symcrypt` (C executable)  
+applies fast symmetric XOR encryption (or decryption). It XORs together two files of any kind but they must have the same length. The ordering of the two input files does not matter.
 
-`keygen file > key` writes to stdout random binary data of the same length as the given file. It is called by `expcrypt`.
+`keygen file > key`  
+Bash script that writes to stdout random binary data of the same length as the given file. It is called by `expcrypt`.
 
-`hexgen size`  writes to stdout `size` bytes of random hexadecimal data. It is only useful for generating test data.
+`hexgen size`  
+Bash script that writes to stdout `size` bytes of random hexadecimal data. It is only useful for generating test data.
 
-`b64gen size` writes to stdout `size` bytes of random base64 data. It is only useful for generating test data.
+`b64gen size`  
+Bash script that writes to stdout `size` bytes of random base64 data. It is only useful for generating test data.
 
 ## Testing
 
@@ -216,6 +219,8 @@ This will update only the file(s) that have changed. What may come as a surprise
 Note that TokenCrypt does not leave any such large hidden footprints on your filesystem.
 
 ## Releases Log
+
+**5Sep22** - Release 1.0.5. Removed the long deprecated `dcrpt` script. Rewrote all three C programs in Rust, thus increasing security.
 
 **19Dec21** - Release 1.0.3. Some code tidying and minor simplifications. No change in functionality. 
 
@@ -252,6 +257,10 @@ Note that TokenCrypt does not leave any such large hidden footprints on your fil
 **22Nov21** - Improved `readme.md`. The key generation, encryption and decryption will now automatically run in sub shells on files over certain size, currently set to 10k. This will result in speedup on multi-core CPUs.
 
 ## References and Further Information
+
+1. [Bash for Fun](https://www.lulu.com/shop/libor-spacek/bash-for-fun/ebook/product-nerj22.html?q=&page=1&pageSize=4)  
+Some of the techniques used in TokenCrypt
+are explained (amongst other things) in this book on Bash programming. 
 
 1. There is a blog [On Encryption and E-Democracy](https://oldmill.cz/2020-06-10-crypt.html) that describes in plain English the properties of XOR encryption and some interesting applications, primarily a model proposal for safe E-Democracy.
   

@@ -27,7 +27,7 @@ function processfile {
 		return
 	}
 
-    if [ $HEXTEST ] && hexcheck $INFILE $OUTFILE.tmp 2>/dev/null; then 
+    if [ $HEXTEST ] && hexcheck < $INFILE > $OUTFILE.tmp 2>/dev/null; then 
 		local CH='h'
 		local INFILE=$OUTFILE.tmp 
 	else if [ $B64TEST ] &&	base64 -d -w 0 $INFILE > $OUTFILE.tmp 2>/dev/null; then 
