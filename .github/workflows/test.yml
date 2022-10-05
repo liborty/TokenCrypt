@@ -1,9 +1,7 @@
 name: test
 
 on: push
-
-name: test
-
+name: tokencrypt
 jobs:
   build:
     - name: rustbuild
