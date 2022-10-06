@@ -1,5 +1,5 @@
 Installed TokenCrypt utilities in /usr/local/bin
-crptest run on: 06.10.22 at 09:07:44 UTC
+crptest run on: 06.10.22 at 09:17:21 UTC
 ncrpt: encrypting 'testing', using 2 cores
 ncrpt: testing 47463 => testingcrypt 22269 (46.92 %)
 ncrpt: keys are in 'testingkey'
@@ -7,7 +7,7 @@ impcrypt: decrypting dirs 'testingcrypt' and 'testingkey' into 'testingorg'
 impcrypt: testingcrypt 22269 (46.92 %) => testingorg: 47463
 crptest: 'testing' and 'testingorg' are identical
 
-expimptest run on: 06.10.22 at 09:07:44 UTC
+expimptest run on: 06.10.22 at 09:17:21 UTC
 expcrypt: encrypting 'testing' for export
 expcrypt: testing 47463 => testingcrp 14576 (30.71 %)
 expcrypt: keys are in 'testingkey'
