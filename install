@@ -2,7 +2,15 @@
 # invoke as: sudo ./install
 # installs TokenCrypt utilities in /usr/local/bin
 
-PROGS='symcrypt keygen ncrpt expcrypt impcrypt crptest expimptest'
+cargo install --path crypt --root . symcrypt
+cargo install --path hex2bin --root . hexcheck
+cargo install --path bin2hex --root . hexify
+
+strip bin/*
+chmod 755 bin/*
+mv bin/* .
+
+PROGS='symcrypt hexcheck hexify keygen ncrpt expcrypt impcrypt crptest expimptest'
 chmod 755 $PROGS
 sudo cp $PROGS /usr/local/bin
 printf "Installed TokenCrypt utilities in /usr/local/bin\n"
