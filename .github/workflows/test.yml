@@ -1,15 +1,15 @@
-on: [push]
+name: test
 
-name: tokencrypt
+on: push
 
 jobs:
-  name: rustbuild
-  runs-on: ubuntu-latest
-  steps:
-    -uses: actions/checkout@v2
-    -uses: actions-rs/toolchain@v1
-    with:
-      toolchain: stable
+  build:   
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions-rs/toolchain@v1
+
+    - name: test
       run: |
         touch bin2hex/src/main.rs hex2bin/src/main.rs crypt/src/main.rs 
         make install > test.log
@@ -19,13 +19,14 @@ jobs:
         expimptest testing >> test.log
       shell: bash
  
-  name: commitlog
-    run: |
-      git config user.email "457124+liborty@users.noreply.github.com"
-      git config user.name "liborty"
-      git commit -am 'action:test.log'
+    - name: commitlog
+      run: |
+        git config user.email "457124+liborty@users.noreply.github.com"
+        git config user.name "liborty"
+        git commit -am 'action:test.log'
 
-  name: push
-    -uses: ad-m/github-push-action@master
-    with: 
-      github_token: ${{ secrets.GITHUB_TOKEN }}  
+    - name: push
+      uses: ad-m/github-push-action@master
+      with: 
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+
