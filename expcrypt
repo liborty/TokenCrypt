@@ -22,7 +22,7 @@ function processfile {
 	[ "$EX" = 'jpg' ] || [ "$EX" = 'jpeg' ] || [ "$EX" = 'mp4' ] || [ "$EX" = 'zip' ] || [ "$EX" = '7z' ] || \
 	[ "$EX" = 'lz' ] || [ "$EX" = 'zst' ] || [ "$EX" = 'gz' ] || [ "$EX" = 'bz2' ] && {
 		printf 'u' >> $KEYFILE
-		keygen $INFILE | tee -a "$KEYFILE" | symcrypt $INFILE > $OUTFILE
+		keygen $INFILE | tee -a $KEYFILE | symcrypt $INFILE > $OUTFILE    
 		return
 	}
 
@@ -64,7 +64,7 @@ function processfile {
 	# generate the key of the same size as the infile,
 	# append the key to the global linear keyfile,
 	# encrypt with it and write to OUTFILE 
-	keygen $INFILE | tee -a "$KEYFILE" | symcrypt $INFILE > $OUTFILE
+	keygen $INFILE | tee -a $KEYFILE | symcrypt $INFILE > $OUTFILE
 	# clean up
 	if [ -e "$OUTFILE.tmp" ]; then rm $OUTFILE.tmp; fi 
 	if [ -e "$OUTFILE.cmp" ]; then rm $OUTFILE.cmp; fi 
@@ -113,6 +113,7 @@ function helpmsg {
 		'-z | --zstd : use zstd compression instead of lzma' >&2
 	exit 1
 }
+
 # Main starts here
 # get options, including long options, extracted as arg to the last option '-'
 while getopts hbxqrvz-: OPT; do

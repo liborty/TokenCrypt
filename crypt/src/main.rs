@@ -19,7 +19,8 @@ pub fn progarg() -> String {
 /// Otherwise all verified hexadecimal data is packed
 /// and written to stdout as binary, two hex chars per byte.
 fn main() -> Result<(), Error> {
-    let mut keyreader = BufReader::new(File::open(progarg())?);
+    let keyname = &progarg();
+    let mut keyreader = BufReader::new(File::open(keyname)?);
     let mut lockin = std::io::stdin().lock();
     let mut lockout = std::io::stdout().lock();
 
@@ -28,10 +29,11 @@ fn main() -> Result<(), Error> {
         if bufin.is_empty() { break; };
         let length = bufin.len();
         let bufkey = keyreader.fill_buf()?;
+        // eprintln!("{} {}",length,bufkey.len());
         if length != bufkey.len() {
             return Err(Error::new(
                 Other,
-                "symcrypt: infile and keyfile do not match",
+                format!("symcrypt: {keyname} size mismatch"),
             ));
         }
         let mut bufout: Vec<u8> = Vec::with_capacity(length);
@@ -42,5 +44,6 @@ fn main() -> Result<(), Error> {
         keyreader.consume(length);
         lockout.write_all(&bufout)?
     }
+    lockout.flush()?;
     Ok(())
 }

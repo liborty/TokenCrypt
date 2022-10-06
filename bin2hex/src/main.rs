@@ -21,5 +21,6 @@ fn main() -> Result<(),Error> {
     let length = bufin.len();
     lockin.consume(length);    
   }
+  lockout.flush()?;
   Ok(())
 }

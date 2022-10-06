@@ -10,13 +10,13 @@ const NONHEX: u8 = 255;
 /// indicating non-hexadecimal data
 fn ishex(n: u8) -> u8 {
   match n {
-    10 => return LF,    // LF, recode as 253
-    32 => return SPACE, // SPACE, recode as 254
-    n if n < ZERO => return NONHEX, // reject all others below '0' (ascii 48)
-    n if n < 58 => return n - ZERO,// convert digits to numbers 0-9
-    n if (n > 96) && (n < 103) => return n - 87, // a-f, convert to 10-15
-    n if (n > 64) && (n < 71) =>  return n - 55, // A-F, also convert to 10-15
-    _=> return NONHEX // reject all others
+    10 => LF,    // LF, recode as 253
+    32 => SPACE, // SPACE, recode as 254
+    n if n < ZERO => NONHEX, // reject all others below '0' (ascii 48)
+    n if n < 58 => n - ZERO,// convert digits to numbers 0-9
+    n if (n > 96) && (n < 103) => n - 87, // a-f, convert to 10-15
+    n if (n > 64) && (n < 71) =>  n - 55, // A-F, also convert to 10-15
+    _=> NONHEX // reject all others
   }
 }
 
@@ -67,5 +67,6 @@ fn main() -> Result<(), Error> {
         lockin.consume(length);
         lockout.write_all(&hexesbuf)? 
     }
+    lockout.flush()?;
     Ok(())
 }

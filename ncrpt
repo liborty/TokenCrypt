@@ -23,7 +23,7 @@ function processfile {
 	# if EX passes any one of these tests, then avoid all compression 
 	[ "$EX" = 'jpg' ] || [ "$EX" = 'jpeg' ] || [ "$EX" = 'mp4' ] || [ "$EX" = 'zip' ] || [ "$EX" = '7z' ] || \
 	[ "$EX" = 'lz' ] || [ "$EX" = 'zst' ] || [ "$EX" = 'gz' ] || [ "$EX" = 'bz2' ] && {
-		keygen $INFILE | tee -a "$KEYFILE.u" | symcrypt $INFILE > $OUTFILE
+		keygen $INFILE | tee "$KEYFILE.u" | symcrypt $INFILE > $OUTFILE
 		return
 	}
 
@@ -64,7 +64,7 @@ function processfile {
 		
 	# generate key of the same size as infile,
 	# encrypt with it and write to OUTFILE.$CH 
-	keygen $INFILE | tee -a "$KEYFILE.$CH" | symcrypt $INFILE > $OUTFILE
+	keygen $INFILE | tee "$KEYFILE.$CH" | symcrypt $INFILE > $OUTFILE
 	# clean up
 	if [ -e "$OUTFILE.tmp" ]; then rm $OUTFILE.tmp; fi 
 	if [ -e "$OUTFILE.cmp" ]; then rm $OUTFILE.cmp; fi 
