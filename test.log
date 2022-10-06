@@ -1,16 +1,16 @@
 Installed TokenCrypt utilities in /usr/local/bin
-crptest run on: 06.10.22 at 04:44:40 UTC
+crptest run on: 06.10.22 at 08:46:41 UTC
 ncrpt: encrypting 'testing', using 2 cores
-ncrpt: testing 159382 => testingcrypt 134188 (84.19 %)
+ncrpt: testing 47463 => testingcrypt 22269 (46.92 %)
 ncrpt: keys are in 'testingkey'
 impcrypt: decrypting dirs 'testingcrypt' and 'testingkey' into 'testingorg'
-impcrypt: testingcrypt 134188 (89.83 %) => testingorg: 149382
-Files testing/hexf.api and testingorg/hexf.api differ
+impcrypt: testingcrypt 22269 (46.92 %) => testingorg: 47463
+crptest: 'testing' and 'testingorg' are identical
 
-expimptest run on: 06.10.22 at 04:44:40 UTC
+expimptest run on: 06.10.22 at 08:46:41 UTC
 expcrypt: encrypting 'testing' for export
-expcrypt: testing 159382 => testingcrp 132344 (83.04 %)
+expcrypt: testing 47463 => testingcrp 14576 (30.71 %)
 expcrypt: keys are in 'testingkey'
 impcrypt: decrypting and decompressing archives files
-impcrypt: testingcrp 132344 (83.04 %) => testingorg: 159382
+impcrypt: testingcrp 14576 (30.71 %) => testingorg: 47463
 expimptest: 'testing' and 'testingorg' are identical
