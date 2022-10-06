@@ -1,29 +1,16 @@
-cc -O3 -I. symcrypt.c -o symcrypt
-strip symcrypt
-chmod 755 symcrypt
-sudo cp symcrypt /usr/local/bin
-cc -O3 -I. hexcheck.c -o hexcheck
-strip hexcheck
-chmod 755 hexcheck
-sudo cp hexcheck /usr/local/bin
-cc -O3 -I. hexify.c -o hexify
-strip hexify
-chmod 755 hexify
-sudo cp hexify /usr/local/bin
-sudo cp keygen ncrpt dcrpt expcrypt impcrypt crptest expimptest /usr/local/bin
-
-crptest run on: 26.12.21 at 12:05:17 UTC
+Installed TokenCrypt utilities in /usr/local/bin
+crptest run on: 06.10.22 at 04:44:40 UTC
 ncrpt: encrypting 'testing', using 2 cores
-ncrpt: testing 159382 => testingcrypt 139188 (87.33 %)
+ncrpt: testing 159382 => testingcrypt 134188 (84.19 %)
 ncrpt: keys are in 'testingkey'
 impcrypt: decrypting dirs 'testingcrypt' and 'testingkey' into 'testingorg'
-impcrypt: testingcrypt 139188 (87.33 %) => testingorg: 159382
-crptest: 'testing' and 'testingorg' are identical
+impcrypt: testingcrypt 134188 (89.83 %) => testingorg: 149382
+Files testing/hexf.api and testingorg/hexf.api differ
 
-expimptest run on: 26.12.21 at 12:05:17 UTC
+expimptest run on: 06.10.22 at 04:44:40 UTC
 expcrypt: encrypting 'testing' for export
-expcrypt: testing 159382 => testingcrp 132324 (83.02 %)
+expcrypt: testing 159382 => testingcrp 132344 (83.04 %)
 expcrypt: keys are in 'testingkey'
 impcrypt: decrypting and decompressing archives files
-impcrypt: testingcrp 132324 (83.02 %) => testingorg: 159382
+impcrypt: testingcrp 132344 (83.04 %) => testingorg: 159382
 expimptest: 'testing' and 'testingorg' are identical
