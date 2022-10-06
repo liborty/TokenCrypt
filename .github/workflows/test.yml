@@ -4,7 +4,7 @@ on: push
 
 jobs:
   build:  
-    name: test 
+    name: tokencrypt 
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -13,6 +13,7 @@ jobs:
       with:
         toolchain: stable
 
+    - name: test
       run: sudo ./install
         crptest testing >> test.log
         echo >> test.log
