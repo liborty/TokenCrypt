@@ -11,9 +11,10 @@ jobs:
     - uses: actions-rs/toolchain@v1    
       with:
         toolchain: stable 
-    - run: cargo install --path crypt --root . symcrypt
-    - run: cargo install --path hex2bin --root . hexcheck
-    - run: cargo install --path bin2hex --root . hexify
+    - run: |
+        cargo install --path crypt --root . symcrypt
+        cargo install --path hex2bin --root . hexcheck
+        cargo install --path bin2hex --root . hexify
     - run: |
         strip bin/*
         chmod 755 bin/*
@@ -25,7 +26,8 @@ jobs:
         expimptest testing >> test.log
     
     - name: commitlog
-      run: git config user.email "457124+liborty@users.noreply.github.com"
+      run: |
+        git config user.email "457124+liborty@users.noreply.github.com"
         git config user.name "liborty"
         git commit -am 'action:test.log'
 
