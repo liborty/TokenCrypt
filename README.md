@@ -213,7 +213,7 @@ Note that TokenCrypt does not leave any such large hidden footprints on your fil
 
 ## Releases Log
 
-**5Sep22** - Release 1.0.5. Removed the long deprecated `dcrpt` script. Rewrote all three C programs in Rust, thus increasing security. Changed github actions to work with Rust instead of previous C.
+**5Oct22** - Release 1.0.5. Removed the long deprecated `dcrpt` script. Rewrote all three C programs in Rust, thus increasing security. Changed github actions to work with Rust instead of previous C.
 
 **19Dec21** - Release 1.0.3. Some code tidying and minor simplifications. No change in functionality.
 
