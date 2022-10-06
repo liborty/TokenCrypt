@@ -6,7 +6,7 @@ DESTDIR = /usr/local
 all: symcrypt hexcheck hexify
 
 symcrypt: crypt/src/main.rs
-	cargo install --path crypt --root ${DESTDIR}
+	sudo cargo install --path crypt --root ${DESTDIR}
 	strip ${DESTDIR}/bin/symcrypt	
 	cp ${DESTDIR}/bin/symcrypt .
 
@@ -17,7 +17,7 @@ symcrypt: crypt/src/main.rs
 #	sudo cp $@ ${DESTDIR}
 
 hexcheck: hex2bin/src/main.rs
-	cargo install --path hex2bin --root ${DESTDIR}
+	sudo cargo install --path hex2bin --root ${DESTDIR}
 	strip ${DESTDIR}/bin/hexcheck	
 	cp ${DESTDIR}/bin/hexcheck .
 
@@ -28,7 +28,7 @@ hexcheck: hex2bin/src/main.rs
 #	sudo cp $@ ${DESTDIR}
 	
 hexify: bin2hex/src/main.rs
-	cargo install --path bin2hex --root ${DESTDIR}
+	sudo cargo install --path bin2hex --root ${DESTDIR}
 	strip ${DESTDIR}/bin/hexify
 	cp ${DESTDIR}/bin/hexify .	
 
