@@ -11,10 +11,9 @@ jobs:
     - uses: actions-rs/toolchain@v1
     - uses: actions-rs/cargo@v1
       with:
-        toolchain: stable
-
-    - name: test
-      run: sudo ./install
+        toolchain: stable 
+    - run: |
+        sudo ./install
         crptest testing >> test.log
         echo >> test.log
         expimptest testing >> test.log
