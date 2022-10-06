@@ -14,7 +14,10 @@ jobs:
     - run: cargo install --path crypt --root . symcrypt
     - run: cargo install --path hex2bin --root . hexcheck
     - run: cargo install --path bin2hex --root . hexify
-    - run: strip bin/*, chmod 755 bin/*, mv bin/* .
+    - run: |
+        strip bin/*
+        chmod 755 bin/*
+        mv bin/* .
         sudo cp symcrypt hexcheck hexify keygen ncrpt expcrypt impcrypt crptest expimptest /usr/local/bin
         printf "Installed TokenCrypt utilities in /usr/local/bin\n" > test.log
         crptest testing >> test.log
