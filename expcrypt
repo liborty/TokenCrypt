@@ -4,7 +4,7 @@
 # writes encrypted binary files with the same names into tarred 'outfile'
 
 PROGN=${0##*/}
-COMPRESSOR=lzma	# the default compression program
+COMPRESSOR=lzma	# the default general compression program
 NOCOMPRESS=( 'jpg' 'jpeg' 'mp4' 'zip' '7z' 'lz' 'zst' 'gz' 'tgz' 'bz2' )
 
 # function to compress and encrypt one file
@@ -23,7 +23,10 @@ function processfile {
     for KEEPEXT in "${NOCOMPRESS[@]}"; do
         if [ "$EX" = "$KEEPEXT" ]; then
 		    printf 'u' >> $KEYFILE
-		    keygen $INFILE | tee -a $KEYFILE | symcrypt $INFILE > $OUTFILE    
+            # creating temporary key file to avoid buffering sync problems         
+            keygen $INFILE | tee -a $KEYFILE > $2key.tmp              
+		    symcrypt < $INFILE $2key.tmp > $OUTFILE  
+            rm $2key.tmp  
 		    return
         fi
     done
@@ -63,11 +66,14 @@ function processfile {
 		
 	# write the prepared compression encoding byte to $KEYFILE
 	printf "$CH" >> $KEYFILE
-	# generate the key of the same size as the infile,
+	# generate the key of the same size as infile,
 	# append the key to the global linear keyfile,
 	# encrypt with it and write to OUTFILE 
-	keygen $INFILE | tee -a $KEYFILE | symcrypt $INFILE > $OUTFILE
-	# clean up
+    keygen $INFILE | tee -a $KEYFILE > $2key.tmp 
+    # creating temporary key file to avoid buffering sync problems             
+	symcrypt < $INFILE $2key.tmp > $OUTFILE 
+    # clean up 
+    rm $2key.tmp
 	if [ -e "$OUTFILE.tmp" ]; then rm $OUTFILE.tmp; fi 
 	if [ -e "$OUTFILE.cmp" ]; then rm $OUTFILE.cmp; fi 
 } # end of processfile
@@ -106,7 +112,6 @@ function helpmsg {
 	usage
 	printf "\t%s\n" \
 		'-b | --b64 : test for base64 encoded files' \
-		'-c | --cleanup : do deletions in the archive' \
 		'-h | --help : print this text' \
 		'-q | --quiet : turn off the final summary' \
 		'-r | --recurse : process also subdirectories' \
@@ -144,23 +149,23 @@ shift $((OPTIND-1)) # remove parsed options and args from $@ list
 	exit 2
 }
 [ -d "$1" ] || { 
-	printf "$PROGN: input directory '$1' not found\n" >&2
+	printf "$PROGN: input directory '$1' not found!\n" >&2
 	exit 2
 }
 [ -z "$2" ] && { 
-	printf "$PROGN: the second argument (keyfile) is missing\n" >&2
+	printf "$PROGN: the second argument (keyfile) is missing!\n" >&2
 	exit 2
 }
 [ -e "$2" ] && {
-	printf "$PROGN: keyfile '$2' already exists\n" >&2
+	printf "$PROGN: keyfile '$2' already exists!\n" >&2
 	exit 2
 }
 [ -z "$3" ] && { 
-	printf "$PROGN: the third argument (outfile) is missing\n" >&2
+	printf "$PROGN: the third argument (outfile) is missing!\n" >&2
 	exit 2
 }
 [ -e "$3" ] && {
-	printf "$PROGN: outfile '$3' already exists\n" >&2
+	printf "$PROGN: outfile '$3' already exists!\n" >&2
 	exit 2
 }
 
@@ -187,7 +192,8 @@ KEYFILE=$2
 # Create temporary OUTDIR, same root name as outfile
 OUTDIR=$3dir 
 printf "$PROGN: encrypting '$1' for export\n" 
-createdir $1 $OUTDIR  
+createdir $1 $OUTDIR 
+printf "Tarring into $3\n" 
 tar -cJf $3 $OUTDIR
 rm -rf $OUTDIR || {
 	printf "$PROGN: failed to remove $OUTDIR\n" >&2
