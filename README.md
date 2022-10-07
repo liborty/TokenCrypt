@@ -18,12 +18,12 @@ The encrypted archive file is just meaningless random data and thus can be store
 
 ## Introduction
 
-It is not an objective of TokenCrypt to replace `git` and to keep the complete histories of everything, as that carries significant costs in complexity and storage. The quest for being totally foolproof is subject to the law of diminishing returns, as human foolishness generally knows no bounds. TokenCrypt is more akin to `borg`; an efficient archiver and backing up tool. The key difference, if excuse the pun, lies in TokenCrypt deploying more secure encryption and sometimes better compression as well. In its update mode, it only maintains the current version of the archive. Historical checkpoints are up to the user to create and keep, as and when required.
+It is not an objective of TokenCrypt to replace `git` and to keep the complete histories of everything, as that carries significant costs in complexity and storage. The quest for being totally foolproof is subject to the law of diminishing returns, as human foolishness generally knows no bounds. TokenCrypt is more akin to `borg`; an efficient archiver and backing up tool. The key difference, excuse the pun, lies in TokenCrypt deploying more secure encryption and sometimes better compression as well. In its update mode, it only maintains the current version of the archive. Historical checkpoints are up to the user to create and keep, as and when required.
 
 Scripts `ncrpt` and `expcrypt` read given input directory (tree) containing hexadecimal tokens, base64 files and any other types of files. Subdirectories are processed recursively with -r option. `ncrpt` creates two output directories, `expcrypt` two archive files.
 
-Some already compressed files afford only minor further compression, if any. To save time, they are recognised simply by their well known extensions: `jpg, jpeg, mp4, zip, 7z, lz, zst, gz, bz2` and their upper case versions.
-All attempts at compressing these particular files are avoided. They are just encrypted as they are.
+Some already compressed files afford only minor further compression, if any. To save time, they are recognised simply by their well known extensions: `jpg, jpeg, mp4, zip, 7z, lz, zst, gz, tgz, bz2` and their upper case versions.
+Files with these extensions are encrypted uncompressed, as they are.
 
 Given `-xb` options, `ncrpt` and `expcrypt` scripts will recognise hexadecimal files and base64 files respectively and convert them to more compact binary data. They then select the best compression method individually for each file and finally securely encrypt them all.
 
@@ -38,7 +38,7 @@ applying data type recognition tests to each file individually. In this case, th
 
 ## Installation
 
-This software was developed and tested under Linux and binaries are available in the repository. Installation from source needs  Rust installed. Download or clone this repository and `cd` into it. Then, for complete fresh installation: 
+This software was developed and tested under Linux and binaries are available in the repository. Installation from source needs  Rust installed. Download or clone this repository and `cd` into it. Then, for complete fresh installation:
 
 ### `sudo ./install`
 

@@ -6,6 +6,7 @@
 PROGN=${0##*/}
 COMPRESSOR=lzma	# the default compression program
 EXT=lz			# and the extension that goes with it
+NOCOMPRESS=( 'jpg' 'jpeg' 'mp4' 'zip' '7z' 'lz' 'zst' 'gz' 'tgz' 'bz2' )
 
 # function to compress and encrypt one file
 # takes three arguments: INDIR KEYDIR OUTDIR
@@ -16,22 +17,23 @@ function processfile {
 	local INFILE="$1"
 	local KEYFILE="$2" 
 	local OUTFILE="$3"
-	local EX="${1##*.}" # this file's extension
-	local CH='u'
+	local EX="${1##*.}" # this file's last extension
+	local CH='u' # default uncompressed marker
 
 	local EX=${EX,,} # convert to lower case, to detect both cases
-	# if EX passes any one of these tests, then avoid all compression 
-	[ "$EX" = 'jpg' ] || [ "$EX" = 'jpeg' ] || [ "$EX" = 'mp4' ] || [ "$EX" = 'zip' ] || [ "$EX" = '7z' ] || \
-	[ "$EX" = 'lz' ] || [ "$EX" = 'zst' ] || [ "$EX" = 'gz' ] || [ "$EX" = 'bz2' ] && {
-		keygen $INFILE | tee "$KEYFILE.u" | symcrypt $INFILE > $OUTFILE
-		return
-	}
+	# if EX is on NOCOMPRESS list, then skip compression 
+    for KEEPEXT in "${NOCOMPRESS[@]}"; do
+        if [ "$EX" = "$KEEPEXT" ]; then
+            keygen $INFILE | tee "$KEYFILE.u" | symcrypt $INFILE > $OUTFILE
+		    return
+        fi
+	done
 
     if [ $HEXTEST ] && hexcheck < $INFILE > $OUTFILE.tmp 2>/dev/null; then 
-		local CH='h'
+		local CH='h' # hexadecimal compression enabled and detected
 		local INFILE=$OUTFILE.tmp 
 	else if [ $B64TEST ] &&	base64 -d -w 0 $INFILE > $OUTFILE.tmp 2>/dev/null; then 
-		local CH='b'
+		local CH='b' # base64 compression enabled and detected 
 		local INFILE=$OUTFILE.tmp 
 		fi
 	fi
@@ -222,7 +224,8 @@ function helpmsg {
 		'-z | --zstd : use zstd compression instead of lzma' >&2
 	exit 1
 }
-# Main starts here
+
+# Main starts here ###########################################################
 # get options, including long options, extracted as arg to the last option '-'
 while getopts hbcxqruvz-: OPT; do
  if [ "$OPT" = "-" ]; then   # long option: reset OPT and OPTARG
