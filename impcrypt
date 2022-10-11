@@ -69,14 +69,16 @@ function importdir {
 		exit 2
 	}
 	# iterate through the listing
-	for ITEM in $(ls -AL $1); do
-		local IND=$1/$ITEM
-		local OUTD=$2/$ITEM
-   		if [ -d "$IND" ]; then  # recursively process existing subdirectory?
-			if [ -n "$RECURSE" ]; then importdir $IND $OUTD; fi
-			continue # done with this subdir
-		fi
-   		[ -f "$IND" ] && importfile $IND $OUTD # only process genuine files
+    local IMPDIRLS=$( ls -ALBp $1 )
+    # import the subdirectories
+    if [ -n "$RECURSE" ]; then
+        for ITEM in $( grep / <( printf '%s' "$IMPDIRLS" ) ); do
+            importdir "$1/$ITEM" "$2/$ITEM"
+        done 
+    fi   
+	# import the files
+	for ITEM in $( grep -v / <( printf '%s' "$IMPDIRLS" ) ); do
+        importfile "$1/$ITEM" "$2/$ITEM"
 	done
 }
 
@@ -90,16 +92,18 @@ function processdir {
 		printf "$PROGN processdir: failed to create output directory $3!\n" >&2
 		exit 2
 	}
-	# iterate through the listing
-	for KEY in $( ls -AL $2 ); do
-		local KD="$2/$KEY"
-   		if [ -d "$KD" ]; then  # recursively process existing subdirectory?
-			[ -n "$RECURSE" ] && processdir "$1/$KEY" "$KD" "$3/$KEY" & 
-			continue # either processed or ignored this subdir now
-		fi
-   		[ -f "$KD" ] || continue # only process genuine file now 
+
+    local DIRCONTENT=$( ls -ALBp $2 )
+    # only if recursing, process the subdirectories
+    if [ -n "$RECURSE" ]; then
+        for KEY in $( grep / <( printf '%s' "$DIRCONTENT" ) ); do
+            processdir "$1/$KEY" "$2/$KEY" "$3/$KEY" &
+        done
+    fi    
+	# process the files
+	for KEY in $( grep -v / <( printf '%s' "$DIRCONTENT" ) ); do
 		local ROOTN=${KEY%.*} # remove keyfile's encoding extension
-   		processfile "$1/$ROOTN" "$KD" "$3/$ROOTN" &
+        processfile "$1/$ROOTN" "$2/$KEY" "$3/$ROOTN" &
 	done
 	wait
 } # end of processdir

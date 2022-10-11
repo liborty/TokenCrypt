@@ -93,17 +93,18 @@ function createdir {
 		exit 2
 	}
 
-	# iterate through the listing
-	for ITEM in $(ls -AL $1); do
-		local IND=$1/$ITEM # append $ITEM to $INDIR path
-   		if [ -d "$IND" ]; then  # recursively process existing subdirectory?
-			if [ -n "$RECURSE" ]; then  # just push ITEM onto paths, no changing of directories
-				createdir $IND $2/$ITEM 
-			fi
-			continue # either processed or ignored this subdir now
-		fi
-   		[ -f "$IND" ] && processfile $IND $2/$ITEM  
-	done
+    local DIRLS=$( ls -ALBp $1 )
+    # only if recursing, process the subdirectories
+    if [ -n "$RECURSE" ]; then
+        for DIR in $( grep / <( printf '%s' "$DIRLS" ) ); do
+            createdir "$1/$DIR" "$2/$DIR"
+        done
+    fi    
+	# process the files
+	for FILE in $( grep -v / <( printf '%s' "$DIRLS" ) ); do
+        processfile "$1/$FILE" "$2/$FILE"
+	done 
+
 } # end of createdir
 
 function usage { printf "Usage: $PROGN [-h][-b][-x][-q][-r][-v][-z] indir keyfile outfile\n" >&2; }
