@@ -1,13 +1,13 @@
 Installed TokenCrypt utilities in /usr/local/bin
-crptest run on: 17.10.22 at 22:53:10 UTC
+crptest run on: 17.10.22 at 23:49:13 UTC
 ncrpt: encrypting 'testing', using 2 cores
-ncrpt: testing 169382 => testingcrypt 30461 (17.98 %)
+ncrpt: testing 169382 => testingcrypt 144188 (85.13 %)
 ncrpt: keys are in 'testingkey'
 dcrpt: decrypting dirs 'testingcrypt' and 'testingkey' into 'testingorg'
-dcrpt: testingcrypt 30461 (54.73 %) => testingorg: 55655
-Files testing/pics/gums.jpg and testingorg/pics/gums.jpg differ
+dcrpt: testingcrypt 144188 (85.13 %) => testingorg: 169382
+crptest: 'testing' and 'testingorg' are identical
 
-packtest run on: 17.10.22 at 22:53:10 UTC
+packtest run on: 17.10.22 at 23:49:14 UTC
 pack: compressing directory 'testing'
 pack: writing keyfile 'testingkey'
 pack: encrypting into file 'testingcrp'
