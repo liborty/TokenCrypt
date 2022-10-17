@@ -9,6 +9,7 @@ cargo install --path bin2hex --root . hexify
 strip bin/*
 chmod 755 bin/*
 mv bin/* .
+rmdir bin
 
 PROGS='symcrypt hexcheck hexify keygen ncrpt dcrpt pack unpack crptest packtest'
 chmod 755 $PROGS

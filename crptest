@@ -36,6 +36,6 @@ if [ -d "$ORGDIR" ]; then
 
 # encrypt and decrypt
 ncrpt -xbr $1 $KEYDIR $OUTDIR
-impcrypt -r $OUTDIR $KEYDIR $ORGDIR
+dcrpt -r $OUTDIR $KEYDIR $ORGDIR
 diff -bqr $1 $ORGDIR && printf "$PROGN: '$1' and '$ORGDIR' are identical\n"
 rm -rf $ORGDIR $OUTDIR $KEYDIR >&2

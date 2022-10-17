@@ -1,0 +1,135 @@
+#!/bin/bash
+# decrypts specified file 'infile' with matching keys from `keysfile`, 
+# restores decrypted and decompressed directory to its original path, 
+# now relative to the current dir. 
+
+PROGN=${0##*/}
+
+# function to import a whole directory
+# takes one argument: outputdir
+# reads from file descriptor 3
+function importdir {
+    cd $1
+	# create subdirectories
+    while true; do
+        read -r -d ',' -u 3 NAME
+        [ -z "$NAME" ] && break; # no more subdirs
+	    mkdir "$NAME" || {
+		    printf "$PROGN importdir: failed to create output directory '$1/$NAME'!\n" >&2
+		    exit 2
+	    } 
+        importdir "$NAME" # recursive descent into subdir
+    done
+    # create the files
+    while true; do
+        read -r -N 1 -u 3 CH
+        [ "$CH" = ',' ] && break; # no more files
+        read -r -d ',' -u 3 NAME
+        read -r -d ',' -u 3 FSIZE
+        # u (uncomressed) could be for a listed extension, 
+        # or because all compression attempts have failed to gain
+	    [ "$CH" = 'u' ] && {
+            head -c $FSIZE <&3 > $NAME # read and write the file data
+		    continue
+	    }
+        # apply code specified decompression to a compressed file
+	    head -c $FSIZE <&3 | case "$CH" in
+		    h ) hexify;;
+		    b ) base64 -w 0;;
+		    i ) lzma -d;;
+		    j ) lzma -d | hexify;; 
+		    k ) lzma -d | base64 -w 0;; 
+		    l ) zstd -d -c;; 
+		    m ) zstd -d -c | hexify;; 
+		    n ) zstd -d -c | base64 -w 0;;
+		    * ) printf "$PROGN importfile: unrecognised ch\n"; exit 2;;
+	    esac > "$NAME"
+    done
+    cd ..
+} # end of importdir
+
+function usage { printf "Usage: $PROGN -[h][q][v] infile keyfile\n" >&2; }
+function helpmsg {
+	usage
+	printf "\t%s\n" \
+		'-h | --help : print this text' \
+		'-q | --quiet : turn off the final summary' \
+		'-v | --verbose : detailed reporting' >&2
+	exit 1
+}
+
+# Main starts here ###########################################################
+# get options, including long options, extracted as arg to the last option '-'
+while getopts dhqv-: OPT; do
+ if [ "$OPT" = "-" ]; then   # long option: reset OPT and OPTARG
+    OPT="${OPTARG%%=*}"      # extract long option name
+    OPTARG="${OPTARG#$OPT}"  # extract long option argument (here empty)
+    OPTARG="${OPTARG#=}"     # remove any assignments `=` from long options
+ fi
+ case "$OPT" in
+    h | help ) helpmsg;;
+	q | quiet ) QUIET=0;;
+	v | verbose ) VERBOSE=0;;  
+    ??* ) printf "$PROGN quitting, invalid long option: $OPT\n" >&2; usage; exit 2;;  
+	*) exit 2;;  # invalid short option (error will be reported via getopts)
+ esac
+done
+shift $((OPTIND-1)) # remove already parsed options and args from $@ list
+
+# Globally validate the input file
+[ -e "$1" ] || { 
+	printf "$PROGN: inputfile '$1' not found\n" >&2
+	exit 2
+}
+# Globally validate the keyfile
+[ -e "$2" ] || { 
+	printf "$PROGN: keyfile '$2' not found\n" >&2
+	exit 2
+}
+
+# Warn about missing decompressors
+if [ -z $( which zstd ) ]; then 
+	printf "$PROGN warning, zstd compressor is not installed, will not decompress .zst files\n" >&2
+fi
+if [ -z $( which lzma ) ]; then 
+	printf "$PROGN warning, lzma compressor is not installed, will not decompress .lz files\n" >&2
+fi
+if [ -z $( which base64 ) ]; then 
+	printf "$PROGN warning, base64 decoder is not installed, will not unpack .b64 files\n" >&2
+fi
+if [ -z $( which hexify ) ]; then 
+	printf "$PROGN warning, hexify is not installed, will not unpack .hex files\n" >&2
+fi
+
+symcrypt < $1 $2 > _$1.dcr # decrypt input file
+
+# Globally open the decrypted file as file descriptor 3
+exec 3<_$1.dcr || {
+	printf "$PROGN: key file '$1.dcr' failed to open for reading\n" >&2
+	exit 2	
+}
+# read the name of the output dir (comma separated)
+read -r -d ',' -u 3 DIRNAME
+[ -e "$DIRNAME" ] && { 
+	printf "$PROGN: output directory '$DIRNAME' already exists!\n" >&2
+	exit 2
+}
+mkdir $DIRNAME || {
+	printf "$PROGN: failed to create output directory '$DIRNAME'!\n" >&2
+	exit 2
+}
+printf "$PROGN: unpacking into $DIRNAME\n" >&2
+importdir $DIRNAME
+rm _$1.dcr # tidy up the decrypted file
+
+# optional final report
+if ! [ $QUIET ]; then
+	SIZES=( `du -hbs $DIRNAME $1` ) # array of size,dir,size,file
+	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} "
+	if [ ${SIZES[0]} = ${SIZES[2]} ]; then printf "(100 %%) => ${SIZES[1]} ${SIZES[0]}\n"; else
+		CR=$(( (5+100000*${SIZES[2]}/${SIZES[0]})/10 )) # calculate percentage rounded to two d.p.	
+		printf "(${CR: 0:2}.${CR: 2:4} %%) => ${SIZES[1]}: ${SIZES[0]}\n"
+	fi
+	# compressed size x 10^5, printed as xx.xx% 
+	printf "$PROGN: decrypted and upacked '$1' into '$DIRNAME'\n" >&2
+fi

@@ -1,0 +1,195 @@
+#!/bin/bash
+# encrypts all files in the specified directory 'indir' 
+# writes keys into file 'keyfile' 
+# writes encrypted binary files with the same names into tarred 'outfile'
+
+PROGN=${0##*/}
+COMPRESSOR=lzma	# the default general compression program
+NOCOMPRESS=( 'jpg' 'jpeg' 'mp4' 'zip' '7z' 'lz' 'zst' 'gz' 'tgz' 'bz2' )
+
+# writes to global TEMPFILE
+function packdir {
+    cd $1
+    # list directory
+    local DIRLS=$( ls -ALBp )
+    # if recursing, process the subdirectories first (depth first descent)
+    if [ -n "$RECURSE" ]; then
+        for D in $( grep / <( printf '%s' "$DIRLS" ) ); do
+            DIR=${D%/} # strip the trailing slash 
+            printf "$DIR," >> $TEMPFILE # write the plain subdir name 
+            packdir "$DIR" # recurse
+        done
+    fi
+    printf "," >> $TEMPFILE  # mark the start of files section 
+	# process the files 
+	for FILE in $( grep -v / <( printf '%s' "$DIRLS" ) ); do
+        local FSIZE=`stat -c%s $FILE`
+        [ -z "$FSIZE" ] && continue; # ignore zero sized files
+        packfile "$FILE" "$FSIZE"
+	done
+    printf "," >> $TEMPFILE  # mark the end of this dir
+    cd ..
+} # end of packdir
+
+# function to compress one file
+# takes one argument: FILENAME
+# writes into global TEMPFILE
+# creates and cleans up to two temporary files
+function packfile {
+    local FILENAME=$1
+	local EX="${1##*.}" # this file's last extension
+	local CH='u' # default uncompressed marker
+    local EX=${EX,,} # convert extension to lower case, to match capitals too
+	# if EX is on NOCOMPRESS list, then skip compression 
+    for KEEPEXT in "${NOCOMPRESS[@]}"; do
+        if [ "$EX" = "$KEEPEXT" ]; then 
+            # write u+filename,file size, to $TEMPFILE
+            printf "u$FILENAME,$2," >> $TEMPFILE
+            # write file contents
+            cat $FILENAME >> $TEMPFILE 
+		    return
+        fi
+    done
+	local INFILE=$FILENAME # the initial name of the file to be compressed
+    if [ $HEXTEST ] && hexcheck < $FILENAME > _$FILENAME.tmp 2>/dev/null; then 
+		CH='h' # hexadecimal compression enabled and detected
+		local INFILE=_$FILENAME.tmp 
+	else if [ $B64TEST ] &&	base64 -d -w 0 $FILENAME > _$FILENAME.tmp 2>/dev/null; then 
+		CH='b'  # base64 compression enabled and detected
+		local INFILE=_$FILENAME.tmp
+		fi
+	fi
+
+	# regardless whether hexcheck or base64 tests above succeeded or not, 
+    # apply general compression test	
+	$COMPRESSOR $FLAGS $INFILE > _$FILENAME.cmp 
+		local CMPS=$( stat -c%s _$FILENAME.cmp ) # size after compression
+		local ORGS=$( stat -c%s $INFILE )  # size before compression
+		# use compressed version only if it is actually smaller
+		[ "$CMPS" -lt "$ORGS" ] && { # successful general compression
+			local INFILE=_$FILENAME.cmp # use the final compressed file
+			if [ "$COMPRESSOR" = 'lzma' ]; then
+			    case "$CH" in
+			    u ) CH='i';;
+			    h ) CH='j';;
+			    b ) CH='k';;
+			    * ) printf "$PROGN packfile: unrecognised ch\n"; exit 2;;
+			    esac
+			else # compressor program is 'zstd'
+			    case "$CH" in
+			    u ) CH='l';;
+			    h ) CH='m';;
+			    b ) CH='n';;
+			    * ) printf "$PROGN processfile: unrecognised ch\n"; exit 2;;
+			    esac
+			fi				
+		} # else no general compression gain, keep the original INFILE and codes: u,h,b
+		
+	# write to $TEMPFILE
+    printf "$CH$FILENAME,%s," `stat -c%s $INFILE` >> $TEMPFILE
+    
+    # write possibly compressed file contents
+    cat $INFILE >> $TEMPFILE
+    # clean up  
+	[ -e "_$FILENAME.tmp" ] && rm _$FILENAME.tmp;
+	[ -e "_$FILENAME.cmp" ] && rm _$FILENAME.cmp; 
+} # end of packfile
+
+function usage { printf "Usage: $PROGN [-h][-b][-x][-q][-r][-v][-z] indir keyfile outfile\n" >&2; }
+
+function helpmsg {
+	usage
+	printf "\t%s\n" \
+		'-b | --b64 : test for base64 encoded files' \
+		'-h | --help : print this text' \
+		'-q | --quiet : turn off the final summary' \
+		'-r | --recurse : process also subdirectories' \
+		'-v | --verbose : detailed reporting' \
+		'-x | --hex : test for hexadecimal files' \
+		'-z | --zstd : use zstd compression instead of lzma' >&2
+	exit 1
+}
+
+# Main starts here ###########################################################
+# get options, including long options, extracted as arg to the last option '-'
+while getopts hbxqrvz-: OPT; do
+ if [ "$OPT" = "-" ]; then   # long option: reset OPT and OPTARG
+    OPT="${OPTARG%%=*}"      # extract long option name
+    OPTARG="${OPTARG#$OPT}"  # extract long option argument (here empty)
+    OPTARG="${OPTARG#=}"     # remove any assignments `=` from long options
+ fi
+ case "$OPT" in
+	b | b64 ) B64TEST=0;;
+	h | help ) helpmsg;;
+	q | quiet ) QUIET=0;;
+	r | recurse ) RECURSE=0;;
+	v | verbose ) VERBOSE=0;; 
+	x | hex ) HEXTEST=0;;
+  	z | zstd ) COMPRESSOR=zstd;; #alternative compressor and its extension
+    ??* ) printf "$PROGN quitting, invalid long option: $OPT\n" >&2; usage; exit 2;;  
+	*) exit 2;;  # invalid short option (error will be reported via getopts)
+ esac
+done
+shift $((OPTIND-1)) # remove parsed options and args from $@ list
+
+# Globally validate the program arguments
+[ -z "$1" ] && { 
+	printf "$PROGN: the first argument (indir) is missing!\n" >&2
+	exit 2
+}
+[ -d "$1" ] || { 
+	printf "$PROGN: input directory '$1' not found!\n" >&2
+	exit 2
+}
+[ -z "$2" ] && { 
+	printf "$PROGN: the second argument (keyfile) is missing!\n" >&2
+	exit 2
+}
+[ -e "$2" ] && {
+	printf "$PROGN: keyfile '$2' already exists!\n" >&2
+	exit 2
+}
+[ -z "$3" ] && { 
+	printf "$PROGN: the third argument (outfile) is missing!\n" >&2
+	exit 2
+}
+[ -e "$3" ] && {
+	printf "$PROGN: outfile '$3' already exists!\n" >&2
+	exit 2
+}
+
+# Globally validate the compressor. It has been set either to lzma or zstd
+[ -z $( which "$COMPRESSOR" ) ] && { 
+	printf "$PROGN quitting, compressor utility $COMPRESSOR not found\n" >&2
+	exit 2
+}
+
+# Global options for the compressor
+FLAGS='-c -z -q' 
+if [ $VERBOSE ]; then 
+	if [ "$COMPRESSOR" = 'lzma' ]; then FLAGS='-c -z -v';	else FLAGS='-c'; fi
+fi
+
+# name the verified global parameters
+INDIR=${1%/} # strip any trailing /
+KEYFILE=$2
+TEMPFILE=`pwd`/_tmp.tmp
+printf "$PROGN: compressing directory '$INDIR'\n" 
+printf "$INDIR," > $TEMPFILE # record the indir path/name
+packdir "$INDIR" # pack the directory
+printf "$PROGN: writing keyfile '$KEYFILE'\n"
+keygen $TEMPFILE > $KEYFILE # write the keyfile of the same size
+printf "$PROGN: encrypting into file '$3'\n"           
+symcrypt < $TEMPFILE $KEYFILE > $3 # encrypt 
+rm $TEMPFILE # remove the temporary archive file
+
+# optional final report
+if [ ! $QUIET ]; then
+	SIZES=( $( du -bs $3 $INDIR ) ) # array of size outfile size indir
+	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} => ${SIZES[1]} ${SIZES[0]} "
+	if [ ${SIZES[0]} = ${SIZES[2]} ]; then printf "(100 %%)\n";
+	else
+		CR=$(( (5+100000*${SIZES[0]}/${SIZES[2]})/10 )) # calculate percentage rounded to two d.p.	
+		printf "(${CR: 0:2}.${CR: 2:4} %%)\n" # compression ratio printed as xx.xx%
+	fi
+fi

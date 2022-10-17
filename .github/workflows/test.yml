@@ -19,6 +19,7 @@ jobs:
         strip bin/*
         chmod 755 bin/*
         mv bin/* .
+        rmdir bin
         sudo cp symcrypt hexcheck hexify keygen ncrpt dcrpt pack unpack crptest packtest /usr/local/bin
         printf "Installed TokenCrypt utilities in /usr/local/bin\n" > test.log
         crptest testing >> test.log
