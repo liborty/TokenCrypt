@@ -24,7 +24,8 @@ function processfile {
 	# if EX is on NOCOMPRESS list, then skip compression 
     for KEEPEXT in "${NOCOMPRESS[@]}"; do
         if [ "$EX" = "$KEEPEXT" ]; then
-            keygen $INFILE | tee "$KEYFILE.u" | symcrypt $INFILE > $OUTFILE
+            keygen $INFILE > "$KEYFILE.u"
+            symcrypt < $INFILE "$KEYFILE.u" > $OUTFILE
 		    return
         fi
 	done
@@ -66,7 +67,8 @@ function processfile {
 		
 	# generate key of the same size as infile,
 	# encrypt with it and write to OUTFILE.$CH 
-	keygen $INFILE | tee "$KEYFILE.$CH" | symcrypt $INFILE > $OUTFILE
+	keygen $INFILE > $KEYFILE.$CH
+    symcrypt < $INFILE $KEYFILE.$CH > $OUTFILE
 	# clean up
 	if [ -e "$OUTFILE.tmp" ]; then rm $OUTFILE.tmp; fi 
 	if [ -e "$OUTFILE.cmp" ]; then rm $OUTFILE.cmp; fi 
