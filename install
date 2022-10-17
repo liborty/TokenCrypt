@@ -10,7 +10,7 @@ strip bin/*
 chmod 755 bin/*
 mv bin/* .
 
-PROGS='symcrypt hexcheck hexify keygen ncrpt expcrypt impcrypt crptest expimptest'
+PROGS='symcrypt hexcheck hexify keygen ncrpt dcrpt pack unpack crptest packtest'
 chmod 755 $PROGS
 sudo cp $PROGS /usr/local/bin
 printf "Installed TokenCrypt utilities in /usr/local/bin\n"

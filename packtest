@@ -35,7 +35,9 @@ ORGDIR="$1"org
 	printf "$PROGN: '$ORGDIR' already exists here!\n" >&2; exit 2; }
 
 # encrypt and decrypt
-expcrypt -xbr $1 $KEYFILE $OUTFILE
-impcrypt -r $OUTFILE $KEYFILE $ORGDIR
+pack -xbr $1 $KEYFILE $OUTFILE
+mv $1 $ORGDIR
+unpack $OUTFILE $KEYFILE
 diff -bqr $1 $ORGDIR && printf "$PROGN: '$1' and '$ORGDIR' are identical\n"
-rm -rf $ORGDIR $OUTFILE $KEYFILE >&2
+rm -rf $1 $OUTFILE $KEYFILE >&2
+mv $ORGDIR $1
