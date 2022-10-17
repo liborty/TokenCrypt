@@ -24,7 +24,7 @@ jobs:
         printf "Installed TokenCrypt utilities in /usr/local/bin\n" > test.log
         crptest testing >> test.log
         echo >> test.log
-        expimptest testing >> test.log
+        packtest testing >> test.log
     
     - name: commitlog
       run: |
