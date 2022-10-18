@@ -189,7 +189,7 @@ if [ ! $QUIET ]; then
 	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} => ${SIZES[1]} ${SIZES[0]} "
 	if [ ${SIZES[0]} = ${SIZES[2]} ]; then printf "(100 %%)\n";
 	else
-		CR=$(( (5+100000*${SIZES[0]}/${SIZES[2]})/10 )) # calculate percentage rounded to two d.p.	
-		printf "(${CR: 0:2}.${CR: 2:4} %%)\n" # compression ratio printed as xx.xx%
+		CR=$(( 100*${SIZES[0]}/${SIZES[2]} )) # calculate percentage rounded to two d.p.	
+		printf "($CR %%)\n" # compression ratio printed as a percentage
 	fi
 fi

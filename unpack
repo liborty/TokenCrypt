@@ -127,8 +127,8 @@ if ! [ $QUIET ]; then
 	SIZES=( `du -hbs $DIRNAME $1` ) # array of size,dir,size,file
 	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} "
 	if [ ${SIZES[0]} = ${SIZES[2]} ]; then printf "(100 %%) => ${SIZES[1]} ${SIZES[0]}\n"; else
-		CR=$(( (5+100000*${SIZES[2]}/${SIZES[0]})/10 )) # calculate percentage rounded to two d.p.	
-		printf "(${CR: 0:2}.${CR: 2:4} %%) => ${SIZES[1]}: ${SIZES[0]}\n"
+		CR=$(( 100*${SIZES[2]}/${SIZES[0]} )) # calculate percentage rounded to two d.p.	
+		printf "($CR %%) => ${SIZES[1]}: ${SIZES[0]}\n"
 	fi
 	# compressed size x 10^5, printed as xx.xx% 
 	printf "$PROGN: decrypted and upacked '$1' into '$DIRNAME'\n" >&2
