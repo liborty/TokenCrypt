@@ -71,11 +71,11 @@ function importdir {
 	# iterate through the listing
     local IMPDIRLS=$( ls -ALBp $1 )
     # import the subdirectories
-    if [ -n "$RECURSE" ]; then
+    [ -n "$IGNORE" ] || {
         for ITEM in $( grep / <( printf '%s' "$IMPDIRLS" ) ); do
             importdir "$1/$ITEM" "$2/$ITEM"
         done 
-    fi   
+    }   
 	# import the files
 	for ITEM in $( grep -v / <( printf '%s' "$IMPDIRLS" ) ); do
         importfile "$1/$ITEM" "$2/$ITEM"
@@ -94,12 +94,12 @@ function processdir {
 	}
 
     local DIRCONTENT=$( ls -ALBp $2 )
-    # only if recursing, process the subdirectories
-    if [ -n "$RECURSE" ]; then
+    # process the subdirectories if not ignoring
+    [ -n "$IGNORE" ] || {
         for KEY in $( grep / <( printf '%s' "$DIRCONTENT" ) ); do
             processdir "$1/$KEY" "$2/$KEY" "$3/$KEY" &
         done
-    fi    
+    }    
 	# process the files
 	for KEY in $( grep -v / <( printf '%s' "$DIRCONTENT" ) ); do
 		local ROOTN=${KEY%.*} # remove keyfile's encoding extension
@@ -113,8 +113,8 @@ function helpmsg {
 	usage
 	printf "\t%s\n" \
 		'-h | --help : print this text' \
-		'-q | --quiet : turn off the final summary' \
-		'-r | --recurse : process also subdirectories' \
+        '-i | --ignore : ignore subdirectories' \
+        '-q | --quiet : turn off the final summary' \
 		'-v | --verbose : detailed reporting' >&2
 	exit 1
 }
@@ -129,8 +129,8 @@ while getopts dhqrv-: OPT; do
  fi
  case "$OPT" in
     h | help ) helpmsg;;
+    i | ignore ) IGNORE=0;;
 	q | quiet ) QUIET=0;;
-	r | recurse ) RECURSE=0;;
 	v | verbose ) VERBOSE=0;;  
     ??* ) printf "$PROGN quitting, invalid long option: $OPT\n" >&2; usage; exit 2;;  
 	*) exit 2;;  # invalid short option (error will be reported via getopts)

@@ -13,13 +13,13 @@ function packdir {
     # list directory
     local DIRLS=$( ls -ALBp )
     # if recursing, process the subdirectories first (depth first descent)
-    if [ -n "$RECURSE" ]; then
+    [ -n "$IGNORE" ] || {
         for D in $( grep / <( printf '%s' "$DIRLS" ) ); do
             DIR=${D%/} # strip the trailing slash 
             printf "$DIR," >> $TEMPFILE # write the plain subdir name 
             packdir "$DIR" # recurse
         done
-    fi
+    }
     printf "," >> $TEMPFILE  # mark the start of files section 
 	# process the files 
 	for FILE in $( grep -v / <( printf '%s' "$DIRLS" ) ); do
@@ -102,8 +102,8 @@ function helpmsg {
 	printf "\t%s\n" \
 		'-b | --b64 : test for base64 encoded files' \
 		'-h | --help : print this text' \
+        '-i | --ignore : process also subdirectories' \
 		'-q | --quiet : turn off the final summary' \
-		'-r | --recurse : process also subdirectories' \
 		'-v | --verbose : detailed reporting' \
 		'-x | --hex : test for hexadecimal files' \
 		'-z | --zstd : use zstd compression instead of lzma' >&2
@@ -121,8 +121,8 @@ while getopts hbxqrvz-: OPT; do
  case "$OPT" in
 	b | b64 ) B64TEST=0;;
 	h | help ) helpmsg;;
+    i | ignore ) IGNORE=0;;
 	q | quiet ) QUIET=0;;
-	r | recurse ) RECURSE=0;;
 	v | verbose ) VERBOSE=0;; 
 	x | hex ) HEXTEST=0;;
   	z | zstd ) COMPRESSOR=zstd;; #alternative compressor and its extension

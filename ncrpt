@@ -104,13 +104,12 @@ function processdir {
 	# iterate through the listing
 	for ITEM in $(ls -AL $1); do
 		local IND="$1/$ITEM" # append $ITEM to $INDIR path
-   		if [ -d "$IND" ]; then  # recursively process existing subdirectory?
-			if [ -n "$RECURSE" ]; then  # just push ITEM onto paths, no changing of directories
-				processdir $IND "$2/$ITEM" "$3/$ITEM" &
-			fi
-			continue # either processed or ignored this subdir now
-		fi
-   		[ -f "$IND" ] && processfile $IND "$2/$ITEM" "$3/$ITEM" & # only process genuine file now
+   		if [ -d "$IND" ]; then  # subdirectory?
+			[ -n "$IGNORE" ] && continue; 
+			processdir $IND "$2/$ITEM" "$3/$ITEM" & # push ITEM onto paths
+        else # process only genuine file
+       		[ -f "$IND" ] && processfile $IND "$2/$ITEM" "$3/$ITEM" & 
+        fi
 	done
 	wait
 } # end of processdir
@@ -134,34 +133,31 @@ function updatedir {
 		local OD=$3/$ITEM # and corresponding $outdir path
 
    		if [ -d "$ID" ]; then  # process existing subdirectory?
-			if [ -n "$RECURSE" ]; then # but only when recursing
-				[ -d "$OD" ] || { # here matching dir does not exist
-					printf " A: $ID\n" # so add it
-					# just push ITEM onto paths 
-					processdir $ID $2/$ITEM $OD &
-					continue
-				}
-				# test the dirs modification times
-				# note that -nt only works for additions/deletions to dirs			
-				if [ $(stat -c%Y $ID) -gt $(stat -c%Y $OD) ]; then 
-					printf " U: $ID\n" # so update it
-					updatedir $ID $2/$ITEM $OD &
-					continue
-				fi
-				continue # up to date dir
-			fi
-			continue # not recursing, ignore this subdir 
+			[ -n "$IGNORE" ] && continue; # not recursing, ignore this subdir
+			[ -d "$OD" ] || { # here matching dir does not exist
+				printf " A: $ID\n" # so add it					
+				processdir $ID $2/$ITEM $OD & # push ITEM onto paths 
+				continue
+			}
+			# test the dirs modification times
+			# note that -nt only works for additions/deletions to dirs			
+			[ $(stat -c%Y $ID) -gt $(stat -c%Y $OD) ] && { 
+				printf " U: $ID\n" # so update it
+				updatedir $ID $2/$ITEM $OD &
+				continue
+            }
+			continue # up to date dir
 		fi
-   		[ -f "$ID" ] || continue # only process genuine files now 
-		[ -e "$OD" ] || { # here $OD file does not exist
+   		[ -f "$ID" ] || continue; # ignore if not genuine file 
+		[ -e "$OD" ] || { # $OD file does not exist
 			printf "   a: $ID\n" # so add it
 			processfile $ID $2/$ITEM $OD  
 			continue
 		}
-		if [ "$ID" -nt "$OD" ]; then  # here the input file is newer 
+		[ "$ID" -nt "$OD" ] && {  # here the input file is newer 
 			printf "   u: $ID\n" # so update it
    			processfile $ID $2/$ITEM $OD  
-		fi # else just skip it
+        } # else just skip it
 	done
 	wait
 } # end of updatedir
@@ -190,17 +186,15 @@ function cleandir {
 		local OD=$3/$ITEM # and the examined $OUTDIR path
 
    		if [ -d "$OD" ]; then  # process existing subdirectory?
-			if [ -n "$RECURSE" ]; then # but only when recursing
-				[ -d "$ID" ] || { # here matching $INDIR dir does not exist
-					printf " D: $OD $KD\n" # so remove it 
-					rm -rf "$OD" "$KD" &
-					continue
-				}			
-				cleandir $ID $KD $OD &  # otherwise recurse
-			fi
-			continue # not recursing, ignore this subdir 
+			[ -n "$IGNORE" ] && continue; # not recursing, ignore this subdir 
+			[ -d "$ID" ] || { # here matching $INDIR dir does not exist
+				printf " D: $OD $KD\n" # so remove it 
+				rm -rf "$OD" "$KD" &
+				continue
+			}			
+			cleandir $ID $KD $OD &  # descend
 		fi
-   		[ -f "$OD" ] || continue # only process genuine files now 
+   		[ -f "$OD" ] || continue; # only process genuine files now 
 		[ -e "$ID" ] || { # here $ID file does not exist
 			printf "   d: $OD $KD.*\n" # so delete them
 			rm $OD $KD.* 
@@ -218,8 +212,8 @@ function helpmsg {
 		'-b | --b64 : test for base64 encoded files' \
 		'-c | --cleanup : do deletions in the archive' \
 		'-h | --help : print this text' \
+        '-i | --ignore : ignore subdirectories' \
 		'-q | --quiet : turn off the final summary' \
-		'-r | --recurse : process also subdirectories' \
 		'-u | --update : update' \
 		'-v | --verbose : detailed reporting' \
 		'-x | --hex : test for hexadecimal files' \
@@ -239,8 +233,8 @@ while getopts hbcxqruvz-: OPT; do
 	b | b64 ) B64TEST=0;;
 	c | clean ) CLEAN=0;; 
 	h | help ) helpmsg;;
+    i | ignore ) IGNORE=0;;
 	q | quiet ) QUIET=0;;
-	r | recurse ) RECURSE=0;;
 	u | update ) UPDATE=0;;
 	v | verbose ) VERBOSE=0;; 
 	x | hex ) HEXTEST=0;;
