@@ -47,7 +47,7 @@ Whether the executables were created by local compilation or just pulled from th
 
 #### `cp symcrypt hexcheck hexify ncrpt dcrpt pack unpack keygen crptest packtest ~/bin`
 
-A good reason to perform local compilation is if it is suspected that the github binaries may have been compromised or when on a different machine architecture. This step should be repeated whenever some programs and scripts have changed, such as after performing a new  `git pull`.
+A good reason to perform local compilation is if it is suspected that the `github` binaries may have been compromised or when on a different machine architecture. This step should be repeated whenever some programs and scripts have changed, such as after performing a new  `git pull`.
 
 ### `sudo ./uninstall`
 
@@ -154,11 +154,15 @@ Is the inverse of `pack`. It decrypts, selects the right decompression methods, 
 
 ## Background Scripts and Programs (not needed by the user)
 
+`xorfork` (rust executable)
+The 'workhorse' of the encryption. 
+Reads `stdin`, writes automatically generated random `keyfile` and also writes encrypted data to `stdout`. 
+
 `symcrypt` (rust executable)  
-The 'workhorse' of the encryption. Applies fast symmetric XOR encryption (or decryption). It `XOR`s together two files of any kind but they must have the same length. The ordering of the two input files does not matter.
+The inverse of `xorfork`. Reads `stdin` and random `keyfile`, writes decrypted data to `stdout`. Applies fast symmetric XOR decryption (or encryption). The two input files of the same lengths are `XOR`ed together. This is a symmetric operation, so the ordering of the two input files does not matter.
 
 `hexcheck` (rust executable)  
-is invoked by `pack -x`. It recognises hexadecimal (token) files and packs them to binary, which exactly halves them in size. Hexadecimal files should be an even number of bytes long and only contain (0-9,a-f) ascii characters. There are a few allowed  exceptions: upper case A-F are accepted but when converted back, they will always end up in lower case. Spaces and newlines just get deleted. This tolerant policy may result in some differences being reported between the original and the reconstructed files. Then it is best to replace the original file with its cleaned up, reconstructed version.
+is invoked by `pack -x`. It recognises hexadecimal (token) files and packs them to binary, which exactly halves them in size. Hexadecimal files should be an even number of bytes long and only contain (0-9,a-f) `ascii` characters. There are a few allowed  exceptions: upper case A-F are accepted but when converted back, they will always end up in lower case. Spaces and newlines just get deleted. This tolerant policy may result in some differences being reported between the original and the reconstructed files. Then it is best to replace the original file with its cleaned up, reconstructed version.
 
 `hexify` (rust executable)  
 is invoked by `unpack` to unpack the binary files back to their original hexadecimal form. In other words, it carries out an inverse operation to `hexcheck` above.
@@ -206,7 +210,9 @@ This will update only the file(s) that have changed. What may come as a surprise
 
 Note that TokenCrypt does not leave any such large hidden footprints on your filesystem.
 
-## Releases Log
+## Releases Log (the latest first)
+
+**19-Oct-22** - Release 1.0.8. More rustification! New `xorfork` now encrypts and generates the key file all in one, which allowed some streamlining and simplification of `pack` and `unpack` scripts.
 
 **18-Oct-22** - Release 1.0.7. As a precaution against losing subdirectories, recursive descent is now deployed by default. Option `-i` or `--ignore` now replaces it with the opposite effect: to create just a flat archive of the top level files.
 
