@@ -8,12 +8,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: actions-rs/toolchain@v1    
+    - uses: actions-rs/toolchain@v2    
       with:
         toolchain: stable
     - run: |
         sudo ./install
-        crptest testing >> test.log
+        crptest testing > test.log
         echo >> test.log
         packtest testing >> test.log
             
