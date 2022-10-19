@@ -8,11 +8,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: actions-rs/toolchain@v2    
+    - uses: actions-rs/toolchain@v1    
       with:
         toolchain: stable
     - run: |
-        sudo ./install
+        install
         crptest testing > test.log
         echo >> test.log
         packtest testing >> test.log
