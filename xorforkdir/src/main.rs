@@ -1,4 +1,4 @@
-use std::io::{BufRead, BufWriter, Error, Read, Write};
+use std::io::{BufRead, BufWriter, Read, Write};
 use std::{env, fs::File};
 
 const USAGE: &str = "usage: xorfork <infile keyfile >outfile";
@@ -16,23 +16,23 @@ pub fn progarg() -> String {
 
 /// xorfork reads from stdin
 /// and writes encrypted data to stdout and keyfile.
-fn main() -> Result<(), Error> {
+fn main() -> Result<(), std::io::Error> {
     let keyname = &progarg(); 
-    let ranbytes = File::open("/dev/urandom")?.bytes(); 
+    let mut ranbytes = File::open("/dev/urandom")?.bytes(); 
     let mut keywriter = BufWriter::new(File::create(keyname)?);
     let mut lockin = std::io::stdin().lock();
     let mut bufout = Vec::new();
     let mut lockout = std::io::stdout().lock();
     let mut bufkey = Vec::new();
 
-    for b in ranbytes {
+    loop {
         let bufin = lockin.fill_buf()?;
         let length = bufin.len();
         if bufin.is_empty() { break; }; 
-        let keybyte = b?;
         for inbyte in bufin.bytes() { 
+            let keybyte = ranbytes.next().unwrap()?; 
             bufout.push(inbyte?^keybyte);
-            bufkey.push(keybyte);
+            bufkey.push(keybyte)
         }
         lockin.consume(length);
         keywriter.write_all(&bufkey)?;

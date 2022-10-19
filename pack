@@ -95,7 +95,7 @@ function packfile {
 	[ -e "_$FILENAME.cmp" ] && rm _$FILENAME.cmp; 
 } # end of packfile
 
-function usage { printf "Usage: $PROGN [-h][-b][-x][-q][-r][-v][-z] indir keyfile outfile\n" >&2; }
+function usage { printf "Usage: $PROGN [-h][-b][-x][-q][-r][-v][-z] indir indexfile keyfile outfile\n" >&2; }
 
 function helpmsg {
 	usage
@@ -141,20 +141,16 @@ shift $((OPTIND-1)) # remove parsed options and args from $@ list
 	printf "$PROGN: input directory '$1' not found!\n" >&2
 	exit 2
 }
-[ -z "$2" ] && { 
-	printf "$PROGN: the second argument (keyfile) is missing!\n" >&2
-	exit 2
-}
-[ -e "$2" ] && {
-	printf "$PROGN: keyfile '$2' already exists!\n" >&2
-	exit 2
-}
-[ -z "$3" ] && { 
-	printf "$PROGN: the third argument (outfile) is missing!\n" >&2
+[ -e "$2" ] && { 
+	printf "$PROGN: the second argument '$2' (indexfile) already exists!\n" >&2
 	exit 2
 }
 [ -e "$3" ] && {
-	printf "$PROGN: outfile '$3' already exists!\n" >&2
+	printf "$PROGN: the third argument '$3' (keyfile) already exists!\n" >&2
+	exit 2
+}
+[ -e "$4" ] && {
+	printf "$PROGN: the fourth argument '$4' (outfile) already exists!\n" >&2
 	exit 2
 }
 
@@ -172,13 +168,13 @@ fi
 
 # name the verified global parameters
 INDIR=${1%/} # strip any trailing /
-KEYFILE=$2
-TEMPFILE=`pwd`/_tmp.tmp
+INDEXFILE=`pwd`/_idx.tmp
+OUTFILE=`pwd`/_out.tmp
 printf "$PROGN: compressing directory '$INDIR'\n" 
-printf "$INDIR," > $TEMPFILE # record the indir path/name
+printf "$INDIR," > $INDEXFILE # record the indir path/name
 packdir "$INDIR" # pack the directory
 printf "$PROGN: encrypting into file '$3'\n"           
-xorfork < $TEMPFILE $KEYFILE > $3 # encrypt 
+xorfork < $TEMPFILE $3 > $4 # encrypt 
 rm $TEMPFILE # remove the temporary archive file
 
 # optional final report
