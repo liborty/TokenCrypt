@@ -1,4 +1,4 @@
-crptest run on: 19.10.22 at 08:07:37 UTC
+crptest run on: 19.10.22 at 08:23:19 UTC
 ncrpt: encrypting 'testing', using 2 cores
 ncrpt: testing 169382 => testingcrypt 144188 (85.13 %)
 ncrpt: keys are in 'testingkey'
@@ -6,7 +6,7 @@ dcrpt: decrypting dirs 'testingcrypt' and 'testingkey' into 'testingorg'
 dcrpt: testingcrypt 144188 (85.13 %) => testingorg: 169382
 crptest: 'testing' and 'testingorg' are identical
 
-packtest run on: 19.10.22 at 08:07:37 UTC
+packtest run on: 19.10.22 at 08:23:19 UTC
 pack: compressing directory 'testing'
 pack: encrypting into file 'testingcrp'
 pack: testing 169382 => testingcrp 136087 (80 %)
