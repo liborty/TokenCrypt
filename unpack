@@ -126,7 +126,6 @@ symcrypt < $1 $2 | {
 		    CR=$(( 100*${SIZES[2]}/${SIZES[0]} )) # calculate percentage rounded to two d.p.	
 		    printf "($CR %%) => ${SIZES[1]}: ${SIZES[0]}\n"
 	    fi
-	# compressed size x 10^5, printed as xx.xx% 
 	printf "$PROGN: decrypted and upacked '$1' into '$DIRNAME'\n" >&2
     fi
 }

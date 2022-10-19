@@ -177,10 +177,8 @@ TEMPFILE=`pwd`/_tmp.tmp
 printf "$PROGN: compressing directory '$INDIR'\n" 
 printf "$INDIR," > $TEMPFILE # record the indir path/name
 packdir "$INDIR" # pack the directory
-printf "$PROGN: writing keyfile '$KEYFILE'\n"
-keygen $TEMPFILE > $KEYFILE # write the keyfile of the same size
 printf "$PROGN: encrypting into file '$3'\n"           
-symcrypt < $TEMPFILE $KEYFILE > $3 # encrypt 
+xorfork < $TEMPFILE $KEYFILE > $3 # encrypt 
 rm $TEMPFILE # remove the temporary archive file
 
 # optional final report

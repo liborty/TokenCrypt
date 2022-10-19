@@ -13,11 +13,8 @@ pub fn progarg() -> String {
         _ => panic!("Too many arguments!\n{USAGE}"),
     }
 }
-
-/// This utility reads text from stdin.
-/// It fails on the first non-hexadecimal character.
-/// Otherwise all verified hexadecimal data is packed
-/// and written to stdout as binary, two hex chars per byte.
+/// reads stdin and a specified input file
+/// writes xor-ed data to stdout
 fn main() -> Result<(), Error> {
     let keyname = &progarg();
     let mut keyreader = BufReader::new(File::open(keyname)?);

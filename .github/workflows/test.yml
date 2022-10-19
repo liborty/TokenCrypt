@@ -10,22 +10,13 @@ jobs:
     - uses: actions/checkout@v3
     - uses: actions-rs/toolchain@v1    
       with:
-        toolchain: stable 
+        toolchain: stable
     - run: |
-        cargo install --path crypt --root . symcrypt
-        cargo install --path hex2bin --root . hexcheck
-        cargo install --path bin2hex --root . hexify
-    - run: |
-        strip bin/*
-        chmod 755 bin/*
-        mv bin/* .
-        rmdir bin
-        sudo cp symcrypt hexcheck hexify keygen ncrpt dcrpt pack unpack crptest packtest /usr/local/bin
-        printf "Installed TokenCrypt utilities in /usr/local/bin\n" > test.log
+        sudo ./install
         crptest testing >> test.log
         echo >> test.log
         packtest testing >> test.log
-    
+            
     - name: commitlog
       run: |
         git config user.email "457124+liborty@users.noreply.github.com"

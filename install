@@ -2,16 +2,24 @@
 # invoke as: sudo ./install
 # installs TokenCrypt utilities in /usr/local/bin
 
-cargo install --path crypt --root . symcrypt
-cargo install --path hex2bin --root . hexcheck
-cargo install --path bin2hex --root . hexify
+RUSTFLAGS='--debug=0 --opt-level=3'
+RUSTS='xorfork symcrypt hexcheck hexify' 
+SCRIPTS='keygen ncrpt dcrpt pack unpack crptest packtest'
 
-strip bin/*
-chmod 755 bin/*
-mv bin/* .
-rmdir bin
+for F in $RUSTS; do
+    [ ${F}dir/src/main.rs -nt bin/$F ] && {
+        cargo install -q -f --path ${F}dir --root .
+        strip bin/$F
+        chmod 755 bin/$F
+        sudo cp bin/$F /usr/local/bin
+        printf "Copied new rust executable bin/$F to /usr/local/bin\n" 
+    } 
+done
 
-PROGS='symcrypt hexcheck hexify keygen ncrpt dcrpt pack unpack crptest packtest'
-chmod 755 $PROGS
-sudo cp $PROGS /usr/local/bin
-printf "Installed TokenCrypt utilities in /usr/local/bin\n"
+for F in $SCRIPTS; do
+    [ $F -nt /usr/local/bin/$F ] && {
+        chmod 755 $F
+        sudo cp $F /usr/local/bin 
+        printf "Copied new script $F in /usr/local/bin\n"  
+    } 
+done
