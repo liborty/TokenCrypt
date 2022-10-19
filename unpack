@@ -12,7 +12,7 @@ function importdir {
     cd $1
 	# create subdirectories
     while true; do
-        read -r -d ',' -u 3 NAME
+        read -r -d ',' NAME
         [ -z "$NAME" ] && break; # no more subdirs
 	    mkdir "$NAME" || {
 		    printf "$PROGN importdir: failed to create output directory '$1/$NAME'!\n" >&2
@@ -22,18 +22,19 @@ function importdir {
     done
     # create the files
     while true; do
-        read -r -N 1 -u 3 CH
+        read -r -N 1 CH
         [ "$CH" = ',' ] && break; # no more files
-        read -r -d ',' -u 3 NAME
-        read -r -d ',' -u 3 FSIZE
+        read -r -d ',' NAME
+        read -r -d ',' FSIZE
         # u (uncomressed) could be for a listed extension, 
         # or because all compression attempts have failed to gain
+        # read from stdin and write the file data as it is
 	    [ "$CH" = 'u' ] && {
-            head -c $FSIZE <&3 > $NAME # read and write the file data
+            head -c $FSIZE > $NAME 
 		    continue
 	    }
         # apply code specified decompression to a compressed file
-	    head -c $FSIZE <&3 | case "$CH" in
+	    head -c $FSIZE | case "$CH" in # read from piped in stdin
 		    h ) hexify;;
 		    b ) base64 -w 0;;
 		    i ) lzma -d;;
@@ -101,35 +102,31 @@ if [ -z $( which hexify ) ]; then
 	printf "$PROGN warning, hexify is not installed, will not unpack .hex files\n" >&2
 fi
 
-symcrypt < $1 $2 > _$1.dcr # decrypt input file
-
-# Globally open the decrypted file as file descriptor 3
-exec 3<_$1.dcr || {
-	printf "$PROGN: key file '$1.dcr' failed to open for reading\n" >&2
-	exit 2	
-}
-# read the name of the output dir (comma separated)
-read -r -d ',' -u 3 DIRNAME
-[ -e "$DIRNAME" ] && { 
-	printf "$PROGN: output directory '$DIRNAME' already exists!\n" >&2
-	exit 2
-}
-mkdir $DIRNAME || {
+# decrypt the archive and pipe to importdir
+symcrypt < $1 $2 | { 
+    read -r -d ',' DIRNAME
+    [ -e "$DIRNAME" ] && { 
+	    printf "$PROGN: output directory '$DIRNAME' already exists!\n" >&2
+	    exit 2
+    }
+    mkdir $DIRNAME || {
 	printf "$PROGN: failed to create output directory '$DIRNAME'!\n" >&2
 	exit 2
-}
-printf "$PROGN: unpacking into $DIRNAME\n" >&2
-importdir $DIRNAME
-rm _$1.dcr # tidy up the decrypted file
+    }
+    printf "$PROGN: unpacking into $DIRNAME\n" >&2
+    importdir $DIRNAME
 
-# optional final report
-if ! [ $QUIET ]; then
-	SIZES=( `du -hbs $DIRNAME $1` ) # array of size,dir,size,file
-	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} "
-	if [ ${SIZES[0]} = ${SIZES[2]} ]; then printf "(100 %%) => ${SIZES[1]} ${SIZES[0]}\n"; else
-		CR=$(( 100*${SIZES[2]}/${SIZES[0]} )) # calculate percentage rounded to two d.p.	
-		printf "($CR %%) => ${SIZES[1]}: ${SIZES[0]}\n"
-	fi
+    # optional final report
+    if ! [ $QUIET ]; then
+	    SIZES=( `du -hbs $DIRNAME $1` ) # array of size,dir,size,file
+	    printf "$PROGN: ${SIZES[3]} ${SIZES[2]} %s"
+	    if [ ${SIZES[0]} = ${SIZES[2]} ]; then 
+            printf "(100 %%) => ${SIZES[1]} ${SIZES[0]}\n"
+        else
+		    CR=$(( 100*${SIZES[2]}/${SIZES[0]} )) # calculate percentage rounded to two d.p.	
+		    printf "($CR %%) => ${SIZES[1]}: ${SIZES[0]}\n"
+	    fi
 	# compressed size x 10^5, printed as xx.xx% 
 	printf "$PROGN: decrypted and upacked '$1' into '$DIRNAME'\n" >&2
-fi
+    fi
+}
