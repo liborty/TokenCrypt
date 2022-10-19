@@ -12,7 +12,7 @@ jobs:
       with:
         toolchain: stable
     - run: |
-        install
+        source ./install
         crptest testing > test.log
         echo >> test.log
         packtest testing >> test.log
