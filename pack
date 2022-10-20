@@ -180,11 +180,10 @@ OUTFILE=`pwd`/_out.tmp
 printf "$PROGN: compressing directory '$INDIR'\n" 
 printf "$INDIR," > $INDEXFILE # record the indir path/name
 packdir "$INDIR" # pack the directory into INDEXFILE and OUTFILE
-printf "$PROGN: compressing and encrypting index file\n"
-# compress indexfile with lzma and encrypt
+# compress and encrypt indexfile
 lzma -c -z -q $INDEXFILE | xorfork $2 > $4 
-printf "$PROGN: encrypting output file\n"           
-xorfork < $OUTFILE $3 >> $4 # encrypt outfile, append keys 
+# encrypt output file append to keys           
+xorfork < $OUTFILE $3 >> $4 
 rm $INDEXFILE $OUTFILE # remove the temporary files
 
 # optional final report

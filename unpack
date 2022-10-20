@@ -134,7 +134,7 @@ head -c $INDEXSIZE $3 | symcrypt $1 | lzma -d | {
 	printf "$PROGN: failed to create output directory '$DIRNAME'!\n" >&2
 	exit 2
     }
-    printf "$PROGN: unpacking into $DIRNAME\n" >&2
+    printf "$PROGN: restoring directory '$DIRNAME'\n"
     importdir $DIRNAME
     rm $INFILE # clean up
 
@@ -148,6 +148,5 @@ head -c $INDEXSIZE $3 | symcrypt $1 | lzma -d | {
 		    CR=$(( 100*${SIZES[2]}/${SIZES[0]} )) # calculate percentage rounded to two d.p.	
 		    printf "($CR %%) => ${SIZES[1]}: ${SIZES[0]}\n"
 	    fi
-	printf "$PROGN: decrypted and upacked '$1' '$2' '$3' into '$DIRNAME'\n" >&2
     fi
 }
