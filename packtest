@@ -22,22 +22,25 @@ case $# in
 esac
 
 # make up some names for the files and directory to be produced by this test
-KEYFILE="$1"key
-OUTFILE="$1"crp
-ORGDIR="$1"org
+INDXFILE=_"$1"idx
+OUTFILE=_"$1"crp
+KEYFILE=_"$1"key
+ORGDIR=_"$1"org
 
 # check that output files do not already exist
-[ -f "$KEYFILE" ] && {
-	printf "$PROGN: '$KEYFILE' already exists here!\n" >&2;	exit 2; }
+[ -f "$INDXFILE" ] && {
+	printf "$PROGN: '$INDXFILE' already exists here!\n" >&2; exit 2; }
 [ -f "$OUTFILE" ] && { 
 	printf "$PROGN: '$OUTFILE' already exists here!\n" >&2; exit 2; }
+[ -f "$KEYFILE" ] && {
+	printf "$PROGN: '$KEYFILE' already exists here!\n" >&2;	exit 2; }
 [ -d "$ORGDIR" ] && { 
 	printf "$PROGN: '$ORGDIR' already exists here!\n" >&2; exit 2; }
 
 # encrypt and decrypt
-pack -xb $1 $KEYFILE $OUTFILE
+pack -xb $1 $INDXFILE $OUTFILE $KEYFILE
 mv $1 $ORGDIR
-unpack $OUTFILE $KEYFILE
+unpack $INDXFILE $OUTFILE $KEYFILE
 diff -bqr $1 $ORGDIR && printf "$PROGN: '$1' and '$ORGDIR' are identical\n"
-rm -rf $1 $OUTFILE $KEYFILE >&2
+rm -rf $1 $INDXFILE $OUTFILE $KEYFILE >&2
 mv $ORGDIR $1

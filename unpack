@@ -28,13 +28,13 @@ function importdir {
         read -r -d ',' FSIZE
         # u (uncomressed) could be for a listed extension, 
         # or because all compression attempts have failed to gain
-        # read from stdin and write the file data as it is
+        # read from infile (fd 3) and write the file data as is
 	    [ "$CH" = 'u' ] && {
-            head -c $FSIZE > $NAME 
+            head -c $FSIZE <&3 > $NAME 
 		    continue
 	    }
         # apply code specified decompression to a compressed file
-	    head -c $FSIZE | case "$CH" in # read from piped in stdin
+	    head -c $FSIZE <&3 | case "$CH" in # read from piped in stdin
 		    h ) hexify;;
 		    b ) base64 -w 0;;
 		    i ) lzma -d;;
@@ -49,7 +49,7 @@ function importdir {
     cd ..
 } # end of importdir
 
-function usage { printf "Usage: $PROGN -[h][q][v] infile keyfile\n" >&2; }
+function usage { printf "Usage: $PROGN -[h][q][v] indexfile infile keyfile\n" >&2; }
 function helpmsg {
 	usage
 	printf "\t%s\n" \
@@ -60,6 +60,7 @@ function helpmsg {
 }
 
 # Main starts here ###########################################################
+
 # get options, including long options, extracted as arg to the last option '-'
 while getopts dhqv-: OPT; do
  if [ "$OPT" = "-" ]; then   # long option: reset OPT and OPTARG
@@ -77,14 +78,25 @@ while getopts dhqv-: OPT; do
 done
 shift $((OPTIND-1)) # remove already parsed options and args from $@ list
 
-# Globally validate the input file
+# Validate number of program arguments
+[ "$#" -ne 3 ] && {
+    printf "$PROGN expected three arguments, "$#" given!\n" >&2
+    exit 2
+}
+
+# Globally validate the index file
 [ -e "$1" ] || { 
-	printf "$PROGN: inputfile '$1' not found\n" >&2
+	printf "$PROGN: indexfile '$1' not found\n" >&2
+	exit 2
+}
+# Globally validate the input file
+[ -e "$2" ] || { 
+	printf "$PROGN: inputfile '$2' not found\n" >&2
 	exit 2
 }
 # Globally validate the keyfile
-[ -e "$2" ] || { 
-	printf "$PROGN: keyfile '$2' not found\n" >&2
+[ -e "$3" ] || { 
+	printf "$PROGN: keyfile '$3' not found\n" >&2
 	exit 2
 }
 
@@ -102,8 +114,17 @@ if [ -z $( which hexify ) ]; then
 	printf "$PROGN warning, hexify is not installed, will not unpack .hex files\n" >&2
 fi
 
-# decrypt the archive and pipe to importdir
-symcrypt < $1 $2 | { 
+INDEXSIZE=`stat -c%s $1` # get size of indexfile
+INFILE=_infile.tmp # temporary file for decrypted files data input
+# decrypt infile with tail of keyfile
+tail -c +$(( "$INDEXSIZE" + 1 )) $3 | symcrypt $2 > $INFILE
+# Open the infile as file descriptor 3
+exec 3<$INFILE || {
+	printf "$PROGN: infile file '$INFILE' failed to open for reading\n" >&2
+	exit 2	
+}
+# decrypt indexfile with head of keyfile, lzma uncompress, and pipe to importdir
+head -c $INDEXSIZE $3 | symcrypt $1 | lzma -d | { 
     read -r -d ',' DIRNAME
     [ -e "$DIRNAME" ] && { 
 	    printf "$PROGN: output directory '$DIRNAME' already exists!\n" >&2
@@ -115,10 +136,11 @@ symcrypt < $1 $2 | {
     }
     printf "$PROGN: unpacking into $DIRNAME\n" >&2
     importdir $DIRNAME
+    rm $INFILE # clean up
 
     # optional final report
     if ! [ $QUIET ]; then
-	    SIZES=( `du -hbs $DIRNAME $1` ) # array of size,dir,size,file
+	    SIZES=( `du -hbs $DIRNAME $3` ) # array of size,dir,size,file
 	    printf "$PROGN: ${SIZES[3]} ${SIZES[2]} %s"
 	    if [ ${SIZES[0]} = ${SIZES[2]} ]; then 
             printf "(100 %%) => ${SIZES[1]} ${SIZES[0]}\n"
@@ -126,6 +148,6 @@ symcrypt < $1 $2 | {
 		    CR=$(( 100*${SIZES[2]}/${SIZES[0]} )) # calculate percentage rounded to two d.p.	
 		    printf "($CR %%) => ${SIZES[1]}: ${SIZES[0]}\n"
 	    fi
-	printf "$PROGN: decrypted and upacked '$1' into '$DIRNAME'\n" >&2
+	printf "$PROGN: decrypted and upacked '$1' '$2' '$3' into '$DIRNAME'\n" >&2
     fi
 }

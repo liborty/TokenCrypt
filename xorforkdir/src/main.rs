@@ -1,7 +1,7 @@
 use std::io::{BufRead, BufWriter, Read, Write};
 use std::{env, fs::File};
 
-const USAGE: &str = "usage: xorfork <infile keyfile >outfile";
+const USAGE: &str = "usage: xorfork <infile outfile >keyfile";
 
 /// Processes and returns one program argument
 pub fn progarg() -> String {
@@ -17,30 +17,29 @@ pub fn progarg() -> String {
 /// xorfork reads from stdin
 /// and writes encrypted data to stdout and keyfile.
 fn main() -> Result<(), std::io::Error> {
-    let keyname = &progarg(); 
+    let outname = &progarg(); 
     let mut ranbytes = File::open("/dev/urandom")?.bytes(); 
-    let mut keywriter = BufWriter::new(File::create(keyname)?);
-    let mut lockin = std::io::stdin().lock();
+    let mut outwriter = BufWriter::new(File::create(outname)?);
     let mut bufout = Vec::new();
-    let mut lockout = std::io::stdout().lock();
     let mut bufkey = Vec::new();
-
+    let mut lockin = std::io::stdin().lock();
+    let mut lockout = std::io::stdout().lock();
     loop {
-        let bufin = lockin.fill_buf()?;
+        let bufin = lockin.fill_buf()?; // read stdin
+        if bufin.is_empty() { break; }; // input finished
         let length = bufin.len();
-        if bufin.is_empty() { break; }; 
-        for inbyte in bufin.bytes() { 
-            let keybyte = ranbytes.next().unwrap()?; 
-            bufout.push(inbyte?^keybyte);
-            bufkey.push(keybyte)
+        for inbyte in bufin.bytes() { // iterate through input bytes
+            let keybyte = ranbytes.next().unwrap()?; // get random byte
+            bufout.push(inbyte?^keybyte); // XOR to output file buffer
+            bufkey.push(keybyte) // random byte to stdout buffer
         }
-        lockin.consume(length);
-        keywriter.write_all(&bufkey)?;
-        bufkey.clear();  
-        lockout.write_all(&bufout)?;
-        bufout.clear();
+        lockin.consume(length); // consume the exact input bytes
+        outwriter.write_all(&bufout)?; // write xored data to output file
+        bufout.clear(); // empty output file buffer for reuse 
+        lockout.write_all(&bufkey)?; // write random key data to stdout
+        bufkey.clear(); // empty stdout buffer for reuse
     }
-    keywriter.flush()?;
-    lockout.flush()?;
+    outwriter.flush()?; // flush any leftovers to file
+    lockout.flush()?;   // flush any leftovers to stdout
     Ok(())
 }

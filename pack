@@ -16,18 +16,18 @@ function packdir {
     [ -n "$IGNORE" ] || {
         for D in $( grep / <( printf '%s' "$DIRLS" ) ); do
             DIR=${D%/} # strip the trailing slash 
-            printf "$DIR," >> $TEMPFILE # write the plain subdir name 
+            printf "$DIR," >> $INDEXFILE # write the plain subdir name 
             packdir "$DIR" # recurse
         done
     }
-    printf "," >> $TEMPFILE  # mark the start of files section 
+    printf "," >> $INDEXFILE  # mark the start of files section 
 	# process the files 
 	for FILE in $( grep -v / <( printf '%s' "$DIRLS" ) ); do
         local FSIZE=`stat -c%s $FILE`
         [ -z "$FSIZE" ] && continue; # ignore zero sized files
         packfile "$FILE" "$FSIZE"
 	done
-    printf "," >> $TEMPFILE  # mark the end of this dir
+    printf "," >> $INDEXFILE  # mark the end of this dir
     cd ..
 } # end of packdir
 
@@ -44,9 +44,9 @@ function packfile {
     for KEEPEXT in "${NOCOMPRESS[@]}"; do
         if [ "$EX" = "$KEEPEXT" ]; then 
             # write u+filename,file size, to $TEMPFILE
-            printf "u$FILENAME,$2," >> $TEMPFILE
+            printf "u$FILENAME,$2," >> $INDEXFILE
             # write file contents
-            cat $FILENAME >> $TEMPFILE 
+            cat $FILENAME >> $OUTFILE 
 		    return
         fi
     done
@@ -86,16 +86,16 @@ function packfile {
 		} # else no general compression gain, keep the original INFILE and codes: u,h,b
 		
 	# write to $TEMPFILE
-    printf "$CH$FILENAME,%s," `stat -c%s $INFILE` >> $TEMPFILE
+    printf "$CH$FILENAME,%s," `stat -c%s $INFILE` >> $INDEXFILE
     
     # write possibly compressed file contents
-    cat $INFILE >> $TEMPFILE
+    cat $INFILE >> $OUTFILE
     # clean up  
 	[ -e "_$FILENAME.tmp" ] && rm _$FILENAME.tmp;
 	[ -e "_$FILENAME.cmp" ] && rm _$FILENAME.cmp; 
 } # end of packfile
 
-function usage { printf "Usage: $PROGN [-h][-b][-x][-q][-r][-v][-z] indir indexfile keyfile outfile\n" >&2; }
+function usage { printf "Usage: $PROGN [-h][-b][-x][-q][-r][-v][-z] indir indexfile outfile keyfile\n" >&2; }
 
 function helpmsg {
 	usage
@@ -111,6 +111,7 @@ function helpmsg {
 }
 
 # Main starts here ###########################################################
+
 # get options, including long options, extracted as arg to the last option '-'
 while getopts hbxqrvz-: OPT; do
  if [ "$OPT" = "-" ]; then   # long option: reset OPT and OPTARG
@@ -133,8 +134,14 @@ done
 shift $((OPTIND-1)) # remove parsed options and args from $@ list
 
 # Globally validate the program arguments
+
+[ "$#" -ne 4 ] && {
+    printf "$PROGN expected four arguments, "$#" given!\n" >&2
+    exit 2
+}
+
 [ -z "$1" ] && { 
-	printf "$PROGN: the first argument (indir) is missing!\n" >&2
+	printf "$PROGN: the first argument (input directory) is missing!\n" >&2
 	exit 2
 }
 [ -d "$1" ] || { 
@@ -146,11 +153,11 @@ shift $((OPTIND-1)) # remove parsed options and args from $@ list
 	exit 2
 }
 [ -e "$3" ] && {
-	printf "$PROGN: the third argument '$3' (keyfile) already exists!\n" >&2
+	printf "$PROGN: the third argument '$3' (outfile) already exists!\n" >&2
 	exit 2
 }
 [ -e "$4" ] && {
-	printf "$PROGN: the fourth argument '$4' (outfile) already exists!\n" >&2
+	printf "$PROGN: the fourth argument '$4' (keyfile) already exists!\n" >&2
 	exit 2
 }
 
@@ -172,14 +179,17 @@ INDEXFILE=`pwd`/_idx.tmp
 OUTFILE=`pwd`/_out.tmp
 printf "$PROGN: compressing directory '$INDIR'\n" 
 printf "$INDIR," > $INDEXFILE # record the indir path/name
-packdir "$INDIR" # pack the directory
-printf "$PROGN: encrypting into file '$3'\n"           
-xorfork < $TEMPFILE $3 > $4 # encrypt 
-rm $TEMPFILE # remove the temporary archive file
+packdir "$INDIR" # pack the directory into INDEXFILE and OUTFILE
+printf "$PROGN: compressing and encrypting index file\n"
+# compress indexfile with lzma and encrypt
+lzma -c -z -q $INDEXFILE | xorfork $2 > $4 
+printf "$PROGN: encrypting output file\n"           
+xorfork < $OUTFILE $3 >> $4 # encrypt outfile, append keys 
+rm $INDEXFILE $OUTFILE # remove the temporary files
 
 # optional final report
 if [ ! $QUIET ]; then
-	SIZES=( $( du -bs $3 $INDIR ) ) # array of size outfile size indir
+	SIZES=( $( du -bs $4 $INDIR ) ) # array of size keyfile size indir
 	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} => ${SIZES[1]} ${SIZES[0]} "
 	if [ ${SIZES[0]} = ${SIZES[2]} ]; then printf "(100 %%)\n";
 	else

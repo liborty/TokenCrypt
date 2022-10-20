@@ -156,10 +156,10 @@ Is the inverse of `pack`. It decrypts, selects the right decompression methods, 
 
 `xorfork` (rust executable)
 The 'workhorse' of the encryption. 
-Reads `stdin`, writes automatically generated random `keyfile` and also writes encrypted data to `stdout`. 
+Reads `stdin`, writes encrypted data to `outfile` and automatically generated random key data to `stdout`.
 
 `symcrypt` (rust executable)  
-The inverse of `xorfork`. Reads `stdin` and random `keyfile`, writes decrypted data to `stdout`. Applies fast symmetric XOR decryption (or encryption). The two input files of the same lengths are `XOR`ed together. This is a symmetric operation, so the ordering of the two input files does not matter.
+The inverse of `xorfork`. Reads `stdin` and random `keyfile`, writes decrypted data to `stdout`. Applies fast symmetric XOR decryption (or encryption). The two inputs of the same lengths are `XOR`ed together. This is a symmetric operation, so the two input sources can be swapped without affecting the results.
 
 `hexcheck` (rust executable)  
 is invoked by `pack -x`. It recognises hexadecimal (token) files and packs them to binary, which exactly halves them in size. Hexadecimal files should be an even number of bytes long and only contain (0-9,a-f) `ascii` characters. There are a few allowed  exceptions: upper case A-F are accepted but when converted back, they will always end up in lower case. Spaces and newlines just get deleted. This tolerant policy may result in some differences being reported between the original and the reconstructed files. Then it is best to replace the original file with its cleaned up, reconstructed version.
@@ -212,7 +212,7 @@ Note that TokenCrypt does not leave any such large hidden footprints on your fil
 
 ## Releases Log (the latest first)
 
-**20-Oct-22** - Release 1.1.0 Even safer and more compact. Fixed a bug in `xorfork`.
+**20-Oct-22** - Release 1.1.0 Even safer and more compact. Fixed a bug in `xorfork` and swapped its outputs, so it now writes output into `outfile` and key data to `stdout`. Converted `pack` and `unpack` to use three archive files for increased security.
 
 **19-Oct-22** - Release 1.0.8. More 'rustification'! New `xorfork` now encrypts and generates the key file all in one, which allowed some streamlining and simplification of `pack` and `unpack` scripts.
 
