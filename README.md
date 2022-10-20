@@ -4,50 +4,48 @@
 
 **Disclaimer:** use at your own risk! No warranties are given or implied. By downloading this software, you agree not to use it for unethical purposes.
 
-## Security Advice
+## Security Advice and Known Vulnerabilities
 
 `TokenCrypt` uses theoretically unbreakable symmetric encryption. However, the following practical precautions need to be followed:
 
-Runs only on systems where `/dev/urandom` returns truly random bytes. Better not use it for large archives immediately after reboot, as the OS may not have yet gathered enough physical randomness from user interactions. Or on 'headless' servers, where there are no mouse and keyboard interactions.
+Runs only on systems where `/dev/urandom` returns truly random bytes. Better not use it for large archives immediately after reboot, as the OS may not have yet gathered enough physical randomness from user interactions. Nor on 'headless' servers, where there are no mouse and keyboard interactions.
 
-The encryption keys and the compressed and encrypted files are written by `ncrpt` into two separate output directories with user specified names. They are restored by the use of `dcrpt`. This is suitable for local use only. For exports use `pack` (and `unpack`), which archive (and restore) the directory tree to/from three flat archive files. This option is more compact and significantly more secure in transit and storage.
+The encryption keys and the compressed and encrypted files are written by `ncrpt` into two separate output directories with user specified names. They are restored by the use of `dcrpt`. This is suitable for local use only. 
+
+For exports, use `pack` (and `unpack`), which archive (and restore) the directory tree to/from three flat archive files. This option is more compact and significantly more secure in transit and storage.
 
 Should the implicit association between these three files be lost or forgotten, then it will not be possible to reconstruct the original data! Therefore, it is recommended to record the chosen output names and to store them in a safe place, before ever deleting the original data.
 
 The encrypted archive files are just meaningless 'random' data and thus can be stored anywhere, even 'on the cloud'. The critical part is to prevent a potential eavesdropper from matching up these three files, as that is the only way to decrypt them. That is why they are not given related names automatically. Normally, the user should choose unrelated paths/names for them and keep them well separated. As with private keys in asymmetric encryption.
 
-## Known Vulnerabilities
-
-Previous versions had a vulnerability in as much as it was in theory possible to find a match somewhere on the internet between the `keyfile` and the `outfile`, based on the fact that they were both of the same size. Now it is much harder to guess the right combination of three different files, all three of different sizes. It goes without saying that their names and places should be unrelated. Still, it is probably best to treat the `keyfile` as a private key and not to upload it anywhere.
+Previous versions had a vulnerability in as much as it was in theory possible to find a match somewhere on the internet between the `keyfile` and the `outfile`, based on the fact that they were both of the same size. As of `v1.1.0`, it is much harder to guess the right combination of three different files, all three of different sizes, with different names and in different places (it goes without saying that their names and places should be unrelated). Still, it is probably best to treat the `keyfile` as a private key and not to upload it anywhere.
 
 ## Introduction
 
 It is not an objective of TokenCrypt to replace `git` and to keep the complete histories of everything, as that carries significant costs in complexity and storage. The quest for being totally foolproof is subject to the law of diminishing returns, as human foolishness generally knows no bounds. TokenCrypt is more akin to `borg`: an efficient archiver and backing up tool. The key difference, please excuse the pun, lies in TokenCrypt deploying more secure encryption and somewhat better compression as well. In its update mode, it only maintains the current version of the archive. Historical checkpoints are up to the user to create and keep, as and when required.
 
-Scripts `pack` and `unpack` read given input directory tree, containing any types of files. `ncrpt` creates two output directories, `pack` creates three flat archive files.
+Scripts `pack` and `ncrpt` read given input directory tree, containing any types of files: `ncrpt` creates two output directories, `pack` creates three flat archive files.
 
 Some already compressed files afford only minor further compression, if any. To save time, they are recognised simply by their well known extensions: `jpg, jpeg, mp4, zip, 7z, lz, zst, gz, tgz, bz2`, and their upper case versions.
 Files with these extensions are encrypted uncompressed.
 
-Given `-xb` options, `ncrpt` and `pack` scripts will recognise hexadecimal files * and base64 files respectively and convert them to more compact binary data. For hexadecimal files, this results in 50% compression. They then select the best final compression method for each individual file and finally securely encrypt them all.
+Given `-xb` options, `ncrpt` and `pack` scripts will recognise hexadecimal files (*) and base64 files respectively and convert them to more compact binary data. For hexadecimal files, this results in 50% compression. They then select the best final compression method for each individual file and finally securely encrypt them all.
 
-(* Internet security tokens usually consist of 32, 64 or more hexadecimal characters. They are increasingly used to facilitate secure access over the internet protocols to various Applications Programming Interfaces (APIs). Even git uses hexadecimal 'slugs'. Being plain text, they are easily transmitted but they need to be stored securely, that means strongly encrypted. Base64 encoding into printable characters is also generally used to encode binary data, for similar reasons.)
+(*) Internet security tokens usually consist of 32, 64 or more hexadecimal characters. They are increasingly used to facilitate secure access over the internet protocols to various Applications Programming Interfaces (APIs). Even git uses hexadecimal 'slugs'. Being plain text, they are easily transmitted but they need to be stored securely, that means strongly encrypted. Base64 encoding into printable characters is also generally used to encode binary data, for similar reasons.
 
-Hexadecimal security tokens, base64 files and other types of files may sometimes be all mixed up in one common directory. This is not the best practice but it can arise. It could involve much work trying to separate them all. `ncrpt` and `pack` cope with such mixed contents directories by
-applying data type recognition tests to each file individually. In this case, they do not rely on extension names, as that could lead to errors.
+Hexadecimal security tokens, base64 files and all other types of files may sometimes be mixed up in one common directory. This is not the best practice but it does arise. It could involve much work trying to separate them all. `ncrpt` and `pack` cope with such mixed contents directories by applying data type recognition tests to each file individually. In this case, they do not rely on extension names, as that could lead to errors.
 
 ## Installation
 
-This software was developed and tested under Linux and binaries are available in the repository. Installation from source needs Rust installed. Download or clone this repository and `cd` into it. Then, for complete fresh installation:
+This software was developed and tested under Linux and the latest binaries are available in the repository as a `release`. Installation from source needs Rust installed. Download or clone this repository and `cd` into it. Then, for complete fresh installation:
 
 ### `sudo ./install`
 
-This will locally compile four Rust  programs `xorfork`, `symcrypt`, `hexify` and `hexcheck` that have changed. Then everything new is installed into `/usr/local/bin`. The bash scripts are also installed, though, of course, they do not need any compilation. For those not having Rust installed, there are x86-64 binaries available in the 'releases' in the repository.
+This will locally compile four Rust  programs `xorfork`, `symcrypt`, `hexify` and `hexcheck`. Everything that may have changed is installed into `/usr/local/bin`. The bash scripts are also installed, though, of course, they do not need any compilation. For those that do not want to install Rust, there are x86-64 binaries available in the 'releases' in the repository.
 
-The Rust sources are also automatically compiled and tested at `github.com` - see the green badge at the top of this document.
-Whether the executables were created by local compilation or just pulled from the repository, this script copies them all from `.bin/` into `/usr/local/bin` for system-wide use.  Alternatively, they can be copied manually to any other `bin` directories that are included in the search path. This does not require `sudo` privileges.
+The Rust sources are also automatically compiled and tested at `github.com` - see the green badge at the top of this document. Whether the executables were created by local compilation or just pulled from the repository, this script copies them all from `./bin/` into `/usr/local/bin` for system-wide use.  Alternatively, they can be copied manually to any other `bin` directories that are included in the search path. That does not require `sudo` privileges.
 
-A good reason to perform local compilation is if it is suspected that the `github` binaries may have been compromised or when on a different machine architecture. This step should be repeated whenever some programs and scripts have changed, such as after performing a new  `git pull`.
+A good reason to perform local compilation is if it is suspected that the `github` binaries may have been compromised or when using a different machine architecture. This step should be repeated whenever some programs and scripts have changed, such as after performing a new  `git pull`.
 
 ### `sudo ./uninstall`
 
@@ -55,17 +53,17 @@ will delete previously installed programs and scripts. It can be used to enforce
 
 ## Dependencies
 
-`du` (disk usage) - standard tool which is normally part of Linux.
+`/dev/urandom` - standard source of truly random data.
+
+`du` (disk usage) - standard tool which is part of Linux.
 
 `base64` tool which is also normally pre-installed on Linux.
 
-`lzma` is the default compression. It is normally pre-installed. If not, install it with: `sudo apt-get install lzma`
+`lzma` is the default compression utility. It is normally pre-installed. If not, install it with: `sudo apt-get install lzma`
   
 `zstd` is an alternative compression, selectable with `-z` option to `ncrpt` and `pack`. It usually needs to be installed with: `sudo apt-get install zstd`
 
-`dcrpt` and `unpack` issue warnings if any of the necessary utilities are not installed. It is probably best to install them all.
-There is not much difference between `lzma` and `zstd` compressions but they each have their own fans. `lzma`
-appears to have slightly better compression rate and `zstd` is slightly faster and more controllable. Of course, to unpack/decrypt archives on a new machine, it must have the same compression/decompression utility installed, too.
+`dcrpt` and `unpack` issue warnings if any of the necessary utilities are not installed. It is probably best to install them all. There is not much difference between `lzma` and `zstd` compressions but they each have their own fans. `lzma` appears to have slightly better compression rate and `zstd` is slightly faster and more controllable. Of course, to unpack/decrypt archives on a new machine, it must have the same compression/decompression utility installed, too.
 
 ## Usage
 
@@ -123,43 +121,43 @@ The only reason to ever prefer `ncrpt` over `pack` is when there is a lot of fre
 
 ### `dcrpt -[h][i][q][v] infile keyfile outdir`
 
-Decrypts, unpacks, and decompresses directories created by `ncrpt`, as well as older archive files created by older `expcrypt` (this needed `tar` to be installed). Both of its first two input arguments must be directories or both must be files. Its operations are carried out in exactly inverse order. It reads from indir (or from a tar archive file) the encrypted files. It also reads their associated keys from `keydir` (or from keys archive file). Individual files in input directories are paired up by their names, so never rename an encrypted file, unless you rename its corresponding key file as well. The root filenames in both directories must match. This issue does not arise with flat archive files produced by `pack`. 
+Decrypts, unpacks, and decompresses directories created by `ncrpt`, as well as older archive files created by older `expcrypt` (this needed `tar` to be installed). Both of its first two input arguments must be directories or both must be files. Its operations are carried out in exactly inverse order. It reads from `indir` (or from a tar archive file) the encrypted files. It also reads their associated keys from `keydir` (or from keys archive file). Individual files in input directories are paired up by their names, so never rename an encrypted file, unless you rename its corresponding key file as well. The root filenames in both directories must match. This issue does not arise with flat archive files produced by `pack`. 
 
 Following decryption, the relevant decompression method(s) are applied to each file, so that the original files are exactly reconstructed in `outdir`. Please note that any strange types of system files or symbolic links might not be saved. Only genuine files that respond `true` to `bash` `-f` test or genuine directories that respond `true` to `-d` test are saved.
 
-### `pack [options] indir indexfile keyfile outfile`
+### `pack [options] indir indexfile outfile keyfile`
 
-Pack creates a brand new archive. Therefore the updating and cleaning options are no longer available. All the other options remain the same as for `ncrpt`. The most important difference is that instead of creating two recognisable output directories, `pack` creates three flat output files. The archived subdirectory and file names in `indexfile` are also compressed and encrypted.
+Pack creates a brand new archive. Therefore the updating and cleaning options `-uc` are no longer available. All the other options remain the same as per `ncrpt`. The most important difference is that instead of creating two output directories, `pack` creates three flat output files. The archived subdirectory and file names in `indexfile` are also compressed and encrypted.
 
 All the keys for the whole archive now form a single sequential `keyfile`. No filenames are being duplicated or extra file extensions appended. This is overall a cleaner solution. The individual compressed files are also spliced together into a single `outfile`. This results in an even better overall compression.
 
 The total of nine different combinations of compressions can be used, as with `ncrpt`, depending on the input file and its compressibility properties.
 
-There is a price to be paid in terms of the execution time. The entire input directory tree structure now has to be traversed sequentially to maintain order, thus reducing the opportunities for parallel execution (that are fully exploited by `ncrpt`).
+There is a price to be paid in terms of the execution time. The entire input directory tree structure now has to be traversed sequentially to maintain the same order, thus reducing the opportunities for parallel execution (that are fully exploited by `ncrpt`).
 
 #### Simple Typical Usage
 
-* `pack -xb indir indexfile keyfile outfile`
-* upload `indexfile`, `keyfile` and `outfile` to three different places on the internet 
+* `pack -xb indir indexfile outfile keyfile`
+* upload the output files to three different places on the internet 
 * delete everything locally, intentionally or by accident:  
-`rm -rf indir indexfile keyfile outfile`  
-* at any time and place later, download back `indexfile`, `keyfile` and `outfile`, then
+`rm -rf indir indexfile outfile keyfile`  
+* at any time (and place) later, download the files back and then:
 * `unpack indexfile outfile keyfile`
 
-This will result in recovered original state of `indir`, at the specified writeable path relative to the current directory.
+This will restore the original state of `indir`, at the specified writeable path relative to the current directory.
 
-### `unpack [options] indexfile keyfile outfile`
+### `unpack [options] indexfile outfile keyfile`
 
-Is the inverse of `pack`. It decrypts, selects the right decompression methods, decompresses all files, and  reconstructs the exact contents of the original directory, with the original names of subdirectories and files.
+Is the inverse of `pack`. It decrypts, selects the right decompression methods, decompresses all files, and reconstructs the exact contents of the original directory, with the same names of directories and files.
 
 ## Background Scripts and Programs (not needed by the user)
 
-`xorfork` (rust executable)
+`xorfork` (rust executable)  
 The 'workhorse' of the encryption. 
-Reads `stdin`, writes encrypted data to `outfile` and automatically generated random key data to `stdout`.
+Reads `stdin`, writes encrypted data to `outfile` and generated random key data to `stdout`.
 
 `symcrypt` (rust executable)  
-The inverse of `xorfork`. Reads `stdin` and random `keyfile`, writes decrypted data to `stdout`. Applies fast symmetric XOR decryption (or encryption). The two inputs of the same lengths are `XOR`ed together. This is a symmetric operation, so the two input sources can be swapped without affecting the results.
+The inverse of `xorfork`. Reads `stdin` and random `keyfile`, writes decrypted data to `stdout`. Applies fast symmetric XOR decryption (or encryption). The two inputs of the same lengths are `XOR`ed together. This is a symmetric operation, so the two input sources may be swapped without affecting the result.
 
 `hexcheck` (rust executable)  
 is invoked by `pack -x`. It recognises hexadecimal (token) files and packs them to binary, which exactly halves them in size. Hexadecimal files should be an even number of bytes long and only contain (0-9,a-f) `ascii` characters. There are a few allowed  exceptions: upper case A-F are accepted but when converted back, they will always end up in lower case. Spaces and newlines just get deleted. This tolerant policy may result in some differences being reported between the original and the reconstructed files. Then it is best to replace the original file with its cleaned up, reconstructed version.
@@ -174,7 +172,7 @@ is invoked by `pack -b`. It recognises base64 files, resulting in 25% size reduc
 are general compression methods used here for the final compression, as long as it result in size reduction. This is not necessarily the case for small and/or binary files. Any incompressible files are detected and encrypted as they are, even if their extensions are not on the 'do not compress' list. However, for extensions on the list, this test compression is avoided.
 
 `keygen file > key` (bash script)  
-writes to stdout random binary data of the same length as the given file.
+writes to stdout random binary data of the same length as the given file. Now superseded by `xorfork` getting this data internally (in Rust).
 
 `hexgen size` (bash script)  
 writes to stdout `size` bytes of random hexadecimal data. It is only useful for generating test data.
@@ -223,16 +221,6 @@ Note that TokenCrypt does not leave any such large hidden footprints on your fil
 **5-Oct-22** - Release 1.0.5. Removed the long deprecated `dcrpt` script. Rewrote all three C programs in Rust, thus increasing security. Changed github actions to work with Rust instead of previous C.
 
 **19-Dec-21** - Release 1.0.3. Some code tidying and minor simplifications. No change in functionality.
-
-**18-Dec-21** - Release v1.0.2. Fixed orphaned jobs. Made tests more forgiving. They now tolerate changes in white space, which often happens with hex files.
-
-**17-Dec-21** - Release v1.0.1. Fixed a bug in importing uncompressed files.
-
-**16-Dec-21** - Breaking change: `ncrpt` now appends a single, one letter extension onto the keyfiles. `dcrpt` still reads the old key directories with their old compression encodings. It is now deprecated but left here for legacy reasons. It will eventually be withdrawn. Please use it as soon as possible to convert any existing old archives to the new format. `impcrypt` now automatically recognises the new format keys extensions, as well as the packed archive files. The tests have been amended to reflect this change.
-
-**15-Dec-21** - `expcrypt` and `imcrypt` released for more secure and convenient exports and imports of archives snapshots.
-
-**14-Dec-21** - Significant redesign of the new scripts.
 
 ## References and Further Information
 
