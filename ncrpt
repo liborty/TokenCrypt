@@ -30,22 +30,22 @@ function processfile {
         fi
 	done
 
-    if [ $HEXTEST ] && hexcheck < $INFILE > $OUTFILE.tmp 2>/dev/null; then 
+    if [ $HEXTEST ] && hexcheck < "$INFILE" > "$OUTFILE".tmp 2>/dev/null; then 
 		local CH='h' # hexadecimal compression enabled and detected
-		local INFILE=$OUTFILE.tmp 
-	else if [ $B64TEST ] &&	base64 -d -w 0 $INFILE > $OUTFILE.tmp 2>/dev/null; then 
+		local INFILE="$OUTFILE".tmp 
+	else if [ $B64TEST ] &&	base64 -d -w 0 "$INFILE" > "$OUTFILE".tmp 2>/dev/null; then 
 		local CH='b' # base64 compression enabled and detected 
-		local INFILE=$OUTFILE.tmp 
+		local INFILE="$OUTFILE".tmp 
 		fi
 	fi
 
 	# regardless whether hexcheck or base64 tests succeeded or not, apply general compression test	
-	$COMPRESSOR $FLAGS $INFILE > $OUTFILE.cmp 
-		local CMPS=$( stat -c%s $OUTFILE.cmp ) # the size after compression
-		local ORGS=$( stat -c%s $INFILE )  # and before compression
+	$COMPRESSOR $FLAGS "$INFILE" > "$OUTFILE".cmp 
+		local CMPS=$( stat -c%s "$OUTFILE".cmp ) # the size after compression
+		local ORGS=$( stat -c%s "$INFILE" )  # and before compression
 		# use compressed version only if it is actually smaller
 		[ "$CMPS" -lt "$ORGS" ] && { # successful general compression
-			local INFILE=$OUTFILE.cmp # make the final compressed file to be the infile
+			local INFILE="$OUTFILE".cmp # make the final compressed file to be the infile
 			if [ "$COMPRESSOR" = 'lzma' ]; then
 			 case "$CH" in
 			 u ) local CH='i';;
@@ -67,8 +67,7 @@ function processfile {
 		
 	# generate key of the same size as infile,
 	# encrypt with it and write to OUTFILE.$CH 
-	keygen $INFILE > $KEYFILE.$CH
-    symcrypt < "$INFILE" "$KEYFILE".$CH > "$OUTFILE"
+	xorfork < "$INFILE" "$OUTFILE" > "$KEYFILE".$CH
 	# clean up
 	if [ -e "$OUTFILE.tmp" ]; then rm "$OUTFILE.tmp"; fi 
 	if [ -e "$OUTFILE.cmp" ]; then rm "$OUTFILE.cmp"; fi 
@@ -132,7 +131,7 @@ function updatedir {
 
 	# iterate through the listing checking for newer items
 	for ITEM in $(ls -ALB $1); do
-		local ID=$1/$ITEM # append $ITEM to $INDIR path
+		local ID="$1"/"$ITEM" # append $ITEM to $INDIR path
 		local OD=$3/$ITEM # and corresponding $outdir path
 
    		if [ -d "$ID" ]; then  # process existing subdirectory?
@@ -144,7 +143,7 @@ function updatedir {
 			}
 			# test the dirs modification times
 			# note that -nt only works for additions/deletions to dirs			
-			[ $(stat -c%Y $ID) -gt $(stat -c%Y $OD) ] && { 
+			[ $(stat -c%Y $ID) -gt $(stat -c%Y "$OD") ] && { 
 				printf " U: $ID\n" # so update it
 				updatedir $ID $2/$ITEM $OD &
 				continue

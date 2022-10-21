@@ -21,7 +21,7 @@ function packdir {
             D=${D%/} # strip off the trailing slash
             # D="${D//[[:blank:]]/}"; # remove windozy spaces
             # if [[ "$D" =~ [[:blank:]] ]]; then 
-            printf "$D," >> $INDEXFILE  # write subdir name
+            printf "$D," >> "$INDEXFILE"  # write subdir name
             packdir "$D" # recurse       
         done
     }
@@ -31,7 +31,7 @@ function packdir {
         [[ "$FILE" == '*' ]] && break; # no more 
         [ -f "$FILE" ] || continue; # skip non files
         # [ -n "$WINDOZE" ] && FILE="${FILE//[[:blank:]]/}"; # remove windozy spaces
-        local FSIZE=`stat -c%s $FILE`
+        local FSIZE=`stat -c%s "$FILE"`
         [ -z "$FSIZE" ] && continue; # ignore zero sized files
         packfile "$FILE" "$FSIZE" # process this file
 	done
@@ -44,56 +44,56 @@ function packdir {
 # writes into global TEMPFILE
 # creates and cleans up to two temporary files
 function packfile {
-    local FILENAME=$1
+    local FILENAME="$1"
 	local EX="${1##*.}" # this file's last extension
 	local CH='u' # default uncompressed marker
     local EX=${EX,,} # convert extension to lower case, to match capitals too
 	# if EX is on NOCOMPRESS list, then skip compression 
     for KEEPEXT in "${NOCOMPRESS[@]}"; do
         if [ "$EX" = "$KEEPEXT" ]; then 
-            printf "u$FILENAME,$2," >> $INDEXFILE # write u+filename,filesize
-            cat $FILENAME >> $OUTFILE  # write file contents
+            printf "u$FILENAME,$2," >> "$INDEXFILE" # write u+filename,filesize
+            cat "$FILENAME" >> "$OUTFILE"  # write file contents
 		    return
         fi
     done
-	local INFILE=$FILENAME # the initial name of the file to be compressed
-    if [ $HEXTEST ] && hexcheck < $FILENAME > _$FILENAME.tmp 2>/dev/null; then 
+	local INFILE="$FILENAME" # the initial name of the file to be compressed
+    if [ $HEXTEST ] && hexcheck < "$FILENAME" > "_$FILENAME".tmp 2>/dev/null; then 
 		CH='h' # hexadecimal compression enabled and detected
-		local INFILE=_$FILENAME.tmp 
-	else if [ $B64TEST ] &&	base64 -d -w 0 $FILENAME > _$FILENAME.tmp 2>/dev/null; then 
+		local INFILE="_$FILENAME".tmp 
+	else if [ $B64TEST ] &&	base64 -d -w 0 "$FILENAME" > "_$FILENAME".tmp 2>/dev/null; then 
 		CH='b'  # base64 compression enabled and detected
-		local INFILE=_$FILENAME.tmp
+		local INFILE="_$FILENAME".tmp
 		fi
 	fi
 	# regardless whether hexcheck or base64 tests above succeeded or not, 
     # apply general compression test	
-	$COMPRESSOR $FLAGS $INFILE > _$FILENAME.cmp 
-		local CMPS=$( stat -c%s _$FILENAME.cmp ) # size after compression
-		local ORGS=$( stat -c%s $INFILE )  # size before compression
-		# use compressed version only if it is actually smaller
-		[ "$CMPS" -lt "$ORGS" ] && { # successful general compression
-			local INFILE=_$FILENAME.cmp # use the final compressed file
-			if [ "$COMPRESSOR" = 'lzma' ]; then
-			    case "$CH" in
-			    u ) CH='i';;
-			    h ) CH='j';;
-			    b ) CH='k';;
-			    * ) printf "$PROGN packfile: unrecognised ch\n"; exit 2;;
-			    esac
-			else # compressor program is 'zstd'
-			    case "$CH" in
-			    u ) CH='l';;
-			    h ) CH='m';;
-			    b ) CH='n';;
-			    * ) printf "$PROGN processfile: unrecognised ch\n"; exit 2;;
-			    esac
-			fi				
-		} # else no general compression gain, keep the original INFILE and codes: u,h,b		
-    printf "$CH$FILENAME,%s," `stat -c%s $INFILE` >> $INDEXFILE 
-    cat $INFILE >> $OUTFILE  # write possibly compressed file contents
+	$COMPRESSOR $FLAGS "$INFILE" > "_$FILENAME".cmp 
+	local CMPS=$( stat -c%s "_$FILENAME".cmp ) # size after compression
+	local ORGS=$( stat -c%s "$INFILE" )  # size before compression
+	# use compressed version only if it is actually smaller
+	[ "$CMPS" -lt "$ORGS" ] && { # successful general compression
+		local INFILE="_$FILENAME".cmp # use the final compressed file
+		if [ "$COMPRESSOR" = 'lzma' ]; then
+			case "$CH" in
+			u ) CH='i';;
+			h ) CH='j';;
+			b ) CH='k';;
+			* ) printf "$PROGN packfile: unrecognised ch\n"; exit 2;;
+			esac
+		else # compressor program is 'zstd'
+			case "$CH" in
+			u ) CH='l';;
+			h ) CH='m';;
+			b ) CH='n';;
+			* ) printf "$PROGN processfile: unrecognised ch\n"; exit 2;;
+			esac
+		fi				
+	} # else no general compression gain, keep the original INFILE and codes: u,h,b		
+    printf "$CH$FILENAME,%s," `stat -c%s "$INFILE"` >> "$INDEXFILE" 
+    cat "$INFILE" >> "$OUTFILE"  # write possibly compressed file contents
     # clean up  
-	[ -e "_$FILENAME.tmp" ] && rm _$FILENAME.tmp;
-	[ -e "_$FILENAME.cmp" ] && rm _$FILENAME.cmp; 
+	[ -e "_$FILENAME".tmp ] && rm "_$FILENAME".tmp;
+	[ -e "_$FILENAME".cmp ] && rm "_$FILENAME".cmp; 
 } # end of packfile
 
 function usage { printf "Usage: $PROGN [-b][-h][-i][-q][-v][-x][-z] indir indexfile outfile keyfile\n" >&2; }
@@ -179,17 +179,17 @@ INDEXFILE=`pwd`/_idx.tmp
 OUTFILE=`pwd`/_out.tmp
 INDIR=${1%/} # strip any trailing /
 printf "$PROGN: compressing directory '$INDIR'\n"
-printf "$INDIR," > $INDEXFILE # record the indir path/name
+printf "$INDIR," > "$INDEXFILE" # record the indir path/name
 packdir "$INDIR" # pack the directory into INDEXFILE and OUTFILE
 # compress and encrypt indexfile
-lzma -c -z -q $INDEXFILE | xorfork $2 > $4 
+lzma -c -z -q "$INDEXFILE" | xorfork "$2" > "$4" 
 # encrypt output file append to keys           
-xorfork < $OUTFILE $3 >> $4 
-rm $INDEXFILE $OUTFILE # remove the temporary files
+xorfork < "$OUTFILE" "$3" >> "$4" 
+rm "$INDEXFILE" "$OUTFILE" # remove the temporary files
 
 # optional final report
 if [ ! $QUIET ]; then
-	SIZES=( $( du -bs $4 $INDIR ) ) # array of size keyfile size indir
+	SIZES=( $( du -bs "$4" "$INDIR" ) ) # array of size keyfile size indir
 	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} => ${SIZES[1]} ${SIZES[0]} "
 	if [ ${SIZES[0]} = ${SIZES[2]} ]; then printf "(100 %%)\n";
 	else
