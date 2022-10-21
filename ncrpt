@@ -24,8 +24,8 @@ function processfile {
 	# if EX is on NOCOMPRESS list, then skip compression 
     for KEEPEXT in "${NOCOMPRESS[@]}"; do
         if [ "$EX" = "$KEEPEXT" ]; then
-            keygen $INFILE > "$KEYFILE.u"
-            symcrypt < $INFILE "$KEYFILE.u" > $OUTFILE
+            keygen "$INFILE" > "$KEYFILE.u"
+            symcrypt < "$INFILE" "$KEYFILE.u" > "$OUTFILE"
 		    return
         fi
 	done
@@ -68,10 +68,10 @@ function processfile {
 	# generate key of the same size as infile,
 	# encrypt with it and write to OUTFILE.$CH 
 	keygen $INFILE > $KEYFILE.$CH
-    symcrypt < $INFILE $KEYFILE.$CH > $OUTFILE
+    symcrypt < "$INFILE" "$KEYFILE".$CH > "$OUTFILE"
 	# clean up
-	if [ -e "$OUTFILE.tmp" ]; then rm $OUTFILE.tmp; fi 
-	if [ -e "$OUTFILE.cmp" ]; then rm $OUTFILE.cmp; fi 
+	if [ -e "$OUTFILE.tmp" ]; then rm "$OUTFILE.tmp"; fi 
+	if [ -e "$OUTFILE.cmp" ]; then rm "$OUTFILE.cmp"; fi 
 } # end of processfile
 
 # function to process a whole directory
@@ -101,16 +101,19 @@ function processdir {
 		exit 2
 	}
 	
+    cd "$1"
+
 	# iterate through the listing
-	for ITEM in $(ls -AL $1); do
-		local IND="$1/$ITEM" # append $ITEM to $INDIR path
-   		if [ -d "$IND" ]; then  # subdirectory?
+	for ITEM in *; do 
+        [[ "$ITEM" == '*' ]] && break; # no more  
+   		if [ -d "$ITEM" ]; then  # directory
 			[ -n "$IGNORE" ] && continue; 
-			processdir $IND "$2/$ITEM" "$3/$ITEM" & # push ITEM onto paths
+			processdir "$ITEM" "../$2"/"$ITEM" "../$3"/"$ITEM" & # push ITEM onto paths
         else # process only genuine file
-       		[ -f "$IND" ] && processfile $IND "$2/$ITEM" "$3/$ITEM" & 
+       		[ -f "$ITEM" ] && processfile "$ITEM" "../$2"/"$ITEM" "../$3"/"$ITEM" & 
         fi
 	done
+    cd ..
 	wait
 } # end of processdir
 
@@ -128,7 +131,7 @@ function updatedir {
 	}
 
 	# iterate through the listing checking for newer items
-	for ITEM in $(ls -AL $1); do
+	for ITEM in $(ls -ALB $1); do
 		local ID=$1/$ITEM # append $ITEM to $INDIR path
 		local OD=$3/$ITEM # and corresponding $outdir path
 
@@ -180,7 +183,7 @@ function cleandir {
 	}
 
 	# iterate through the list checking for missing items
-	for ITEM in $(ls -AL $3); do
+	for ITEM in $(ls -ALB $3); do
 		local ID=$1/$ITEM # append $ITEM to $INDIR path
 		local KD=$2/$ITEM # append $ITEM to $KEYDIR path
 		local OD=$3/$ITEM # and the examined $OUTDIR path
@@ -223,7 +226,7 @@ function helpmsg {
 
 # Main starts here ###########################################################
 # get options, including long options, extracted as arg to the last option '-'
-while getopts hbcxqruvz-: OPT; do
+while getopts bchiquvxz-: OPT; do
  if [ "$OPT" = "-" ]; then   # long option: reset OPT and OPTARG
     OPT="${OPTARG%%=*}"      # extract long option name
     OPTARG="${OPTARG#$OPT}"  # extract long option argument (here empty)
@@ -281,8 +284,8 @@ if ! [ $QUIET ]; then
 	# let "SIZES[2]-=4096"	
 	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} => ${SIZES[1]} ${SIZES[0]} "
 	if [ ${SIZES[0]} = ${SIZES[2]} ]; then printf "(100 %%)\n"; else
-		CR=$(( (5+100000*${SIZES[0]}/${SIZES[2]})/10 )) # calculate percentage rounded to two d.p.	
-		printf "(${CR: 0:2}.${CR: 2:4} %%)\n" # compression ratio printed as xx.xx%
+		CR=$(( 100*${SIZES[0]}/${SIZES[2]} )) # calculate percentage 
+		printf "($CR %%)\n" # compression ratio printed as a percentage
 	fi 
 	printf "$PROGN: keys are in '$2'\n"
 fi

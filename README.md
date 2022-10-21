@@ -10,7 +10,7 @@
 
 Runs only on systems where `/dev/urandom` returns truly random bytes. Better not use it for large archives immediately after reboot, as the OS may not have yet gathered enough physical randomness from user interactions. Nor on 'headless' servers, where there are no mouse and keyboard interactions.
 
-The encryption keys and the compressed and encrypted files are written by `ncrpt` into two separate output directories with user specified names. They are restored by the use of `dcrpt`. This is suitable for local use only. 
+The encryption keys and the compressed and encrypted files are written by `ncrpt` into two separate output directories with user specified names. They are restored by the use of `dcrpt`. This is suitable for local use only.
 
 For exports, use `pack` (and `unpack`), which archive (and restore) the directory tree to/from three flat archive files. This option is more compact and significantly more secure in transit and storage.
 
@@ -18,7 +18,7 @@ Should the implicit association between these three files be lost or forgotten, 
 
 The encrypted archive files are just meaningless 'random' data and thus can be stored anywhere, even 'on the cloud'. The critical part is to prevent a potential eavesdropper from matching up these three files, as that is the only way to decrypt them. That is why they are not given related names automatically. Normally, the user should choose unrelated paths/names for them and keep them well separated. As with private keys in asymmetric encryption.
 
-Previous versions had a vulnerability in as much as it was in theory possible to find a match somewhere on the internet between the `keyfile` and the `outfile`, based on the fact that they were both of the same size. As of `v1.1.0`, it is much harder to guess the right combination of three different files, all three of different sizes, with different names and in different places (it goes without saying that their names and places should be unrelated). Still, it is probably best to treat the `keyfile` as a private key and not to upload it anywhere.
+Previous versions had a vulnerability: it was in theory possible to find a match somewhere on the internet between the `keyfile` and the `outfile`, based on the fact that they were both of the same size. As of `v1.1.0`, it is much harder to guess the right combination of three different files, all three of different sizes, with different names and stored in different places (it goes without saying that their names and places should be unrelated). 
 
 ## Introduction
 
@@ -26,8 +26,7 @@ It is not an objective of TokenCrypt to replace `git` and to keep the complete h
 
 Scripts `pack` and `ncrpt` read given input directory tree, containing any types of files: `ncrpt` creates two output directories, `pack` creates three flat archive files.
 
-Some already compressed files afford only minor further compression, if any. To save time, they are recognised simply by their well known extensions: `jpg, jpeg, mp4, zip, 7z, lz, zst, gz, tgz, bz2`, and their upper case versions.
-Files with these extensions are encrypted uncompressed.
+Some already compressed files afford only minor further compression, if any. To save time, they are recognised simply by their well known extensions: `jpg, jpeg, mp4, zip, 7z, lz, zst, gz, tgz, bz2`, and their upper case versions. Files with these extensions are encrypted uncompressed.
 
 Given `-xb` options, `ncrpt` and `pack` scripts will recognise hexadecimal files (*) and base64 files respectively and convert them to more compact binary data. For hexadecimal files, this results in 50% compression. They then select the best final compression method for each individual file and finally securely encrypt them all.
 
@@ -37,7 +36,7 @@ Hexadecimal security tokens, base64 files and all other types of files may somet
 
 ## Installation
 
-This software was developed and tested under Linux and the latest binaries are available in the repository as a `release`. Installation from source needs Rust installed. Download or clone this repository and `cd` into it. Then, for complete fresh installation:
+This software was developed and tested under Linux and the latest binaries are available in the repository as a `release`. Installation from source needs Rust installed. Download or clone this repository (to get the latest version of the bash scripts) and `cd` into it. Then, for complete fresh installation:
 
 ### `sudo ./install`
 
@@ -71,7 +70,7 @@ There are four command line interface (CLI) bash scripts that do all the work an
 
 ### `ncrpt [options] indir keydir outdir`
 
-This script speedily executes the tasks of data type analysis, optimal compression selection, compression, key generation, key saving and encryption. Also recursive archiving and subsequent archive maintenance.
+This script performs data type analysis, optimal compression selection, compression, key generation, key saving and encryption. Also recursive archiving and subsequent archive maintenance.
 
 Long options introduced by `--` are also recognised.  
 The options explained:
@@ -89,31 +88,30 @@ The options explained:
 When `-u` option is not given, then by default a new archive is created.  
 Option `-c` only makes sense conjoined in `-uc` because it can do nothing for a brand new archive.
 
-The tests for hexadecimal `-x` and base64 `-b` files should only be specified when the input directory likely contains such files. Though these tests are relatively fast. They usually fail after reading only a few bytes (of the wrong type of file). When these options are omitted by mistake, then everything will still work, only the default compression of these types of files will take up more space than was strictly necessary.
+The tests for hexadecimal `-x` and base64 `-b` files should only be specified when the input directory likely contains such files. However, these tests are fast. They usually fail after reading only a few bytes (of the wrong type of file). When these options are omitted by mistake, then everything will still work, only the default compression of these types of files will take up more space than was strictly necessary.
 
-The last three arguments are mandatory: the input directory, the keys directory and the encrypted directory. Both output directories (`keydir` and `outdir`) will mirror `indir` in their structure and file names; `keydir` will hold the keys and `outdir` will hold the encrypted files.
+The three arguments are mandatory: the input directory, the keys directory and the encrypted directory. Both output directories (`keydir` and `outdir`) will mirror `indir` in their structure and file names; `keydir` will hold the keys and `outdir` will hold the encrypted files.
 
-The summary at the end, such as the one shown in `test.log`, reports the sizes (in bytes) of input and output directories and the total compressed size as a percentage of the original size. The compression to 50% will compensate for the creation  of the encryption keys. Sometimes even better compression may be achieved.
+The summary at the end, such as the one shown in `test.log`, reports the sizes (in bytes) of input and output directories and the total compressed size as a percentage of the original size. Compression to 50% would  compensate for the creation of the encryption keys. Sometimes even better compression may be achieved.
 
 Option `-q` (`--quiet`) cancels the final report.
 Option `-v` (`--verbose`) adds details of compressing each file. Selecting  both options `-vq`, contradictory as it may seem, turns on the individual file reports and turns off the final summary. The encryption itself is so unproblematic that it does not require any reports.
 
 Once a directory has been compressed and encrypted, it is on subsequent occasions possible to update the keys and outdir directories (the archives) with option `-u`. This will add any new files and recode updated ones. Added new files are marked with a: and more recent existing files are updated (marked with u:). The same actions will be applied to all subdirectories, unless option `-i` has been deployed. Capital letters A:,U: denote these two operations when applied to whole subdirectories.
 
-An archive can be also cleaned up with option `-c`, to ensure that a new state of the input directory and its archives match exactly one-to-one.   Files no longer existing in indir will then be deleted from the archive (and marked with d:). With `-uc` options, possibly whole directories can be deleted and marked with D:.
+An archive can additionally be cleaned up with `-uc`, to ensure that a new state of the input directory and its archives match exactly one-to-one. That is, files no longer existing in indir will be deleted from the archive (and marked with d:). Unless `-uci` is used, whole directories may be deleted and marked with D:.
 
 Caution should be exercised when using the `-c` option. Any files that may have been inadvertently deleted from indir will then be removed from the archive as well. For added safety, option `-c` is deliberately made explicit and separate from `-u`. Thus using `-u` alone is the *cautious updating mode*, which never deletes anything from the archive. However, it will still overwrite existing files with their new, possibly erroneous, contents. Beware that this can cause loss of previously useful content. Of course, this is true in general, whenever changing any files, by any means.
 
-The most powerful mode of operation on a previously created archive (keydir outdir) is '-uc' (recursive-update-clean).
-Options can be run together:
+As seen above, options can be run together, e.g.:
 
 ```bash
 ncrpt -xbuc indir keydir outdir
 ```
 
-This will recursively update and clean the archive so that it is as if freshly created from the current state of indir. However, as it is only incremental, it runs faster. This is convenient for backing up purposes.
+This will recursively update and clean the entire archive dir, so that it is as if freshly created from the current state of indir (with only -xb). However, as it is only incremental, it runs faster. This is convenient for backing up purposes.
 
-There is a vulnerability inherent in `ncrpt` creating directories. Specifically, specialist search engines sifting through the whole of the internet, matching up pairs of (keydir outdir) directories by their same structures, file names and sizes, could in theory pair them up, even if they were uploaded to two unrelated places. Using `pack` is therefore more secure for external storage.
+There is a vulnerability inherent in `ncrpt` output directories. Specifically, specialist search engines sifting through the whole of the internet, matching up pairs of (keydir outdir) directories by their same structures, file names and sizes, could in theory pair them up, even if they were uploaded to two unrelated places. Using `pack` is therefore more secure for external storage.
 
 It is recommended that `pack` be used prior to exporting snapshots of the local directory to any unsecure locations, such as the internet.
 
@@ -121,9 +119,9 @@ The only reason to ever prefer `ncrpt` over `pack` is when there is a lot of fre
 
 ### `dcrpt -[h][i][q][v] infile keyfile outdir`
 
-Decrypts, unpacks, and decompresses directories created by `ncrpt`, as well as older archive files created by older `expcrypt` (this needed `tar` to be installed). Both of its first two input arguments must be directories or both must be files. Its operations are carried out in exactly inverse order. It reads from `indir` (or from a tar archive file) the encrypted files. It also reads their associated keys from `keydir` (or from keys archive file). Individual files in input directories are paired up by their names, so never rename an encrypted file, unless you rename its corresponding key file as well. The root filenames in both directories must match. This issue does not arise with flat archive files produced by `pack`. 
+Decrypts, unpacks, and decompresses directories created by `ncrpt`. Both of its first two input arguments must be directories. Its operations are carried out in exactly reverse order. It reads from `indir` the encrypted files. It also reads their associated keys from `keydir`. Individual files in input directories are paired up by their names, so never rename an encrypted file, unless you rename its corresponding key file as well. The root filenames in both directories must match. This issue does not arise with flat archive files produced by `pack`. 
 
-Following decryption, the relevant decompression method(s) are applied to each file, so that the original files are exactly reconstructed in `outdir`. Please note that any strange types of system files or symbolic links might not be saved. Only genuine files that respond `true` to `bash` `-f` test or genuine directories that respond `true` to `-d` test are saved.
+Following decryption, the relevant decompression method(s) are applied to each file, so that the original files are exactly reconstructed in `outdir`. Please note that any strange types of system files or symbolic links might not be saved. Only genuine files that respond `true` to `bash` `-f` or genuine directories that respond `true` to `-d` test are saved.
 
 ### `pack [options] indir indexfile outfile keyfile`
 
@@ -131,26 +129,26 @@ Pack creates a brand new archive. Therefore the updating and cleaning options `-
 
 All the keys for the whole archive now form a single sequential `keyfile`. No filenames are being duplicated or extra file extensions appended. This is overall a cleaner solution. The individual compressed files are also spliced together into a single `outfile`. This results in an even better overall compression.
 
-The total of nine different combinations of compressions can be used, as with `ncrpt`, depending on the input file and its compressibility properties.
+The total of nine different combinations of compressions can be used, as with `ncrpt`, depending on each individual input file and its compressibility properties.
 
 There is a price to be paid in terms of the execution time. The entire input directory tree structure now has to be traversed sequentially to maintain the same order, thus reducing the opportunities for parallel execution (that are fully exploited by `ncrpt`).
 
 #### Simple Typical Usage
 
 * `pack -xb indir indexfile outfile keyfile`
-* upload the output files to three different places on the internet 
+* upload the output files to three different places on the internet
 * delete everything locally, intentionally or by accident:  
 `rm -rf indir indexfile outfile keyfile`  
 * at any time (and place) later, download the files back and then:
 * `unpack indexfile outfile keyfile`
 
-This will restore the original state of `indir`, at the specified writeable path relative to the current directory.
+This will restore the original state of `indir`, at the originally specified writeable path, relative to the current directory.
 
 ### `unpack [options] indexfile outfile keyfile`
 
-Is the inverse of `pack`. It decrypts, selects the right decompression methods, decompresses all files, and reconstructs the exact contents of the original directory, with the same names of directories and files.
+Is the inverse of `pack`. It decrypts, selects the right decompression methods, decompresses all files, and restores the exact contents of the original directory, with the same names of directories and files.
 
-## Background Scripts and Programs (not needed by the user)
+## Appendix - Background Scripts and Programs (not needed by the user)
 
 `xorfork` (rust executable)  
 The 'workhorse' of the encryption. 
@@ -209,6 +207,8 @@ This will update only the file(s) that have changed. What may come as a surprise
 Note that TokenCrypt does not leave any such large hidden footprints on your filesystem.
 
 ## Releases Log (the latest first)
+
+**21-Oct-22** - Windowsy names of files and directories (with internal spaces) are now processed correctly, opening the possibility of using TokenCrypt on Windows. Simplification: `dcrpt` is no longer reading old style file archives as well as the encrypted directories. Tar is no longer needed at all.
 
 **20-Oct-22** - Release 1.1.0 Even safer and more compact. Fixed a bug in `xorfork` and swapped its outputs, so it now writes output into `outfile` and key data to `stdout`. Converted `pack` and `unpack` to use three archive files for increased security.
 

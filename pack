@@ -14,8 +14,6 @@ function packdir {
         printf "$PROGN: failed to cd to $1\n"
         exit 2
     }
-    # list directory
-    # local DIRLS=$( ls -ALBp )
     # if recursing, process the subdirectories first (depth first descent)
     [ -n "$IGNORE" ] || {
         for D in */; do

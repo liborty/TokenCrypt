@@ -5,48 +5,21 @@
 
 PROGN=${0##*/}
 
-# importfile will decompress and decrypt one file
-# it expects two arguments: INFILE OUTFILE
-# and it reads from fd 3 which is an opened for reading KEYFILE
-function importfile {
-
-	local INFILE=$1 
-	local OUTFILE=$2
-	local FSIZE=`stat -c%s $INFILE`
-	local CH=`head -c 1 <&3` # read the compression encoding char
-	# u (uncomressed) can be for a listed extension, or because all compressions have failed
-	[ "$CH" = 'u' ] && {		
-		head -c $FSIZE <&3 | symcrypt $INFILE > $OUTFILE
-		return
-	}
-	head -c $FSIZE <&3 | symcrypt $INFILE | case "$CH" in
-		h ) hexify;;
-		b ) base64 -w 0;;
-		i ) lzma -d;;
-		j ) lzma -d | hexify;; 
-		k ) lzma -d | base64 -w 0;; 
-		l ) zstd -d -c;; 
-		m ) zstd -d -c | hexify;; 
-		n ) zstd -d -c | base64 -w 0;;
-		* ) printf "$PROGN importfile: unrecognised ch\n"; exit 2;;
-	esac > $OUTFILE
-}
-
 # processfile will decompress and decrypt one file
 # it expects three arguments: INDIR KEYDIR OUTDIR
 function processfile {
 
-	local INFILE=$1 
-	local KEYFILE=$2
-	local OUTFILE=$3
+	local INFILE="$1" 
+	local KEYFILE="$2"
+	local OUTFILE="$3"
 	# the last keyfile extension encodes the compression type in dirs
 	local CH=${KEYFILE##*.}
 	# u (uncomressed) can be for a listed extension, or because all compressions have failed
 	[ "$CH" = 'u' ] && {		
-		symcrypt < $INFILE $KEYFILE > $OUTFILE
+		symcrypt < "$INFILE" "$KEYFILE" > "$OUTFILE"
 		return
 	}
-	symcrypt < $INFILE $KEYFILE | case "$CH" in
+	symcrypt < "$INFILE" "$KEYFILE" | case "$CH" in
 		h ) hexify;;
 		b ) base64 -w 0;;
 		i ) lzma -d;; 
@@ -56,55 +29,35 @@ function processfile {
 		m ) zstd -d -c | hexify;;
 		n ) zstd -d -c | base64 -w 0;;
 		* ) printf "$PROGN importfile: unrecognised ch\n"; exit 2;;
-	esac > $OUTFILE
-}
-
-# function to import a whole directory
-# takes two arguments: INDIR OUTDIR
-function importdir {
-
-	# create the ouput directory 
-	mkdir $2 || {
-		printf "$PROGN importdir: failed to create output directory '$2'!\n" >&2
-		exit 2
-	}
-	# iterate through the listing
-    local IMPDIRLS=$( ls -ALBp $1 )
-    # import the subdirectories
-    [ -n "$IGNORE" ] || {
-        for ITEM in $( grep / <( printf '%s' "$IMPDIRLS" ) ); do
-            importdir "$1/$ITEM" "$2/$ITEM"
-        done 
-    }   
-	# import the files
-	for ITEM in $( grep -v / <( printf '%s' "$IMPDIRLS" ) ); do
-        importfile "$1/$ITEM" "$2/$ITEM"
-	done
+	esac > "$OUTFILE"
 }
 
 # function to process a whole directory
 # takes three arguments: INDIR KEYDIR OUTDIR
 function processdir {
 
-	# create the ouput directory
-	mkdir "$3"
-	[ "$?" -ne 0 ] && {
+    # create the ouput directory
+   mkdir "$3" || {
 		printf "$PROGN processdir: failed to create output directory $3!\n" >&2
 		exit 2
 	}
 
-    local DIRCONTENT=$( ls -ALBp $2 )
-    # process the subdirectories if not ignoring
-    [ -n "$IGNORE" ] || {
-        for KEY in $( grep / <( printf '%s' "$DIRCONTENT" ) ); do
-            processdir "$1/$KEY" "$2/$KEY" "$3/$KEY" &
-        done
-    }    
-	# process the files
-	for KEY in $( grep -v / <( printf '%s' "$DIRCONTENT" ) ); do
-		local ROOTN=${KEY%.*} # remove keyfile's encoding extension
-        processfile "$1/$ROOTN" "$2/$KEY" "$3/$ROOTN" &
+    cd "$2" # reading the keydir
+
+	# iterate through the listing
+	for ITEM in *; do 
+        [[ "$ITEM" == '*' ]] && break; # no more 
+   		if [ -d "$ITEM" ]; then  # directory
+			[ -n "$IGNORE" ] && continue; 
+			processdir "../$1/$ITEM" "$ITEM" "../$3"/"$ITEM" & 
+        else # process only genuine file
+       		[ -f "$ITEM" ] && {
+                local ROOTN="${ITEM%.*}" # remove keyfile's encoding extension
+                processfile "../$1"/"$ROOTN" "$ITEM" "../$3"/"$ROOTN" & 
+            }
+        fi
 	done
+    cd ..
 	wait
 } # end of processdir
 
@@ -121,7 +74,7 @@ function helpmsg {
 
 # Main starts here
 # get options, including long options, extracted as arg to the last option '-'
-while getopts dhqrv-: OPT; do
+while getopts hiqv-: OPT; do
  if [ "$OPT" = "-" ]; then   # long option: reset OPT and OPTARG
     OPT="${OPTARG%%=*}"      # extract long option name
     OPTARG="${OPTARG#$OPT}"  # extract long option argument (here empty)
@@ -150,12 +103,12 @@ shift $((OPTIND-1)) # remove already parsed options and args from $@ list
 
 # Globally validate the input file/dir
 [ -e "$1" ] || { 
-	printf "$PROGN: input '$1' not found\n" >&2
+	printf "$PROGN: inputdir '$1' not found\n" >&2
 	exit 2
 }
 # Globally validate the keyfile/dir
 [ -e "$2" ] || { 
-	printf "$PROGN: keys '$2' not found\n" >&2
+	printf "$PROGN: keysdir '$2' not found\n" >&2
 	exit 2
 }
 
@@ -173,29 +126,13 @@ if [ -z $( which hexify ) ]; then
 	printf "$PROGN warning, hexify is not installed, will not unpack .hex files\n" >&2
 fi
 
-if [ -f "$1" ] && [ -f "$2" ]; then
-	if [ -z $( which tar ) ]; then 
-		printf "$PROGN: tar is not installed, can not import archive file\n" >&2
-		exit 2
-	fi
-	# Globally open the keyfile
-	exec 3<$2 || {
-		printf "$PROGN: key file '$2' failed to open for reading\n" >&2
-		exit 2	
-	}
-	tar -xpJf $1 $1dir # $1dir is temporary encrypted dir, untarred
-	printf "$PROGN: decrypting and decompressing archives files\n" 
-	importdir $1dir $3
-	rm -rf $1dir # tidy up temp encrypted dir
-else 
-	if [ -d "$1" ] && [ -d "$2" ]; then 
-		processdir $1 $2 $3
-		printf "$PROGN: decrypting dirs '$1' and '$2' into '$3'\n"
-		wait
-	else
-		printf "$PROGN: inputs '$1' '$2' must be either both directories or both files\n" >&2
-		exit 2
-	fi
+if [ -d "$1" ] && [ -d "$2" ]; then 
+	processdir "$1" "$2" "$3"
+	printf "$PROGN: decrypting '$1' + '$2' => '$3'\n"
+	wait
+else
+	printf "$PROGN: inputs '$1' '$2' must be both directories\n" >&2
+	exit 2
 fi
 
 # optional final report
@@ -203,9 +140,9 @@ if ! [ $QUIET ]; then
 	SIZES=( `du -hbs $3 $1` ) # array of size,dir,size,dir
 	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} "
 	if [ ${SIZES[0]} = ${SIZES[2]} ]; then printf "(100 %%) => ${SIZES[1]} ${SIZES[0]}\n"; else
-		CR=$(( (5+100000*${SIZES[2]}/${SIZES[0]})/10 )) # calculate percentage rounded to two d.p.	
-		printf "(${CR: 0:2}.${CR: 2:4} %%) => ${SIZES[1]}: ${SIZES[0]}\n"
+		CR=$(( 100*${SIZES[2]}/${SIZES[0]} )) # calculate percentage rounded to two d.p.	
+		printf "($CR %%)\n" # compression ratio printed as a percentage
 	fi
 	# compressed size x 10^5, printed as xx.xx% 
-	printf "$PROGN: decrypted '$1' into '$3'\n" >&2
+	printf "$PROGN: restored '$3'\n"
 fi

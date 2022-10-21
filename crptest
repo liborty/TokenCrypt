@@ -22,9 +22,9 @@ case $# in
 esac
 
 # directory names, preceding path is stripped off, so all output goes to ./
-KEYDIR="$1"key # must separate _ from the variable name
-OUTDIR="$1"crypt
-ORGDIR="$1"org
+KEYDIR=_"$1"key # must separate _ from the variable name
+OUTDIR=_"$1"crypt
+ORGDIR=_"$1"org
 
 # check that outputs directories do not already exist
 if [ -d "$KEYDIR" ]; then
