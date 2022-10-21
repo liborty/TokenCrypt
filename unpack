@@ -9,7 +9,7 @@ PROGN=${0##*/}
 # takes one argument: outputdir
 # reads from file descriptor 3
 function importdir {
-    cd $1
+    cd "$1"
 	# create subdirectories
     while true; do
         read -r -d ',' NAME
@@ -62,7 +62,7 @@ function helpmsg {
 # Main starts here ###########################################################
 
 # get options, including long options, extracted as arg to the last option '-'
-while getopts dhqv-: OPT; do
+while getopts hqv-: OPT; do
  if [ "$OPT" = "-" ]; then   # long option: reset OPT and OPTARG
     OPT="${OPTARG%%=*}"      # extract long option name
     OPTARG="${OPTARG#$OPT}"  # extract long option argument (here empty)

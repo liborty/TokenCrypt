@@ -43,7 +43,7 @@ This software was developed and tested under Linux and the latest binaries are a
 
 This will locally compile four Rust  programs `xorfork`, `symcrypt`, `hexify` and `hexcheck`. Everything that may have changed is installed into `/usr/local/bin`. The bash scripts are also installed, though, of course, they do not need any compilation. For those that do not want to install Rust, there are x86-64 binaries available in the 'releases' in the repository.
 
-The Rust sources are also automatically compiled and tested at `github.com` - see the green badge at the top of this document. Whether the executables were created by local compilation or just pulled from the repository, this script copies them all from `./bin/` into `/usr/local/bin` for system-wide use.  Alternatively, they can be copied manually to any other `bin` directories that are included in the search path. That does not require `sudo` privileges.
+The Rust sources are also automatically compiled and tested at `github.com` - see the green badge at the top of this document. Whether the executables were created by local compilation or just pulled from the repository, this script copies them all from `.bin/` into `/usr/local/bin` for system-wide use.  Alternatively, they can be copied manually to any other `bin` directories that are included in the search path. That does not require `sudo` privileges.
 
 A good reason to perform local compilation is if it is suspected that the `github` binaries may have been compromised or when using a different machine architecture. This step should be repeated whenever some programs and scripts have changed, such as after performing a new  `git pull`.
 
@@ -127,7 +127,7 @@ Following decryption, the relevant decompression method(s) are applied to each f
 
 ### `pack [options] indir indexfile outfile keyfile`
 
-Pack creates a brand new archive. Therefore the updating and cleaning options `-uc` are no longer available. All the other options remain the same as per `ncrpt`. The most important difference is that instead of creating two output directories, `pack` creates three flat output files. The archived subdirectory and file names in `indexfile` are also compressed and encrypted.
+Pack creates a brand new archive. Therefore the updating and cleaning options `-uc` are no longer available. Other `ncrpt` options remain. The most important difference is that instead of creating two output directories, `pack` creates three flat output files. The archived subdirectory and file names in `indexfile` are also compressed and encrypted.
 
 All the keys for the whole archive now form a single sequential `keyfile`. No filenames are being duplicated or extra file extensions appended. This is overall a cleaner solution. The individual compressed files are also spliced together into a single `outfile`. This results in an even better overall compression.
 

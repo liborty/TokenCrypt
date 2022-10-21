@@ -9,25 +9,35 @@ NOCOMPRESS=( 'jpg' 'jpeg' 'mp4' 'zip' '7z' 'lz' 'zst' 'gz' 'tgz' 'bz2' )
 
 # writes to global TEMPFILE
 function packdir {
-    cd $1
+    cd "$1" # must be quoted or fails on windozy dirs with spaces!
+    [ $? -ne 0 ] && { 
+        printf "$PROGN: failed to cd to $1\n"
+        exit 2
+    }
     # list directory
-    local DIRLS=$( ls -ALBp )
+    # local DIRLS=$( ls -ALBp )
     # if recursing, process the subdirectories first (depth first descent)
     [ -n "$IGNORE" ] || {
-        for D in $( grep / <( printf '%s' "$DIRLS" ) ); do
-            DIR=${D%/} # strip the trailing slash 
-            printf "$DIR," >> $INDEXFILE # write the plain subdir name 
-            packdir "$DIR" # recurse
+        for D in */; do
+            [[ "$D" == '*/' ]] && break; # no more dirs
+            D=${D%/} # strip off the trailing slash
+            # D="${D//[[:blank:]]/}"; # remove windozy spaces
+            # if [[ "$D" =~ [[:blank:]] ]]; then 
+            printf "$D," >> $INDEXFILE  # write subdir name
+            packdir "$D" # recurse       
         done
     }
-    printf "," >> $INDEXFILE  # mark the start of files section 
+    printf "," >> $INDEXFILE  # mark the end of directories section (with ,,)
 	# process the files 
-	for FILE in $( grep -v / <( printf '%s' "$DIRLS" ) ); do
+	for FILE in *; do
+        [[ "$FILE" == '*' ]] && break; # no more 
+        [ -f "$FILE" ] || continue; # skip non files
+        # [ -n "$WINDOZE" ] && FILE="${FILE//[[:blank:]]/}"; # remove windozy spaces
         local FSIZE=`stat -c%s $FILE`
         [ -z "$FSIZE" ] && continue; # ignore zero sized files
-        packfile "$FILE" "$FSIZE"
+        packfile "$FILE" "$FSIZE" # process this file
 	done
-    printf "," >> $INDEXFILE  # mark the end of this dir
+    printf "," >> $INDEXFILE  # mark the end of this dir (with ,,)
     cd ..
 } # end of packdir
 
@@ -43,10 +53,8 @@ function packfile {
 	# if EX is on NOCOMPRESS list, then skip compression 
     for KEEPEXT in "${NOCOMPRESS[@]}"; do
         if [ "$EX" = "$KEEPEXT" ]; then 
-            # write u+filename,file size, to $TEMPFILE
-            printf "u$FILENAME,$2," >> $INDEXFILE
-            # write file contents
-            cat $FILENAME >> $OUTFILE 
+            printf "u$FILENAME,$2," >> $INDEXFILE # write u+filename,filesize
+            cat $FILENAME >> $OUTFILE  # write file contents
 		    return
         fi
     done
@@ -59,7 +67,6 @@ function packfile {
 		local INFILE=_$FILENAME.tmp
 		fi
 	fi
-
 	# regardless whether hexcheck or base64 tests above succeeded or not, 
     # apply general compression test	
 	$COMPRESSOR $FLAGS $INFILE > _$FILENAME.cmp 
@@ -83,19 +90,15 @@ function packfile {
 			    * ) printf "$PROGN processfile: unrecognised ch\n"; exit 2;;
 			    esac
 			fi				
-		} # else no general compression gain, keep the original INFILE and codes: u,h,b
-		
-	# write to $TEMPFILE
-    printf "$CH$FILENAME,%s," `stat -c%s $INFILE` >> $INDEXFILE
-    
-    # write possibly compressed file contents
-    cat $INFILE >> $OUTFILE
+		} # else no general compression gain, keep the original INFILE and codes: u,h,b		
+    printf "$CH$FILENAME,%s," `stat -c%s $INFILE` >> $INDEXFILE 
+    cat $INFILE >> $OUTFILE  # write possibly compressed file contents
     # clean up  
 	[ -e "_$FILENAME.tmp" ] && rm _$FILENAME.tmp;
 	[ -e "_$FILENAME.cmp" ] && rm _$FILENAME.cmp; 
 } # end of packfile
 
-function usage { printf "Usage: $PROGN [-h][-b][-x][-q][-r][-v][-z] indir indexfile outfile keyfile\n" >&2; }
+function usage { printf "Usage: $PROGN [-b][-h][-i][-q][-v][-x][-z] indir indexfile outfile keyfile\n" >&2; }
 
 function helpmsg {
 	usage
@@ -113,7 +116,7 @@ function helpmsg {
 # Main starts here ###########################################################
 
 # get options, including long options, extracted as arg to the last option '-'
-while getopts hbxqrvz-: OPT; do
+while getopts bhiqvxz-: OPT; do # do not forget to list new options here!
  if [ "$OPT" = "-" ]; then   # long option: reset OPT and OPTARG
     OPT="${OPTARG%%=*}"      # extract long option name
     OPTARG="${OPTARG#$OPT}"  # extract long option argument (here empty)
@@ -124,7 +127,7 @@ while getopts hbxqrvz-: OPT; do
 	h | help ) helpmsg;;
     i | ignore ) IGNORE=0;;
 	q | quiet ) QUIET=0;;
-	v | verbose ) VERBOSE=0;; 
+	v | verbose ) VERBOSE=0;;
 	x | hex ) HEXTEST=0;;
   	z | zstd ) COMPRESSOR=zstd;; #alternative compressor and its extension
     ??* ) printf "$PROGN quitting, invalid long option: $OPT\n" >&2; usage; exit 2;;  
@@ -174,10 +177,10 @@ if [ $VERBOSE ]; then
 fi
 
 # name the verified global parameters
-INDIR=${1%/} # strip any trailing /
 INDEXFILE=`pwd`/_idx.tmp
 OUTFILE=`pwd`/_out.tmp
-printf "$PROGN: compressing directory '$INDIR'\n" 
+INDIR=${1%/} # strip any trailing /
+printf "$PROGN: compressing directory '$INDIR'\n"
 printf "$INDIR," > $INDEXFILE # record the indir path/name
 packdir "$INDIR" # pack the directory into INDEXFILE and OUTFILE
 # compress and encrypt indexfile
