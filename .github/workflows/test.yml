@@ -11,24 +11,8 @@ jobs:
     - uses: actions-rs/toolchain@v1    
       with:
         toolchain: stable
-    - name: setpaths
-      run: |
-        echo "$HOME/bin" >> $GITHUB_PATH
-    - name: compile
-      run: |
-        for F in xorfork symcrypt hexcheck hexify; do
-          [ ${F}dir/src/main.rs -nt bin/$F ] && {
-            cargo install -q -f --path ${F}dir --root .
-            strip bin/$F
-            chmod 755 bin/$F 
-          } 
-        done
-    - name: install_scripts
-      run: |
-        for F in keygen ncrpt dcrpt pack unpack crptest packtest; do
-          cp $F ./bin
-          chmod 755 bin/$F
-        done
+    - name: install
+      run: source ./install 
     - name: tests
       run: | 
         crptest testing > test.log
