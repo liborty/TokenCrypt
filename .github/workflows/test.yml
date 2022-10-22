@@ -11,9 +11,10 @@ jobs:
     - uses: actions-rs/toolchain@v1    
       with:
         toolchain: stable
-    - name: setpath
+    - name: setpaths
       run: |
-        echo "$HOME:$HOME/bin" >> $GITHUB_PATH
+        echo "$HOME/bin" >> $GITHUB_PATH
+        echo "$HOME" >> $GITHUB_PATH
         echo $GITHUB_PATH
     - name: compile
       run: |
