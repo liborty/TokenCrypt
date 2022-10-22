@@ -23,16 +23,15 @@ function processfile {
 	local EX=${EX,,} # convert to lower case, to detect both cases
 	# if EX is on NOCOMPRESS list, then skip compression 
     for KEEPEXT in "${NOCOMPRESS[@]}"; do
-        if [ "$EX" = "$KEEPEXT" ]; then
-            keygen "$INFILE" > "$KEYFILE.u"
-            symcrypt < "$INFILE" "$KEYFILE.u" > "$OUTFILE"
+        [ "$EX" = "$KEEPEXT" ] && {
+            xorfork < "$INFILE" "$OUTFILE" > "$KEYFILE.u"
 		    return
-        fi
+        } 
 	done
 
     if [ $HEXTEST ] && hexcheck < "$INFILE" > "$OUTFILE".tmp 2>/dev/null; then 
 		local CH='h' # hexadecimal compression enabled and detected
-		local INFILE="$OUTFILE".tmp 
+		local INFILE="$OUTFILE.tmp" 
 	else if [ $B64TEST ] &&	base64 -d -w 0 "$INFILE" > "$OUTFILE".tmp 2>/dev/null; then 
 		local CH='b' # base64 compression enabled and detected 
 		local INFILE="$OUTFILE".tmp 
@@ -67,10 +66,10 @@ function processfile {
 		
 	# generate key of the same size as infile,
 	# encrypt with it and write to OUTFILE.$CH 
-	xorfork < "$INFILE" "$OUTFILE" > "$KEYFILE".$CH
+	xorfork < "$INFILE" "$OUTFILE" > "$KEYFILE"."$CH"
 	# clean up
-	if [ -e "$OUTFILE.tmp" ]; then rm "$OUTFILE.tmp"; fi 
-	if [ -e "$OUTFILE.cmp" ]; then rm "$OUTFILE.cmp"; fi 
+	if [ -e "$OUTFILE.tmp" ]; then rm "$OUTFILE".tmp; fi 
+	if [ -e "$OUTFILE.cmp" ]; then rm "$OUTFILE".cmp; fi 
 } # end of processfile
 
 # function to process a whole directory
@@ -90,9 +89,9 @@ function processdir {
         [[ "$ITEM" == '*' ]] && break; # no more  
    		if [ -d "$ITEM" ]; then  # directory
 			[ "$IGNORE" ] && continue; 
-			processdir "$ITEM" "../$2"/"$ITEM" "../$3"/"$ITEM" & # push ITEM onto paths
+			processdir "$ITEM" ../"$2/$ITEM" ../"$3/$ITEM" & # push ITEM onto paths
         else # process only genuine file
-       		[ -f "$ITEM" ] && processfile "$ITEM" "../$2"/"$ITEM" "../$3"/"$ITEM" & 
+       		[ -f "$ITEM" ] && processfile "$ITEM" ../"$2/$ITEM" ../"$3/$ITEM" & 
         fi
 	done
     cd ..
@@ -117,8 +116,8 @@ function updatedir {
     # iterate through the indir listing
 	for ITEM in *; do 
         [[ "$ITEM" == '*' ]] && break; # no more 
-        local KD="../$2"/"$ITEM" # corresponding $keydir path
-        local OD="../$3"/"$ITEM" # corresponding $outdir path 
+        local KD=../"$2/$ITEM" # corresponding $keydir path
+        local OD=../"$3/$ITEM" # corresponding $outdir path 
    		if [ -d "$ITEM" ]; then  # directory
 			[ "$IGNORE" ] && continue; 
             [ -d "$OD" ] || { # matching dir does not exist
@@ -169,8 +168,8 @@ function cleandir {
     # iterate through the outdir listing
 	for OD in *; do 
         [[ "$OD" == '*' ]] && break; # no more 
-        local ID="../$1"/"$OD" # corresponding $indir path
-        local KD="../$2"/"$OD" # corresponding $keydir path
+        local ID=../"$1/$OD" # corresponding $indir path
+        local KD=../"$2/$OD" # corresponding $keydir path
    		if [ -d "$OD" ]; then  # directory
 			[ "$IGNORE" ] && continue; 
             [ -d "$ID" ] || { # matching input dir does not exist
@@ -243,14 +242,6 @@ shift $((OPTIND-1)) # remove parsed options and args from $@ list
 	printf "$PROGN quitting, input directory $1 not found\n" >&2
 	exit 2
 }
-[ -e "$2" ] && { 
-	printf "$PROGN processdir: keydir $2 already exists!\n" >&2
-	exit 2
-}
-[ -e "$3" ] && { 
-	printf "$PROGN processdir: outdir $3 already exists!\n" >&2
-	exit 2
-}
 
 # Validate the compressor. It has been set either to lzma or zstd
 [ -z $( which "$COMPRESSOR" ) ] && { 
@@ -263,16 +254,24 @@ if [ $VERBOSE ]; then
 	if [ "$COMPRESSOR" = 'lzma' ]; then FLAGS='-c -z -v';	else FLAGS='-c'; fi
 fi
 
-if [ $UPDATE ]; then 
-	if [ $CLEAN ]; then 
+if [ $UPDATE ]; then
+	[ $CLEAN ] && { 
 		printf "$PROGN: cleaning up archive dir '$3', using %d cores\n" $( grep -c ^processor /proc/cpuinfo ) 
-		cleandir $1 $2 $3
-	fi
+		cleandir "$1" "$2" "$3"
+    }
 	printf "$PROGN: updating archive dir '$3', using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
-	updatedir $1 $2 $3
+	updatedir "$1" "$2" "$3"
 else
-	printf "$PROGN: encrypting dir '$1', using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
-	processdir $1 $2 $3
+    printf "$PROGN: encrypting dir '$1', using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
+    [ -e "$2" ] && { 
+	printf "$PROGN: keydir $2 already exists!\n" >&2
+	exit 2
+    }
+    [ -e "$3" ] && { 
+	printf "$PROGN: outdir $3 already exists!\n" >&2
+	exit 2
+    }
+	processdir "$1" "$2" "$3"
 fi
 
 # optional final report

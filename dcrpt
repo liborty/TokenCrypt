@@ -46,11 +46,11 @@ function processdir {
         [[ "$ITEM" == '*' ]] && break; # no more 
    		if [ -d "$ITEM" ]; then  # directory
 			[ "$IGNORE" ] && continue; 
-			processdir "../$1/$ITEM" "$ITEM" "../$3"/"$ITEM" & 
+			processdir ../"$1/$ITEM" "$ITEM" ../"$3/$ITEM" & 
         else # process only genuine file
        		[ -f "$ITEM" ] && {
                 local ROOTN="${ITEM%.*}" # remove keyfile's encoding extension
-                processfile "../$1"/"$ROOTN" "$ITEM" "../$3"/"$ROOTN" & 
+                processfile ../"$1/$ROOTN" "$ITEM" ../"$3/$ROOTN" & 
             }
         fi
 	done
@@ -69,7 +69,8 @@ function helpmsg {
 	exit 1
 }
 
-# Main starts here
+##################### Main starts here #######################################
+
 # get options, including long options, extracted as arg to the last option '-'
 while getopts hiqv-: OPT; do
  if [ "$OPT" = "-" ]; then   # long option: reset OPT and OPTARG

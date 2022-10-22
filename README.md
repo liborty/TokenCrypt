@@ -208,7 +208,9 @@ Note that TokenCrypt does not leave any such large hidden footprints on your fil
 
 ## Releases Log (the latest first)
 
-**21-Oct-22** - Windowsy names of files and directories (with internal spaces) are now processed correctly, opening the possibility of using TokenCrypt on Windows. Simplification: `dcrpt` is no longer reading old style file archives as well as the encrypted directories. Tar is no longer needed at all.
+**22-Oct-22** - Cleaned up, mostly `ncrpt` and `dcrpt`.
+
+**21-Oct-22** - 'Windowsy' names of files and directories (with internal spaces) are now processed correctly, opening the possibility of using TokenCrypt even on Windows. Simplification: `dcrpt` is no longer reading old style file archives as well as the encrypted directories. Tar is no longer needed at all.
 
 **20-Oct-22** - Release 1.1.0 Even safer and more compact. Fixed a bug in `xorfork` and swapped its outputs, so it now writes output into `outfile` and key data to `stdout`. Converted `pack` and `unpack` to use three archive files for increased security.
 
