@@ -12,7 +12,7 @@ jobs:
       with:
         toolchain: stable
     - run: |
-        echo "$HOME/.:$HOME/bin" >> $GITHUB_PATH
+        echo "$HOME:$HOME/bin" >> $GITHUB_PATH
         for F in xorfork symcrypt hexcheck hexify; do
           [ ${F}dir/src/main.rs -nt bin/$F ] && {
             cargo install -q -f --path ${F}dir --root .
