@@ -9,13 +9,16 @@ PROGN=${0##*/}
 # takes one argument: outputdir
 # reads from file descriptor 3
 function importdir {
-    cd "$1"
+    cd "$1" || {
+        printf "$PROGN importdir: failed to change to directory $1!\n" >&2
+        exit 2
+    }
 	# create subdirectories
     while true; do
         read -r -d ',' NAME
         [ -z "$NAME" ] && break; # no more subdirs
 	    mkdir "$NAME" || {
-		    printf "$PROGN importdir: failed to create output directory '$1/$NAME'!\n" >&2
+		    printf "$PROGN importdir: failed to create output directory $1/$NAME!\n" >&2
 		    exit 2
 	    } 
         importdir "$NAME" # recursive descent into subdir

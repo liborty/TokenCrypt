@@ -9,13 +9,13 @@ NOCOMPRESS=( 'jpg' 'jpeg' 'mp4' 'zip' '7z' 'lz' 'zst' 'gz' 'tgz' 'bz2' )
 
 # writes to global TEMPFILE
 function packdir {
-    cd "$1" # must be quoted or fails on windozy dirs with spaces!
-    [ $? -ne 0 ] && { 
-        printf "$PROGN: failed to cd to $1\n"
+    cd "$1" || { # must be quoted or fails on windozy dirs with spaces!
+        printf "$PROGN packdir: failed to change to directory $1!\n" >&2
         exit 2
     }
+
     # if recursing, process the subdirectories first (depth first descent)
-    [ -n "$IGNORE" ] || {
+    [ $IGNORE ] || {
         for D in */; do
             [[ "$D" == '*/' ]] && break; # no more dirs
             D=${D%/} # strip off the trailing slash

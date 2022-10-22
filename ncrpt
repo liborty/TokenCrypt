@@ -76,20 +76,20 @@ function processfile {
 # function to process a whole directory
 # takes three arguments: INDIR KEYDIR OUTDIR
 function processdir {
-
 	# create the ouput directories
 	mkdir "$2" "$3" || {
 		printf "$PROGN quitting, failed to create output directories '$2' '$3'!\n" >&2
 		exit 2
 	}
-	
-    cd "$1"
-
+    cd "$1" || { # must be quoted or fails on windozy dirs with spaces!
+        printf "$PROGN processdir: failed to change to directory $1!\n" >&2
+        exit 2
+    }
 	# iterate through the listing
 	for ITEM in *; do 
         [[ "$ITEM" == '*' ]] && break; # no more  
    		if [ -d "$ITEM" ]; then  # directory
-			[ -n "$IGNORE" ] && continue; 
+			[ "$IGNORE" ] && continue; 
 			processdir "$ITEM" "../$2"/"$ITEM" "../$3"/"$ITEM" & # push ITEM onto paths
         else # process only genuine file
        		[ -f "$ITEM" ] && processfile "$ITEM" "../$2"/"$ITEM" "../$3"/"$ITEM" & 
@@ -102,7 +102,6 @@ function processdir {
 # function to update a whole directory
 # takes three arguments: INDIR KEYDIR OUTDIR
 function updatedir {
-
 	[ -d "$2" ] || {
 		printf "$PROGN updatedir: key dir $2 is invalid\n" >&2
 		exit 2
@@ -111,81 +110,85 @@ function updatedir {
 		printf "$PROGN updatedir: output dir $3 is invalid\n" >&2
 		exit 2
 	}
-
-	# iterate through the listing checking for newer items
-	for ITEM in $(ls -ALB $1); do
-		local ID="$1"/"$ITEM" # append $ITEM to $INDIR path
-		local OD=$3/$ITEM # and corresponding $outdir path
-
-   		if [ -d "$ID" ]; then  # process existing subdirectory?
-			[ -n "$IGNORE" ] && continue; # not recursing, ignore this subdir
-			[ -d "$OD" ] || { # here matching dir does not exist
-				printf " A: $ID\n" # so add it					
-				processdir $ID $2/$ITEM $OD & # push ITEM onto paths 
+    cd "$1" || { # must be quoted or fails on windozy dirs with spaces!
+        printf "$PROGN updatedir: failed to change to directory $1!\n" >&2
+        exit 2
+    }
+    # iterate through the indir listing
+	for ITEM in *; do 
+        [[ "$ITEM" == '*' ]] && break; # no more 
+        local KD="../$2"/"$ITEM" # corresponding $keydir path
+        local OD="../$3"/"$ITEM" # corresponding $outdir path 
+   		if [ -d "$ITEM" ]; then  # directory
+			[ "$IGNORE" ] && continue; 
+            [ -d "$OD" ] || { # matching dir does not exist
+				printf " A: $ITEM\n" # so add it					
+				processdir "$ITEM" "$KD" "$OD" & # push ITEM onto paths 
 				continue
 			}
-			# test the dirs modification times
+            # test the dirs modification times
 			# note that -nt only works for additions/deletions to dirs			
-			[ $(stat -c%Y $ID) -gt $(stat -c%Y "$OD") ] && { 
-				printf " U: $ID\n" # so update it
-				updatedir $ID $2/$ITEM $OD &
+			[ $(stat -c%Y "$ITEM") -gt $(stat -c%Y "$OD") ] && { 
+				printf " U: $ITEM\n" # input dir is newer, so update
+				updatedir "ITEM" "$KD" "$OD" &
 				continue
             }
-			continue # up to date dir
-		fi
-   		[ -f "$ID" ] || continue; # ignore if not genuine file 
-		[ -e "$OD" ] || { # $OD file does not exist
-			printf "   a: $ID\n" # so add it
-			processfile $ID $2/$ITEM $OD  
+            continue # up to date dir
+        else 
+            [ -f "$ITEM" ] || continue; # ignore if not genuine file 
+		    [ -e "$OD" ] || { # matching $OD file does not exist
+			    printf "   a: $ITEM\n" # so add it
+			    processfile "$ITEM" "$KD" "$OD"  
 			continue
 		}
-		[ "$ID" -nt "$OD" ] && {  # here the input file is newer 
+		[ "$ITEM" -nt "$OD" ] && {  # here the input file is newer 
 			printf "   u: $ID\n" # so update it
-   			processfile $ID $2/$ITEM $OD  
+   			processfile "$ITEM" "$KD" "$OD"  
         } # else just skip it
+        fi
 	done
+    cd ..
 	wait
 } # end of updatedir
 
 # function to clean up a whole directory
 # takes three arguments: INDIR KEYDIR OUTDIR
 function cleandir {
-
-	[ -d "$1" ] || {
-		printf "$PROGN clean: input dir $1 is invalid\n" >&2
+    [ -d "$1" ] || {
+		printf "$PROGN updatedir: input dir $1 is invalid\n" >&2
 		exit 2
 	}
 	[ -d "$2" ] || {
-		printf "$PROGN clean: key dir $2 is invalid\n" >&2
+		printf "$PROGN updatedir: key dir $2 is invalid\n" >&2
 		exit 2
 	}
-	[ -d "$3" ] || {
-		printf "$PROGN clean: output dir $3 is invalid\n" >&2
-		exit 2
-	}
-
-	# iterate through the list checking for missing items
-	for ITEM in $(ls -ALB $3); do
-		local ID=$1/$ITEM # append $ITEM to $INDIR path
-		local KD=$2/$ITEM # append $ITEM to $KEYDIR path
-		local OD=$3/$ITEM # and the examined $OUTDIR path
-
-   		if [ -d "$OD" ]; then  # process existing subdirectory?
-			[ -n "$IGNORE" ] && continue; # not recursing, ignore this subdir 
-			[ -d "$ID" ] || { # here matching $INDIR dir does not exist
-				printf " D: $OD $KD\n" # so remove it 
+    cd "$3" || { # must be quoted or fails on windozy dirs with spaces!
+        printf "$PROGN cleandir: failed to change to directory $3!\n" >&2
+        exit 2
+    }
+    # iterate through the outdir listing
+	for OD in *; do 
+        [[ "$OD" == '*' ]] && break; # no more 
+        local ID="../$1"/"$OD" # corresponding $indir path
+        local KD="../$2"/"$OD" # corresponding $keydir path
+   		if [ -d "$OD" ]; then  # directory
+			[ "$IGNORE" ] && continue; 
+            [ -d "$ID" ] || { # matching input dir does not exist
+            	printf " D: $OD $KD\n" # so remove it 
 				rm -rf "$OD" "$KD" &
 				continue
-			}			
-			cleandir $ID $KD $OD &  # descend
-		fi
-   		[ -f "$OD" ] || continue; # only process genuine files now 
-		[ -e "$ID" ] || { # here $ID file does not exist
-			printf "   d: $OD $KD.*\n" # so delete them
-			rm $OD $KD.* 
+			}
+            cleandir "$ID" "$KD" "$OD" &  # descend
+        else 
+           	[ -f "$OD" ] || continue; # only process genuine files now 
+		    [ -e "$ID" ] || { # here $ID file does not exist
+			printf "   d: $OD $KD.*\n" # so delete it from outdir and keydir
+			rm "$OD" "$KD".* 
 			continue
-		}
+		    } 
+        fi
 	done
+    cd ..
 	wait
 } # end of cleandir
 

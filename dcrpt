@@ -35,20 +35,17 @@ function processfile {
 # function to process a whole directory
 # takes three arguments: INDIR KEYDIR OUTDIR
 function processdir {
-
     # create the ouput directory
-   mkdir "$3" || {
+    mkdir "$3" || {
 		printf "$PROGN processdir: failed to create output directory $3!\n" >&2
 		exit 2
 	}
-
     cd "$2" # reading the keydir
-
 	# iterate through the listing
 	for ITEM in *; do 
         [[ "$ITEM" == '*' ]] && break; # no more 
    		if [ -d "$ITEM" ]; then  # directory
-			[ -n "$IGNORE" ] && continue; 
+			[ "$IGNORE" ] && continue; 
 			processdir "../$1/$ITEM" "$ITEM" "../$3"/"$ITEM" & 
         else # process only genuine file
        		[ -f "$ITEM" ] && {
