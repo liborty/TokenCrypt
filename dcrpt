@@ -61,7 +61,7 @@ function processdir {
 	wait
 } # end of processdir
 
-function usage { printf "Usage: $PROGN -[h][q][r][v] indir keyfile outdir\n" >&2; }
+function usage { printf "Usage: $PROGN -[h][q][r][v] indir keydir outdir\n" >&2; }
 function helpmsg {
 	usage
 	printf "\t%s\n" \
@@ -128,8 +128,8 @@ fi
 
 if [ -d "$1" ] && [ -d "$2" ]; then 
 	processdir "$1" "$2" "$3"
-	printf "$PROGN: decrypting '$1'+'$2' => '$3'\n"
-    printf "$PROGN: using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
+	printf "$PROGN: decrypting dirs '$1' & '$2'\n"
+    printf "$PROGN: into dir '$3', using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
 	wait
 else
 	printf "$PROGN: inputs '$1' '$2' must be both directories\n" >&2
@@ -138,7 +138,7 @@ fi
 
 # optional final report
 if ! [ $QUIET ]; then
-	SIZES=( `du -hbs $3 $1` ) # array of size,dir,size,dir
-	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} (%s%%) => $3\n" \
+	SIZES=( `du -hbs "$3" "$1"` ) # array of size,dir,size,dir
+	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} (%s%%) => $3 (100%%)\n" \
 	$(( 100*${SIZES[2]}/${SIZES[0]} )) # calculate percentage
 fi

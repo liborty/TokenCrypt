@@ -262,20 +262,20 @@ fi
 
 if [ $UPDATE ]; then 
 	if [ $CLEAN ]; then 
-		printf "$PROGN: cleaning up archive '$3', using %d cores\n" $( grep -c ^processor /proc/cpuinfo ) 
+		printf "$PROGN: cleaning up archive dir '$3', using %d cores\n" $( grep -c ^processor /proc/cpuinfo ) 
 		cleandir $1 $2 $3
 	fi
-	printf "$PROGN: updating archive '$3', using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
+	printf "$PROGN: updating archive dir '$3', using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
 	updatedir $1 $2 $3
 else
-	printf "$PROGN: encrypting '$1', using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
+	printf "$PROGN: encrypting dir '$1', using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
 	processdir $1 $2 $3
 fi
 
 # optional final report
 if ! [ $QUIET ]; then
-	SIZES=( $( du -bs $3 $1 ) ) # array of size,dir,size,dir
-	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} => ${SIZES[1]} ${SIZES[0]} (%d%%)\n" \
+	SIZES=( $( du -bs "$3" "$1" ) ) # array of size,dir,size,dir
+	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} (100%%) => ${SIZES[1]} ${SIZES[0]} (%d%%)\n" \
 		$(( 100*${SIZES[0]}/${SIZES[2]} )) # calculate percentage 
-	printf "$PROGN: keys are in '$2'\n"
+	printf "$PROGN: keys are in dir '$2'\n"
 fi

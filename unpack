@@ -138,15 +138,10 @@ head -c $INDEXSIZE "$3" | symcrypt "$1" | lzma -d | {
     importdir "$DIRNAME"
     rm "$INFILE" # clean up
 
-    # optional final report
-    if ! [ $QUIET ]; then
-	    SIZES=( `du -hbs "$DIRNAME" "$3"` ) # array of size,dir,size,file
-	    printf "$PROGN: ${SIZES[3]} ${SIZES[2]} %s"
-	    if [ ${SIZES[0]} = ${SIZES[2]} ]; then 
-            printf "(100 %%) => ${SIZES[1]} ${SIZES[0]}\n"
-        else
-		    CR=$(( 100*${SIZES[2]}/${SIZES[0]} )) # calculate percentage rounded to two d.p.	
-		    printf "($CR %%) => ${SIZES[1]}: ${SIZES[0]}\n"
-	    fi
-    fi
-}
+# optional final report
+if ! [ $QUIET ]; then
+	SIZES=( `du -hbs "$DIRNAME" "$3"` ) # array of size,dir,size,dir
+	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} (%s%%) => ${SIZES[1]} ${SIZES[0]} (100%%)\n" \
+	$(( 100*${SIZES[2]}/${SIZES[0]} )) # calculate percentage
+fi
+} 

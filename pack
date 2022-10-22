@@ -187,12 +187,8 @@ xorfork < "$OUTFILE" "$3" >> "$4"
 rm "$INDEXFILE" "$OUTFILE" # remove the temporary files
 
 # optional final report
-if [ ! $QUIET ]; then
-	SIZES=( $( du -bs "$4" "$INDIR" ) ) # array of size keyfile size indir
-	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} => ${SIZES[1]} ${SIZES[0]} "
-	if [ ${SIZES[0]} = ${SIZES[2]} ]; then printf "(100 %%)\n";
-	else
-		CR=$(( 100*${SIZES[0]}/${SIZES[2]} )) # calculate percentage rounded to two d.p.	
-		printf "($CR %%)\n" # compression ratio printed as a percentage
-	fi
+if ! [ $QUIET ]; then
+	SIZES=( `du -hbs "$4" "$INDIR"` ) # array of size,dir,size,dir
+	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} (100%%) => ${SIZES[1]} ${SIZES[0]} (%s%%)\n" \
+	$(( 100*${SIZES[0]}/${SIZES[2]} )) # calculate percentage
 fi
