@@ -12,7 +12,14 @@ jobs:
       with:
         toolchain: stable
     - run: |
-        source ./install
+        echo "$HOME/.:$HOME/bin" >> $GITHUB_PATH
+        for F in xorfork symcrypt hexcheck hexify; do
+          [ ${F}dir/src/main.rs -nt bin/$F ] && {
+            cargo install -q -f --path ${F}dir --root .
+            strip bin/$F
+            chmod 755 bin/$F 
+          } 
+        done 
         crptest testing > test.log
         echo >> test.log
         packtest testing >> test.log

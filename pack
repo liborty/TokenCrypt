@@ -135,7 +135,6 @@ done
 shift $((OPTIND-1)) # remove parsed options and args from $@ list
 
 # Globally validate the program arguments
-
 [ "$#" -ne 4 ] && {
     printf "$PROGN expected four arguments, "$#" given!\n" >&2
     exit 2

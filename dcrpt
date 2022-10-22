@@ -128,7 +128,8 @@ fi
 
 if [ -d "$1" ] && [ -d "$2" ]; then 
 	processdir "$1" "$2" "$3"
-	printf "$PROGN: decrypting '$1' + '$2' => '$3'\n"
+	printf "$PROGN: decrypting '$1'+'$2' => '$3'\n"
+    printf "$PROGN: using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
 	wait
 else
 	printf "$PROGN: inputs '$1' '$2' must be both directories\n" >&2
@@ -138,11 +139,6 @@ fi
 # optional final report
 if ! [ $QUIET ]; then
 	SIZES=( `du -hbs $3 $1` ) # array of size,dir,size,dir
-	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} "
-	if [ ${SIZES[0]} = ${SIZES[2]} ]; then printf "(100 %%) => ${SIZES[1]} ${SIZES[0]}\n"; else
-		CR=$(( 100*${SIZES[2]}/${SIZES[0]} )) # calculate percentage rounded to two d.p.	
-		printf "($CR %%)\n" # compression ratio printed as a percentage
-	fi
-	# compressed size x 10^5, printed as xx.xx% 
-	printf "$PROGN: restored '$3'\n"
+	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} (%s%%) => $3\n" \
+	$(( 100*${SIZES[2]}/${SIZES[0]} )) # calculate percentage
 fi

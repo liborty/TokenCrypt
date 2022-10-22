@@ -77,23 +77,6 @@ function processfile {
 # takes three arguments: INDIR KEYDIR OUTDIR
 function processdir {
 
-	[ -z "$2" ] && { 
-		printf "$PROGN processdir: keydir not given!\n" >&2
-		exit 2
-	}
-	[ -e "$2" ] && { 
-		printf "$PROGN processdir: keydir $2 already exists!\n" >&2
-		exit 2
-	}
-	[ -z "$3" ] && { 
-		printf "$PROGN processdir: outdir not given!\n" >&2
-		exit 2
-	}
-	[ -e "$3" ] && { 
-		printf "$PROGN processdir: outdir $3 already exists!\n" >&2
-		exit 2
-	}
-
 	# create the ouput directories
 	mkdir "$2" "$3" || {
 		printf "$PROGN quitting, failed to create output directories '$2' '$3'!\n" >&2
@@ -247,13 +230,26 @@ while getopts bchiquvxz-: OPT; do
 done
 shift $((OPTIND-1)) # remove parsed options and args from $@ list
 
-# Globally validate the input directory
+# Validate the program arguments
+[ "$#" -ne 3 ] && {
+    printf "$PROGN expected three arguments, "$#" given!\n" >&2
+    exit 2
+}
+# Validate the input directory
 [ -d "$1" ] || { 
 	printf "$PROGN quitting, input directory $1 not found\n" >&2
 	exit 2
 }
+[ -e "$2" ] && { 
+	printf "$PROGN processdir: keydir $2 already exists!\n" >&2
+	exit 2
+}
+[ -e "$3" ] && { 
+	printf "$PROGN processdir: outdir $3 already exists!\n" >&2
+	exit 2
+}
 
-# Globally validate the compressor. It has been set either to lzma or zstd
+# Validate the compressor. It has been set either to lzma or zstd
 [ -z $( which "$COMPRESSOR" ) ] && { 
 	printf "$PROGN quitting, compressor utility $COMPRESSOR not found\n" >&2
 	exit 2
@@ -266,7 +262,7 @@ fi
 
 if [ $UPDATE ]; then 
 	if [ $CLEAN ]; then 
-		printf "$PROGN: cleaning up archive '$3'\n" 
+		printf "$PROGN: cleaning up archive '$3', using %d cores\n" $( grep -c ^processor /proc/cpuinfo ) 
 		cleandir $1 $2 $3
 	fi
 	printf "$PROGN: updating archive '$3', using %d cores\n" $( grep -c ^processor /proc/cpuinfo )
@@ -279,12 +275,7 @@ fi
 # optional final report
 if ! [ $QUIET ]; then
 	SIZES=( $( du -bs $3 $1 ) ) # array of size,dir,size,dir
-	# let "SIZES[0]-=4096"
-	# let "SIZES[2]-=4096"	
-	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} => ${SIZES[1]} ${SIZES[0]} "
-	if [ ${SIZES[0]} = ${SIZES[2]} ]; then printf "(100 %%)\n"; else
-		CR=$(( 100*${SIZES[0]}/${SIZES[2]} )) # calculate percentage 
-		printf "($CR %%)\n" # compression ratio printed as a percentage
-	fi 
+	printf "$PROGN: ${SIZES[3]} ${SIZES[2]} => ${SIZES[1]} ${SIZES[0]} (%d%%)\n" \
+		$(( 100*${SIZES[0]}/${SIZES[2]} )) # calculate percentage 
 	printf "$PROGN: keys are in '$2'\n"
 fi

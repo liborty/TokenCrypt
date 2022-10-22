@@ -6,7 +6,7 @@
 PROGN=${0##*/}
 # make this output unique to facilitate git commit working in 
 # automated tests run at github actions:
-printf "$PROGN run on: %s %s %s %s\n" $( date -u "+%d.%m.%y at %H:%M:%S %Z" )
+printf "$PROGN run on: %s %s %s %s\n\n" $( date -u "+%d.%m.%y at %H:%M:%S %Z" )
 
 case $# in
 	0)
@@ -36,6 +36,7 @@ if [ -d "$ORGDIR" ]; then
 
 # encrypt and decrypt
 ncrpt -xb $1 $KEYDIR $OUTDIR
+printf "\n"
 dcrpt $OUTDIR $KEYDIR $ORGDIR
-diff -bqr $1 $ORGDIR && printf "$PROGN: '$1' and '$ORGDIR' are identical\n"
-rm -rf $ORGDIR $OUTDIR $KEYDIR >&2
+diff -bqr "$1" "$ORGDIR" && printf "\n$PROGN: '$1' and '$ORGDIR' are identical\n"
+rm -rf "$ORGDIR" "$OUTDIR" "$KEYDIR" >&2
