@@ -11,25 +11,27 @@ jobs:
     - uses: actions-rs/toolchain@v1    
       with:
         toolchain: stable
-    - run: |
-        echo "$HOME:$HOME/bin" >> $GITHUB_PATH
+    - name: setpath
+      run: echo "$HOME:$HOME/bin" >> $GITHUB_PATH
+    - name: compile
+      run: |
         for F in xorfork symcrypt hexcheck hexify; do
           [ ${F}dir/src/main.rs -nt bin/$F ] && {
             cargo install -q -f --path ${F}dir --root .
             strip bin/$F
             chmod 755 bin/$F 
           } 
-        done 
+        done
+    - name: tests
+      run: |
         crptest testing > test.log
         echo >> test.log
-        packtest testing >> test.log
-            
+        packtest testing >> test.log            
     - name: commitlog
       run: |
         git config user.email "457124+liborty@users.noreply.github.com"
         git config user.name "liborty"
         git commit -am 'action:test.log'
-
     - name: push
       uses: ad-m/github-push-action@master
       with: 
