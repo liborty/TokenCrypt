@@ -26,12 +26,11 @@ jobs:
     - name: install_scripts
       run: |
         for F in keygen ncrpt dcrpt pack unpack crptest packtest; do
-          cp $F bin
+          cp $F ./bin
           chmod 755 bin/$F
         done
     - name: tests
-      run: |
-        echo $PATH
+      run: | 
         crptest testing > test.log
         echo >> test.log
         packtest testing >> test.log            
