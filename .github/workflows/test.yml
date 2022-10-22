@@ -14,8 +14,6 @@ jobs:
     - name: setpaths
       run: |
         echo "$HOME/bin" >> $GITHUB_PATH
-        echo "$HOME" >> $GITHUB_PATH
-        echo $GITHUB_PATH
     - name: compile
       run: |
         for F in xorfork symcrypt hexcheck hexify; do
@@ -25,8 +23,15 @@ jobs:
             chmod 755 bin/$F 
           } 
         done
+    - name: install_scripts
+      run: |
+        for F in keygen ncrpt dcrpt pack unpack crptest packtest; do
+          cp $F bin
+          chmod 755 bin/$F
+        done
     - name: tests
       run: |
+        echo $PATH
         crptest testing > test.log
         echo >> test.log
         packtest testing >> test.log            
