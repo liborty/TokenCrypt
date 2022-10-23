@@ -11,7 +11,7 @@ By downloading this software, you agree not to use it for unethical purposes.
 
 Run it only on systems where `/dev/urandom` returns truly random bytes. Better not use it for large archives immediately after reboot, as the operating system may not have yet gathered enough physical randomness from user interactions. 'Headless' servers may be problematic in this regard.
 
-An input directory is compressed and encrypted by `ncrpt` into two separate output directories, with user specified names. The original directory can be restored from them by the use of `dcrpt`. These two scripts are suitable for local archive maintenance only.
+An input directory is compressed and encrypted by `ncrpt` into two separate output directories, with user specified names. The original directory can be restored from them by `dcrpt`. These two scripts are suitable for local archive maintenance only.
 
 For exports, use `pack` (`unpack`), which archives (restores) the directory tree to (from) three flat archive files. This is more compact and significantly more secure in transit and storage.
 
@@ -233,12 +233,22 @@ Note that TokenCrypt does not leave any such large hidden footprints on your fil
 
 **19-Dec-21** - Release 1.0.3. Some code tidying and minor simplifications. No change in functionality.
 
+## Todo List
+
+* add option -d 'list'(--dirsexclude ) to `pack` to leave out named directories.
+
+* add option -f 'list' (--filesexclude ) to leave out named files.
+
+* allow wildcards (*) in -d and -f list items to ignore all matching directories and files (this carries some computing burden).
+
+Activating these options would of course make `packtest` in its present form fail.
+
 ## References and Further Information
 
 1. [Bash for Fun](https://www.lulu.com/shop/libor-spacek/bash-for-fun/ebook/product-nerj22.html?q=&page=1&pageSize=4)  
-Some of the techniques used in TokenCrypt
-are explained (amongst other things) in this book on Bash programming. 
+My book on Bash programming, with specific references to some of the techniques used in TokenCrypt.
+
 
 1. There is a blog [On Encryption and E-Democracy](https://oldmill.cz/2020-06-10-crypt.html) that describes in plain English the properties of XOR encryption and some interesting applications, primarily a model proposal for safe E-Democracy.
   
-1. Blog [Multithreading Automation](https://oldmill.cz/2021-11-24-joy-of-bashing2.html) describing the scheduling of the background tasks within this project.
+1. Blog [Multithreading Automation](https://oldmill.cz/2021-11-24-joy-of-bashing2.html) describing the scheduling of the background tasks in this project (by `ncrpt` and `dcrpt`).
