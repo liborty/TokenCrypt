@@ -68,8 +68,8 @@ function processfile {
 	# encrypt with it and write to OUTFILE.$CH 
 	xorfork < "$INFILE" "$OUTFILE" > "$KEYFILE"."$CH"
 	# clean up
-	if [ -e "$OUTFILE.tmp" ]; then rm "$OUTFILE".tmp; fi 
-	if [ -e "$OUTFILE.cmp" ]; then rm "$OUTFILE".cmp; fi 
+	if [ -e "$OUTFILE".tmp ]; then rm "$OUTFILE".tmp; fi 
+	if [ -e "$OUTFILE".cmp ]; then rm "$OUTFILE".cmp; fi 
 } # end of processfile
 
 # function to process a whole directory

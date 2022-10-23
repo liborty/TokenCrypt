@@ -25,17 +25,19 @@ function packdir {
             packdir "$D" # recurse       
         done
     }
-    printf "," >> $INDEXFILE  # mark the end of directories section (with ,,)
+     # mark the end of subdirectories (with ,,) for tree parsing by unpack
+    printf "," >> $INDEXFILE 
 	# process the files 
 	for FILE in *; do
         [[ "$FILE" == '*' ]] && break; # no more 
         [ -f "$FILE" ] || continue; # skip non files
-        # [ -n "$WINDOZE" ] && FILE="${FILE//[[:blank:]]/}"; # remove windozy spaces
+        # [ -n "$WINDOZE" ] && FILE="${FILE//[[:blank:]]/}"; # remove windozy spaces?
         local FSIZE=`stat -c%s "$FILE"`
-        [ -z "$FSIZE" ] && continue; # ignore zero sized files
+        [ -z "$FSIZE" ] && continue; # clean up zero sized files
         packfile "$FILE" "$FSIZE" # process this file
 	done
-    printf "," >> $INDEXFILE  # mark the end of this dir (with ,,)
+    # mark the end of files and this dir (with ,,) for tree parsing by unpack
+    printf "," >> $INDEXFILE  
     cd ..
 } # end of packdir
 
@@ -57,22 +59,22 @@ function packfile {
         fi
     done
 	local INFILE="$FILENAME" # the initial name of the file to be compressed
-    if [ $HEXTEST ] && hexcheck < "$FILENAME" > "_$FILENAME".tmp 2>/dev/null; then 
+    if [ $HEXTEST ] && hexcheck < "$FILENAME" > _"$FILENAME".tmp 2>/dev/null; then 
 		CH='h' # hexadecimal compression enabled and detected
-		local INFILE="_$FILENAME".tmp 
-	else if [ $B64TEST ] &&	base64 -d -w 0 "$FILENAME" > "_$FILENAME".tmp 2>/dev/null; then 
+		local INFILE=_"$FILENAME".tmp 
+	else if [ $B64TEST ] &&	base64 -d -w 0 "$FILENAME" > _"$FILENAME".tmp 2>/dev/null; then 
 		CH='b'  # base64 compression enabled and detected
-		local INFILE="_$FILENAME".tmp
+		local INFILE=_"$FILENAME".tmp
 		fi
 	fi
 	# regardless whether hexcheck or base64 tests above succeeded or not, 
     # apply general compression test	
-	$COMPRESSOR $FLAGS "$INFILE" > "_$FILENAME".cmp 
-	local CMPS=$( stat -c%s "_$FILENAME".cmp ) # size after compression
+	$COMPRESSOR $FLAGS "$INFILE" > _"$FILENAME".cmp 
+	local CMPS=$( stat -c%s _"$FILENAME".cmp ) # size after compression
 	local ORGS=$( stat -c%s "$INFILE" )  # size before compression
 	# use compressed version only if it is actually smaller
 	[ "$CMPS" -lt "$ORGS" ] && { # successful general compression
-		local INFILE="_$FILENAME".cmp # use the final compressed file
+		local INFILE=_"$FILENAME".cmp # use the final compressed file
 		if [ "$COMPRESSOR" = 'lzma' ]; then
 			case "$CH" in
 			u ) CH='i';;
@@ -92,8 +94,8 @@ function packfile {
     printf "$CH$FILENAME,%s," `stat -c%s "$INFILE"` >> "$INDEXFILE" 
     cat "$INFILE" >> "$OUTFILE"  # write possibly compressed file contents
     # clean up  
-	[ -e "_$FILENAME".tmp ] && rm "_$FILENAME".tmp;
-	[ -e "_$FILENAME".cmp ] && rm "_$FILENAME".cmp; 
+	[ -e _"$FILENAME".tmp ] && rm _"$FILENAME".tmp;
+	[ -e _"$FILENAME".cmp ] && rm _"$FILENAME".cmp; 
 } # end of packfile
 
 function usage { printf "Usage: $PROGN [-b][-h][-i][-q][-v][-x][-z] indir indexfile outfile keyfile\n" >&2; }

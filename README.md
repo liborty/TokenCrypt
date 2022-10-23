@@ -1,24 +1,31 @@
 # TokenCrypt [<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/liborty/tokencrypt/HEAD?logo=github">](https://github.com/liborty/tokencrypt) [![Actions Status](https://github.com/liborty/TokenCrypt/workflows/test/badge.svg)](https://github.com/liborty/TokenCrypt/actions)
 
-**Efficiently compress and securely encrypt directories trees containing  hexadecimal security tokens, base64 data, text, binary and any other types of files. High security combined with ease of use.**
+**Efficiently compress, securely encrypt and archive directories trees. High security combined with ease of use.**
 
-**Disclaimer:** use at your own risk! No warranties are given or implied. By downloading this software, you agree not to use it for unethical purposes.
+**Disclaimer:** use at your own risk! No warranties are given or implied. Backwards compatibility is not guaranteed!
+By downloading this software, you agree not to use it for unethical purposes.
 
-## Security Advice and Known Vulnerabilities
+## Practical Security Advice
 
-`TokenCrypt` uses theoretically unbreakable symmetric encryption. However, the following practical precautions need to be followed:
+`TokenCrypt` uses theoretically unbreakable symmetric encryption. However, the following precautions should be followed:
 
-Runs only on systems where `/dev/urandom` returns truly random bytes. Better not use it for large archives immediately after reboot, as the OS may not have yet gathered enough physical randomness from user interactions. Nor on 'headless' servers, where there are no mouse and keyboard interactions.
+Run it only on systems where `/dev/urandom` returns truly random bytes. Better not use it for large archives immediately after reboot, as the operating system may not have yet gathered enough physical randomness from user interactions. 'Headless' servers may be problematic in this regard.
 
-The encryption keys and the compressed and encrypted files are written by `ncrpt` into two separate output directories with user specified names. They are restored by the use of `dcrpt`. This is suitable for local use only.
+An input directory is compressed and encrypted by `ncrpt` into two separate output directories, with user specified names. The original directory can be restored from them by the use of `dcrpt`. These two scripts are suitable for local archive maintenance only.
 
-For exports, use `pack` (and `unpack`), which archive (and restore) the directory tree to/from three flat archive files. This option is more compact and significantly more secure in transit and storage.
+For exports, use `pack` (`unpack`), which archives (restores) the directory tree to (from) three flat archive files. This is more compact and significantly more secure in transit and storage.
 
-Should the implicit association between these three files be lost or forgotten, then it will not be possible to reconstruct the original data! Therefore, it is recommended to record the chosen output names and to store them in a safe place, before ever deleting the original data.
+Should one of these files be lost or the implicit association between them be forgotten, then it will not be possible to reconstruct the original data! Therefore, it is recommended to record the chosen output names and to store them in a safe place, before ever deleting the original data.
 
-The encrypted archive files are just meaningless 'random' data and thus can be stored anywhere, even 'on the cloud'. The critical part is to prevent a potential eavesdropper from matching up these three files, as that is the only way to decrypt them. That is why they are not given related names automatically. Normally, the user should choose unrelated paths/names for them and keep them well separated. As with private keys in asymmetric encryption.
+The encrypted archive files are just meaningless 'random' data and thus can be stored anywhere, even 'on the cloud'. The critical part is to prevent a potential eavesdropper from matching up these three files, as that is the only way to decrypt them. That is why they are not given related names automatically. Normally, the user should choose unrelated paths/names for them and keep them well separated. (As with private keys in asymmetric encryption).
 
-Previous versions had a vulnerability: it was in theory possible to find a match somewhere on the internet between the `keyfile` and the `outfile`, based on the fact that they were both of the same size. As of `v1.1.0`, it is much harder to guess the right combination of three different files, all three of different sizes, with different names and stored in different places (it goes without saying that their names and places should be unrelated). 
+As of `v1.1.0`, it is now much harder to guess the right combination of these files, all three being of different sizes, with different names and, hopefully, kept in different places.
+
+As a bare minimum, the `keyfile` (the last argument to `pack` and `unpack`), should be well separated from `indexfile` and `outfile`. It can be safely uploaded, on its own, to any 'cloud' location.
+
+Important directories can be tested first with `packtest` before proceeding. Gigabytes may take some minutes to process, so just run the script in the background while you get on with other things. It is still faster than many other archiving and backup tools.
+
+For complete peace of mind, save locally the repository version that was used for the successful `packtest`, in case anything happens to this github repository.
 
 ## Introduction
 
@@ -207,6 +214,8 @@ This will update only the file(s) that have changed. What may come as a surprise
 Note that TokenCrypt does not leave any such large hidden footprints on your filesystem.
 
 ## Releases Log (the latest first)
+
+**23-Oct-22** - Release 1.1.1 Housekeeping release, encapsulating the changes to date. 
 
 **22-Oct-22** - Cleaned up, mostly `ncrpt` and `dcrpt`.
 

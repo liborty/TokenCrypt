@@ -18,7 +18,7 @@ jobs:
         crptest testing > test.log
         echo >> test.log
         packtest testing >> test.log            
-    - name: commitlog
+    - name: commit
       run: |
         git config user.email "457124+liborty@users.noreply.github.com"
         git config user.name "liborty"
