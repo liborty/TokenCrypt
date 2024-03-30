@@ -1,21 +1,20 @@
-crptest run on: 30.03.24 at 13:07:01 UTC
+crptest run on: 30.03.24 at 14:31:13 UTC
 
 ncrpt: encrypting dir 'testing', using 4 cores
-ncrpt: testing 169382 (100%) => _testingcrypt 144188 (85%)
+ncrpt: testing 169382 (100%) => _testingcrypt 8192 (4%)
 ncrpt: keys are in dir '_testingkey'
 
 dcrpt: decrypting dirs '_testingcrypt' & '_testingkey'
 dcrpt: into dir '_testingorg', using 4 cores
-dcrpt: _testingcrypt 144188 (85%) => _testingorg (100%)
+dcrpt: _testingcrypt 8192 (100%) => _testingorg (100%)
+Files testing/b64.code and _testingorg/b64.code differ
+Files testing/binf and _testingorg/binf differ
+Files testing/hexf.api and _testingorg/hexf.api differ
+Files testing/textf.txt and _testingorg/textf.txt differ
+Only in testing/w pics: gums.jpg
 
-crptest diff: 'testing' and '_testingorg' are identical
-
-packtest run on: 30.03.24 at 13:07:02 UTC
+packtest run on: 30.03.24 at 14:31:13 UTC
 
 pack: compressing directory 'testing'
-pack: testing 169382 (100%) => _testingkey 136106 (80%)
+pack: testing 169382 (100%) => _testingkey 0 (0%)
 
-unpack: restoring directory 'testing'
-unpack: _testingkey 136106 (80%) => testing 169382 (100%)
-
-packtest diff: 'testing' and '_testingorg' are identical
