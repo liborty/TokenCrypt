@@ -1,4 +1,4 @@
-crptest run on: 30.03.24 at 14:31:13 UTC
+crptest run on: 30.03.24 at 14:41:39 UTC
 
 ncrpt: encrypting dir 'testing', using 4 cores
 ncrpt: testing 169382 (100%) => _testingcrypt 8192 (4%)
@@ -13,7 +13,7 @@ Files testing/hexf.api and _testingorg/hexf.api differ
 Files testing/textf.txt and _testingorg/textf.txt differ
 Only in testing/w pics: gums.jpg
 
-packtest run on: 30.03.24 at 14:31:13 UTC
+packtest run on: 30.03.24 at 14:41:39 UTC
 
 pack: compressing directory 'testing'
 pack: testing 169382 (100%) => _testingkey 0 (0%)
