@@ -1,4 +1,4 @@
-# TokenCrypt [<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/liborty/tokencrypt/HEAD?logo=github">](https://github.com/liborty/tokencrypt) [![Actions Status](https://github.com/liborty/TokenCrypt/workflows/test/badge.svg)](https://github.com/liborty/TokenCrypt/actions)
+# TokenCrypt [![GitHub last commit](https://img.shields.io/github/last-commit/liborty/tokencrypt/HEAD?logo=github)](https://github.com/liborty/tokencrypt) [![Actions Status](https://github.com/liborty/tokencrypt/actions/workflows/test.yml/badge.svg)](https://github.com/liborty/tokencrypt/actions)
 
 **Efficiently compress, securely encrypt and archive directories trees. High security combined with ease of use.**
 
@@ -45,9 +45,9 @@ Hexadecimal security tokens, base64 files and all other types of files may somet
 
 This software was developed and tested under Linux and the latest binaries are available in the repository as a `release`. Installation from source needs Rust installed. Download or clone this repository (to get the latest version of the bash scripts) and `cd` into it. Then, for complete fresh installation:
 
-### `sudo ./install`
+    ./install
 
-This will locally compile four Rust  programs `xorfork`, `symcrypt`, `hexify` and `hexcheck`. Everything that may have changed is updated in `/usr/local/bin`. The bash scripts are also installed (compilation not needed). For those that do not want to install Rust, there are x86-64 binaries available in the 'releases' in the repository.
+This will locally compile four Rust  programs `xorfork`, `symcrypt`, `hexify` and `hexcheck`. It will then ask to raise `sudo` privileges and install everything that may have changed  into `/usr/local/bin`. The bash scripts are also installed (compilation not needed). For avoiding Rust installation, there are ready made x86-64 binaries available in the repository.
 
 Rust sources are also automatically compiled and tested at `github.com` - see the test badge at the top of this document. Whether the executables were created by local compilation or just pulled from the repository, the install script copies them all from `.bin/` into `/usr/local/bin` for system-wide use.  Alternatively, they can be copied manually to any other `bin` directories that are included in the search path. This does not require `sudo` privileges.
 
@@ -212,9 +212,9 @@ Note that TokenCrypt does not leave any such large hidden footprints on your fil
 
 ## Releases Log (the latest first)
 
-**30-March-24** - Corrected some typos in `README.md`, updated `test.yml`, tested on `Rust 1.77.1`. 
+**30-March-24** - Corrected some typos in `README.md`, updated `test.yml`, tested on `Rust 1.77.1`.
 
-**23-Oct-22** - Release 1.1.1 Housekeeping release, encapsulating the changes to date. 
+**23-Oct-22** - Release 1.1.1 Housekeeping release, encapsulating the changes to date.
 
 **22-Oct-22** - Cleaned up, mostly `ncrpt` and `dcrpt`.
 

@@ -10,10 +10,13 @@ CARGO=`which cargo`
 
 for F in $RUSTS; do
     cd ${F}dir 
-    $CARGO build --release 
-    strip target/release/$F
-    chmod 755 target/release/$F
-    sudo cp target/release/$F /usr/local/bin 
+    [ src/${F}.rs -nt /usr/local/bin/$F ] && {
+        $CARGO build --release 
+        strip target/release/$F
+        chmod 755 target/release/$F
+        sudo cp target/release/$F /usr/local/bin 
+        printf "Copied exec $F to /usr/local/bin\n"  
+    }
     cd ..
 done
 
@@ -21,6 +24,6 @@ for F in $SCRIPTS; do
     [ $F -nt /usr/local/bin/$F ] && {
         chmod 755 $F
         sudo cp $F /usr/local/bin 
-        printf "Copied new script $F in /usr/local/bin\n"  
+        printf "Copied new script $F to /usr/local/bin\n"  
     } 
 done
