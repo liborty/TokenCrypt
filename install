@@ -1,19 +1,20 @@
 #!/bin/bash
-# invoke as: sudo ./install
+# cd TOKENCRYPT
+# invoke as: ./install
 # installs TokenCrypt utilities in /usr/local/bin
 
-RUSTFLAGS='--debug=0 --opt-level=3'
+RUSTFLAGS='--emit=asm --debug=0 --incremental=true --opt-level=3'
 RUSTS='xorfork symcrypt hexcheck hexify' 
 SCRIPTS='keygen ncrpt dcrpt pack unpack crptest packtest'
+CARGO=`which cargo`
 
 for F in $RUSTS; do
-    [ ${F}dir/src/main.rs -nt bin/$F ] && {
-        cargo install -q -f --path ${F}dir --root .
-        strip bin/$F
-        chmod 755 bin/$F
-        sudo cp bin/$F /usr/local/bin
-        printf "Copied new rust executable bin/$F to /usr/local/bin\n" 
-    } 
+    cd ${F}dir 
+    $CARGO build --release 
+    strip target/release/$F
+    chmod 755 target/release/$F
+    sudo cp target/release/$F /usr/local/bin 
+    cd ..
 done
 
 for F in $SCRIPTS; do
