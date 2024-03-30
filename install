@@ -10,13 +10,11 @@ CARGO=`which cargo`
 
 for F in $RUSTS; do
     cd ${F}dir 
-    [ src/${F}.rs -nt /usr/local/bin/$F ] && {
-        $CARGO build --release 
-        strip target/release/$F
-        chmod 755 target/release/$F
-        sudo cp target/release/$F /usr/local/bin 
-        printf "Copied exec $F to /usr/local/bin\n"  
-    }
+    $CARGO build --release 
+    strip target/release/$F
+    chmod 755 target/release/$F
+    sudo cp target/release/$F /usr/local/bin 
+    printf "Copied exec $F to /usr/local/bin\n"
     cd ..
 done
 
