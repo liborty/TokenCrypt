@@ -43,19 +43,22 @@ Hexadecimal security tokens, base64 files and all other types of files may somet
 
 ## Installation
 
-This software was developed and tested under Linux and the latest binaries are available in the repository as a `release`. Installation from source needs Rust installed. Download or clone this repository (to get the latest version of the bash scripts) and `cd` into it. Then, for complete fresh installation:
+This software was developed and tested under Linux and its x86-64  binaries are available in the repository release. Compilation from source needs Rust installed. Download or clone this repository (to get the latest version of the bash scripts) and `cd` into it.
 
     ./install
 
-This will locally compile four Rust  programs `xorfork`, `symcrypt`, `hexify` and `hexcheck`. It will then ask to raise `sudo` privileges and install everything that may have changed  into `/usr/local/bin`. The bash scripts are also installed (compilation not needed). For avoiding Rust installation, there are ready made x86-64 binaries available in the repository.
+will then locally compile four Rust  programs `xorfork`, `symcrypt`, `hexify` and `hexcheck`. The script then asks to raise `sudo` privileges and installs everything that may have changed into `/usr/local/bin` (including the Bash scripts).
 
-Rust sources are also automatically compiled and tested at `github.com` - see the test badge at the top of this document. Whether the executables were created by local compilation or just pulled from the repository, the install script copies them all from `.bin/` into `/usr/local/bin` for system-wide use.  Alternatively, they can be copied manually to any other `bin` directories that are included in the search path. This does not require `sudo` privileges.
+The binaries provided in the repository can be used to avoid Rust installation and compilation. Rust sources are automatically compiled and tested by `github.com` actions - see the test badge at the top of this document. The executables downloaded from the repository release should be copied manually into `/usr/local/bin` for system-wide use. Alternatively, they (and the scripts), can be copied to any other `bin` directory in the search path, without using `sudo` privileges. This step should be repeated whenever some programs and scripts have been updated.
 
-Good reason for local compilation is if it is suspected that the `github` binaries may have been compromised or when using a different machine architecture. This step should be repeated whenever some programs and scripts have changed, such as after performing fresh `git pull`.
+Reasons for local compilation may be:
+
+1) when the binaries may have been compromised
+2) when using a different machine architecture.
 
 ### `sudo ./uninstall`
 
-will delete previously installed programs and scripts. It can be used to enforce a completely clean restart.
+will delete previously installed programs and scripts from `/usr/local/bin`. It can be used to enforce a completely clean restart.
 
 ## Dependencies
 
@@ -114,7 +117,7 @@ As seen above, options can be run together, e.g.:
 
     ncrpt -xbuc indir keydir outdir
 
-This will recursively update and clean the entire archive outdir, so that it is as if freshly created from the current state of indir (with only -xb). However, with `u` it is incremental, so it runs faster. This is convenient for regular backing up purposes.
+This will recursively update and clean the entire archive outdir, so that it is as if freshly created from the current state of indir (with only -xb). However, with `-u` it is incremental, so it runs faster. This is convenient for regular backing up purposes.
 
 There is a vulnerability inherent in `ncrpt` output directories. Specifically, specialist search engines sifting through the internet, matching up pairs of (keydir outdir) directories by their same structures, file names and sizes, could in theory pair them up, even if they were uploaded to two unrelated places. Using `pack` is therefore more secure for external storage.
 
@@ -141,17 +144,17 @@ There is a price to be paid in terms of the execution time. The entire input dir
 #### Simple Typical Usage
 
 * `pack -xb indir indexfile outfile keyfile`
-* upload the output files to three different places on the internet
+* upload the output files to three different places on the internet,
 * delete everything locally, intentionally or by accident:  
 `rm -rf indir indexfile outfile keyfile`  
-* at any time (and place) later, download the files back and then:
+* at any time (and place) later, download the files back and:
 * `unpack indexfile outfile keyfile`
 
 This will restore the original state of `indir`, at the originally specified writeable path, relative to the current directory.
 
 ### `unpack [options] indexfile outfile keyfile`
 
-Is the inverse of `pack`. It decrypts, selects the right decompression methods, decompresses all files, and restores the exact contents of the original directory, with the same names of directories and files.
+Is the inverse of `pack`. It decrypts, selects the right decompression methods, decompresses all files, and restores the exact contents of indir  in the current directory.
 
 ## Appendix - Background Scripts and Programs (not needed by the user)
 
@@ -165,10 +168,10 @@ The inverse of `xorfork`. Reads `stdin` and random `keyfile`, writes decrypted d
 is invoked by `pack -x`. It recognises hexadecimal (token) files and packs them to binary, which exactly halves them in size. Hexadecimal files should be an even number of bytes long and only contain (0-9,a-f) `ascii` characters. There are a few allowed  exceptions: upper case A-F are accepted but when converted back, they will always end up in lower case. Spaces and newlines just get deleted. This forgiving policy may result in some differences being reported between the original and the reconstructed files. Then it is best to replace the original file with its cleaned up, reconstructed version.
 
 `hexify` (rust executable)  
-is invoked by `unpack` to unpack the binary files back to their original hexadecimal form. In other words, it carries out an inverse operation to `hexcheck` above.
+is invoked by `unpack` to unpack the binary files back to their original hexadecimal form. In other words, it carries out the inverse operation to `hexcheck` above.
 
 `base64` (linux utility)  
-is invoked by `pack -b`. It recognises base64 files, resulting in 25% size reduction before the final general compression. Base64 files should not contain any non base64 characters, such as newlines, otherwise this strict test will reject them. This utility is also deployed in inverse mode by `unpack`.
+is invoked by `pack -b`. It recognises base64 files, resulting in 25% size reduction before the final general compression. Base64 files should not contain any non base64 characters, such as newlines, otherwise this strict test will reject them. This utility is also deployed in its inverse mode by `unpack`.
 
 `lzma` or `zstd` (linux utilities)  
 are general compression methods used here for the final compression, as long as it will result in size reduction. This is not necessarily the case for small and/or binary files. Any incompressible files are detected and encrypted as they are, even if their extensions are not on the 'do not compress' list. However, for extensions on the list, this test compression is avoided.
@@ -191,7 +194,7 @@ Some character differences may arise for hexadecimal files because `hexcheck` co
 
 ### `crptest testdir`
 
-performs an automated test of `ncrpt`/`dcrpt`, creating directories, checking that not a single byte was corrupted anywhere, while encrypting and decrypting back the contents of (any) `testdir`. The reported compression/decompression rates and sizes should also exactly match. Afterwards it cleans up all the created directories.
+Tests `ncrpt`/`dcrpt`, creating directories, checking that not a single byte was corrupted anywhere, while encrypting and decrypting back the contents of (any) `testdir`. The reported compression/decompression rates and sizes should also exactly match. Afterwards it cleans up all the created directories.
 
 ### `packtest testdir`
 
@@ -222,11 +225,9 @@ Note that TokenCrypt does not leave any such large hidden footprints on your fil
 
 ## Todo List
 
-* add option -d 'list'(--dirsexclude ) to `pack` to leave out named directories.
+* add option -e 'list' (--extexclude ) to leave out files with listed extensions
 
-* add option -f 'list' (--filesexclude ) to leave out named files.
-
-* allow wildcards (*) in -d and -f list items to ignore all matching directories and files (this carries some computing burden).
+* add option -d 'list'(--dirsexclude ) to leave out named directories.
 
 Activating these options would of course make `packtest` in its present form fail.
 

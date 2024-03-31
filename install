@@ -13,7 +13,7 @@ for F in $RUSTS; do
     $CARGO build --release 
     strip target/release/$F
     chmod 755 target/release/$F
-    sudo cp target/release/$F /usr/local/bin 
+    sudo cp target/release/$F /usr/local/bin
     printf "Copied exec $F to /usr/local/bin\n"
     cd ..
 done
