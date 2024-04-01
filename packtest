@@ -38,7 +38,7 @@ ORGDIR=_"$1"org
 	printf "$PROGN: '$ORGDIR' already exists here!\n" >&2; exit 2; }
 
 # encrypt and decrypt
-pack -xb $1 $INDXFILE $OUTFILE $KEYFILE
+pack -xbr $1 $INDXFILE $OUTFILE $KEYFILE
 printf "\n"
 mv $1 $ORGDIR
 unpack $INDXFILE $OUTFILE $KEYFILE

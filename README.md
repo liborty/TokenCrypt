@@ -86,17 +86,22 @@ Long options introduced by `--` are also recognised.
 The options explained:
 
     -b --b64 test for base64 files, 
-    -c --clean up the archive and the keys,
+    -c --clean up existing archive and its keys,
+    -e --exclude (globally) listed file extensions,
     -h --help,
-    -i --ignore, do not descend into subdirectories   
+    -i --ignore (globally) named subdirectories,
     -q --quiet, suppress the final report,
-    -u --update an existing archive and keys,
+    -r --recurse into subdirectories,
+    -u --update existing archive and its keys,
     -v --verbose information on compressing each file
     -x --hex test for hexadecimal files, 
     -z --zstd compression to be used instead of lzma.     
 
-When `-u` option is not given, then by default a new archive is created.  
-Option `-c` only makes sense as `-uc` because it can do nothing for a brand new archive.
+- When `-u` option is used, then instead of creating a new archive, an existing one is compared and updated.  
+- Option `-c` only makes sense as `-uc` because a new archive needs no cleaning.  
+- Option `-i` only makes sense as `-ri` because without `-r` all subdirectories are ignored anyway by default. It requires a quoted list of space separated directory names. 
+- Option `-e` requires quoted list of space separated extensions in lower case. Files with upper case extensions will also be recognised and ignored.
+- Options `-i` and `-e` should not be combined with `-uc` as then the additions, updates and deletions are entirely determined by the comparisons between `indir` and `outdir`.
 
 The tests for hexadecimal `-x` and base64 `-b` files should only be specified when the input directory likely contains such files. However, these tests are fast. They usually terminate after reading only the first few bytes. When these options are omitted by mistake, then everything will still work. However, the default compression of these types of files will take up more space than was strictly necessary.
 
@@ -139,7 +144,7 @@ All the keys for the whole archive now form a single sequential `keyfile`. No fi
 
 The total of nine different combinations of compressions can be applied, as with `ncrpt`, depending on each individual input file and its compressibility properties.
 
-There is a price to be paid in terms of the execution time. The entire input directory tree structure now has to be traversed sequentially to maintain the same order, thus reducing the opportunities for parallel execution (that were fully exploited by `ncrpt`).
+There is a price to be paid in execution time. The entire input directory tree structure now has to be traversed sequentially to maintain the same order, thus preventing parallel execution (that is fully exploited by `ncrpt`).
 
 #### Simple Typical Usage
 
@@ -190,17 +195,15 @@ writes to stdout `size` bytes of random base64 data. It is only useful for gener
 An automated github action compiles the Rust programs and runs both `crptest`  and `packtest` over example `testing` directory included in the repository.
 It tests all the main types of files: hexadecimal, base64, plain text and binary. It also tests recursive descent into a subdirectory. The 'test' badge at the top of this document lights up green when all the tests were passed. Note that only the summary output `test.log` is saved in the repository, everything else is tidied up (removed) after the tests.
 
-Some character differences may arise for hexadecimal files because `hexcheck` converts both a-f and A-F to 10-15 and also it cleans up spurious spaces and newlines, instead of just rejecting such files. API keys should be separated into their own unique files. If the spaces/newlines turned out to be an unintended corruption, then the original file ought to be replaced by the cleaned up (reconstructed) version.
+Some character differences may sometimes arise for hexadecimal files because `hexcheck` converts both a-f and A-F to 10-15. Also, it deletes all spaces and newlines, instead of strictly rejecting such files. API keys should always be stored in files one at a time. Therefore any spaces/newlines separators are spurious characters. The original file can be replaced by the cleaned up (reconstructed) version, ensuring no more discrepancies in the future.
 
 ### `crptest testdir`
 
-Tests `ncrpt`/`dcrpt`, creating directories, checking that not a single byte was corrupted anywhere, while encrypting and decrypting back the contents of (any) `testdir`. The reported compression/decompression rates and sizes should also exactly match. Afterwards it cleans up all the created directories.
+Tests `ncrpt`/`dcrpt`, creating directories, checking that not a single byte was corrupted anywhere, while recursively encrypting and decrypting back the entire contents of (any) `testdir`. Note that `--exclude` or `--ignore` options are not deployed in this test. Therefore the reported overall compression/decompression rates and sizes should exactly match. The overall compression rate depends on the compressibility of all the individual files. Afterwards, all the created directories are deleted.
 
 ### `packtest testdir`
 
-is just like `crptest`, except it tests `pack`/`unpack` and the created output archive files instead of directories. The reconstructed files should be reported as being identical to the originals.
-
-The reported overall compression rates depend on the compressibility of all the files.
+is just like `crptest`, except it tests `pack`/`unpack` (the archive files instead of the directories). The reconstructed files should be reported as being identical to the originals.
 
 ## Exercise
 
@@ -215,6 +218,8 @@ Note that TokenCrypt does not leave any such large hidden footprints on your fil
 
 ## Releases Log (the latest first)
 
+**1-April-24** - `ncrpt` can now globally ignore named directories with, e.g. `-i 'bin test backup'` and to globally exclude all files with listed extensions, e.g. `-e 'exe dat bak'`. Note that `-i` was previously used to turn off recursion. Recursion is now off by default and must be activated explicitly with option `-r` (usual conservative convention). TODO: before the next release, implement these options also for `pack`.
+
 **30-March-24** - Corrected some typos in `README.md`, updated `test.yml`, tested on `Rust 1.77.1`.
 
 **23-Oct-22** - Release 1.1.1 Housekeeping release, encapsulating the changes to date.
@@ -222,14 +227,6 @@ Note that TokenCrypt does not leave any such large hidden footprints on your fil
 **22-Oct-22** - Cleaned up, mostly `ncrpt` and `dcrpt`.
 
 **21-Oct-22** - 'Windowsy' names of files and directories (with internal spaces) are now processed correctly, opening the possibility of using TokenCrypt even on Windows. Simplification: `dcrpt` is no longer reading old style file archives as well as the encrypted directories. `Tar` is no longer needed at all.
-
-## Todo List
-
-* add option -e 'list' (--extexclude ) to leave out files with listed extensions
-
-* add option -d 'list'(--dirsexclude ) to leave out named directories.
-
-Activating these options would of course make `packtest` in its present form fail.
 
 ## References and Further Information
 

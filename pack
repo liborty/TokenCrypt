@@ -104,10 +104,12 @@ function helpmsg {
 	usage
 	printf "\t%s\n" \
 		'-b | --b64 : test for base64 encoded files' \
+        '-e | --exclude : globally exclude named subdirectories' \
 		'-h | --help : print this text' \
-        '-i | --ignore : process also subdirectories' \
+        '-i | --ignore : globally exclude listed extensions' \
 		'-q | --quiet : turn off the final summary' \
-		'-v | --verbose : detailed reporting' \
+        '-r | --recurse : into subdirectories' \
+        '-v | --verbose : detailed reporting' \
 		'-x | --hex : test for hexadecimal files' \
 		'-z | --zstd : use zstd compression instead of lzma' >&2
 	exit 1

@@ -35,7 +35,7 @@ if [ -d "$ORGDIR" ]; then
 	printf "$PROGN quitting, '$ORGDIR' already exists here!\n" >&2; exit 2; fi
 
 # encrypt and decrypt
-ncrpt -xb $1 $KEYDIR $OUTDIR
+ncrpt -xbr $1 $KEYDIR $OUTDIR
 printf "\n"
 dcrpt $OUTDIR $KEYDIR $ORGDIR
 diff -bqr "$1" "$ORGDIR" && printf "\n$PROGN diff: '$1' and '$ORGDIR' are identical\n"
