@@ -13,7 +13,6 @@ NOCOMPRESS=( 'jpg' 'jpeg' 'mp4' 'zip' '7z' 'lz' 'zst' 'gz' 'tgz' 'bz2' )
 # KEYDIR OUTDIR must be writeable
 # creates and cleans up two temporary files in OUTDIR
 function processfile {
-
 	local INFILE="$1"
 	local KEYFILE="$2" 
 	local OUTFILE="$3"
@@ -80,25 +79,20 @@ function processfile {
 	if [ -e "$OUTFILE".cmp ]; then rm "$OUTFILE".cmp; fi 
 } # end of processfile
 
-# check IGNORE list and processdir $1 if it is not on it 
-function dodir {    
-    for D in "$IGNORE"; do
-        [ "$1" = "$D" ] && return
-    done
-    processdir "$1" "$2" "$3"
-} 
-
-
 # function to process a whole directory
 # takes three arguments: INDIR KEYDIR OUTDIR
 function processdir {
+    # do not process when INDIR is on IGNORE list
+    for D in "$IGNORE"; do
+        [ "$1" = "$D" ] && return
+    done
 	# create the ouput directories
 	mkdir "$2" "$3" || {
 		printf "$PROGN quitting, failed to create output directories '$2' '$3'!\n" >&2
 		exit 2
 	}
     cd "$1" || { # must be quoted or fails on windozy dirs with spaces!
-        printf "$PROGN processdir: failed to change to directory $1!\n" >&2
+        printf "$PROGN processdir: failed to enter directory $1!\n" >&2
         exit 2
     }
 	# iterate through the listing
@@ -106,12 +100,8 @@ function processdir {
         [[ "$ITEM" == '*' ]] && break; # no more  
    		if [ -d "$ITEM" ]; then  # ITEM is directory
             [ "$RECURSE" ] || continue
-            if [ "$IGNORE" ]; then 
-                dodir "$ITEM" ../"$2/$ITEM" ../"$3/$ITEM" &
-            else 
-                processdir "$ITEM" ../"$2/$ITEM" ../"$3/$ITEM" & # push ITEM onto paths
-            fi
-        else # process only genuine file
+            processdir "$ITEM" ../"$2/$ITEM" ../"$3/$ITEM" & # push ITEM onto paths
+        else # process only a genuine file
        		[ -f "$ITEM" ] && processfile "$ITEM" ../"$2/$ITEM" ../"$3/$ITEM" & 
         fi
 	done
@@ -122,6 +112,10 @@ function processdir {
 # function to update a whole directory
 # takes three arguments: INDIR KEYDIR OUTDIR
 function updatedir {
+    # do not process when INDIR is on IGNORE list
+    for D in "$IGNORE"; do
+        [ "$1" = "$D" ] && return
+    done
 	[ -d "$2" ] || {
 		printf "$PROGN updatedir: key dir $2 is invalid\n" >&2
 		exit 2
@@ -131,9 +125,10 @@ function updatedir {
 		exit 2
 	}
     cd "$1" || { # must be quoted or fails on windozy dirs with spaces!
-        printf "$PROGN updatedir: failed to change to directory $1!\n" >&2
+        printf "$PROGN updatedir: failed to enter directory $1!\n" >&2
         exit 2
     }
+
     # iterate through the indir listing
 	for ITEM in *; do 
         [[ "$ITEM" == '*' ]] && break; # no more 
@@ -150,7 +145,7 @@ function updatedir {
 			# note that -nt only works for additions/deletions to dirs			
 			[ $(stat -c%Y "$ITEM") -gt $(stat -c%Y "$OD") ] && { 
 				printf " U: $ITEM\n" # input dir is newer, so update
-				updatedir "ITEM" "$KD" "$OD" &
+				updatedir "$ITEM" "$KD" "$OD" &
 				continue
             }
         else 
@@ -173,6 +168,15 @@ function updatedir {
 # function to clean up a whole directory
 # takes three arguments: INDIR KEYDIR OUTDIR
 function cleandir {
+    BN=`basename $3`
+    for D in "$IGNORE"; do
+        [ "$D" = "$BN" ] && { # outdir is on the ignore list
+        # so remove it and its corresponding keydir 
+            printf " D: $KD $OD\n"
+            rm -rf "$KD" "$OD" &
+            return
+        }
+    done
     [ -d "$1" ] || {
 		printf "$PROGN updatedir: input dir $1 is invalid\n" >&2
 		exit 2
@@ -182,19 +186,22 @@ function cleandir {
 		exit 2
 	}
     cd "$3" || { # must be quoted or fails on windozy dirs with spaces!
-        printf "$PROGN cleandir: failed to change to directory $3!\n" >&2
+        printf "$PROGN cleandir: failed to enter outdir $3!\n" >&2
         exit 2
     }
+
     # iterate through the outdir listing
 	for OD in *; do 
         [[ "$OD" == '*' ]] && break; # no more 
         local ID=../"$1/$OD" # corresponding $indir path
         local KD=../"$2/$OD" # corresponding $keydir path
+        
    		if [ -d "$OD" ]; then  # directory
-            [ "$RECURSE" ] || continue
-            [ -d "$ID" ] || { # matching input dir does not exist
-            	printf " D: $OD $KD\n" # so remove it 
-				rm -rf "$OD" "$KD" &
+            [ "$RECURSE" ] || continue            
+            [ -d "$ID" ] || { # corresponding indir does not exist
+            # so remove the corresponding keydir and this outdir 
+            	printf " D: $KD $OD\n" 
+				rm -rf "$KD" "$OD" &
 				continue
 			}
             cleandir "$ID" "$KD" "$OD" &  # descend
@@ -204,7 +211,19 @@ function cleandir {
 			printf "   d: $OD $KD.*\n" # so delete it from outdir and keydir
 			rm "$OD" "$KD".* 
 			continue
-		    } 
+		    }
+            local EX="${OD##*.}" # this file's last extension
+            local EX=${EX,,} # convert to lower case, to detect both cases
+            # if EX is on excluded list, delete
+            [ -n "$EXCLUDE" ] && {
+                for EXT in "$EXCLUDE"; do
+                    [ "$EXT" = "$EX" ] && {
+                        printf "   d: $OD $KD.*\n" # so delete it from outdir and keydir
+			            rm "$OD" "$KD".*
+                        break
+                    }   
+                done
+            }
         fi
 	done
     cd ..

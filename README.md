@@ -97,11 +97,12 @@ The options explained:
     -x --hex test for hexadecimal files, 
     -z --zstd compression to be used instead of lzma.     
 
-- When `-u` option is used, then instead of creating a new archive, an existing one is compared and updated.  
+- When `-u` option is used, then instead of creating a new archive, an existing one is compared to the latest state of indir and updated.  
 - Option `-c` only makes sense as `-uc` because a new archive needs no cleaning.  
-- Option `-i` only makes sense as `-ri` because without `-r` all subdirectories are ignored anyway by default. It requires a quoted list of space separated directory names. 
-- Option `-e` requires quoted list of space separated extensions in lower case. Files with upper case extensions will also be recognised and ignored.
-- Options `-i` and `-e` should not be combined with `-uc` as then the additions, updates and deletions are entirely determined by the comparisons between `indir` and `outdir`.
+- Option `-i` only makes sense as `-ri` because without `-r` all subdirectories are ignored anyway by default. It requires a quoted list of space separated directory names.
+- Option `-e` requires quoted list of space separated extensions in lower case. Files with upper case extensions will also be recognised and ignored.  
+- Option `-ur -e '...' -i '...' (updating only) will not update excluded file extensions and ignored directories and their old versions will remain.  
+- Options `-ucr -e '...' -i '...' (cleaning) will delete files/directories from the archive for two possible reasons: a) they had been deleted from INDIR or b) they had been specified on the exclude/ignore lists. After the cleaning, the remaining contents will be updated.
 
 The tests for hexadecimal `-x` and base64 `-b` files should only be specified when the input directory likely contains such files. However, these tests are fast. They usually terminate after reading only the first few bytes. When these options are omitted by mistake, then everything will still work. However, the default compression of these types of files will take up more space than was strictly necessary.
 
@@ -114,15 +115,15 @@ Option `-v` (`--verbose`) adds details of compressing each file. Selecting  both
 
 Once a directory has been compressed and encrypted, it is subsequently possible to update the keys and outdir directories (the archives) with option `-u`. This will add any new files and recode updated ones. Added new files are marked with a: and more recent existing files are updated (marked with u:). The same actions will be applied to all subdirectories, unless option `-i` (ignore subdirectories) has been deployed. Capital letters A:,U: denote these two operations when applied to whole subdirectories.
 
-An archive can additionally be cleaned up with `-uc`, to ensure that a new state of the input directory and its archives match exactly one-to-one. That is, files no longer existing in indir will be deleted from the archive (and marked with d:). Unless `-uci` was used, whole directories may be deleted and marked with D:.
+An archive can additionally be cleaned up with `-uc`, to ensure that a new state of the input directory and its archives match. That is, files no longer existing in indir will be deleted from the archive (and marked with d:). When `-r` is added, whole directories may be deleted and marked with D:.
 
-Caution should be exercised when using the `-c` option. Any files that may have been inadvertently deleted from indir will then be removed from the archive as well. For added safety, option `-c` is deliberately made explicit and separate from `-u`. Thus using `-u` alone is the *cautious updating mode*, which never deletes anything from the archive. However, it will still overwrite existing files with their new, possibly erroneous, contents. Beware that this can cause loss of previously useful content. Of course, this is true in general, whenever updating any files, by any means.
+Caution should be exercised when using the `-c` option. Any files that may have been inadvertently deleted from indir will be removed from the archive as well. For added safety, option `-c` is deliberately made explicit and separate from `-u`. Thus using `-u` alone is the *cautious updating mode*, which never deletes anything from the archive. However, it will still overwrite existing files with their new, possibly erroneous, contents. This can cause loss of previously useful content. Of course, this is true in general, whenever updating any files, by any means.
 
 As seen above, options can be run together, e.g.:
 
-    ncrpt -xbuc indir keydir outdir
+    ncrpt -xbruc indir keydir outdir
 
-This will recursively update and clean the entire archive outdir, so that it is as if freshly created from the current state of indir (with only -xb). However, with `-u` it is incremental, so it runs faster. This is convenient for regular backing up purposes.
+This will recursively update and clean the entire archive outdir, so that it is as if freshly created from the current state of indir (with only -xbr). However, with `-u` it is incremental, so it runs faster. This is convenient for regular backing up purposes.
 
 There is a vulnerability inherent in `ncrpt` output directories. Specifically, specialist search engines sifting through the internet, matching up pairs of (keydir outdir) directories by their same structures, file names and sizes, could in theory pair them up, even if they were uploaded to two unrelated places. Using `pack` is therefore more secure for external storage.
 
@@ -148,7 +149,7 @@ There is a price to be paid in execution time. The entire input directory tree s
 
 #### Simple Typical Usage
 
-* `pack -xb indir indexfile outfile keyfile`
+* `pack -xbr indir indexfile outfile keyfile`
 * upload the output files to three different places on the internet,
 * delete everything locally, intentionally or by accident:  
 `rm -rf indir indexfile outfile keyfile`  
@@ -218,8 +219,10 @@ Note that TokenCrypt does not leave any such large hidden footprints on your fil
 
 ## Releases Log (the latest first)
 
-**1-April-24** - `ncrpt` can now globally ignore named directories with, e.g. `-i 'bin test backup'` and to globally exclude all files with listed extensions, e.g. `-e 'exe dat bak'`. Note that `-i` was previously used to turn off recursion. Recursion is now off by default and must be activated explicitly with option `-r` (usual conservative convention). TODO: before the next release, implement these options also for `pack`.
+**3-April-24** - improved `ncrpt` so that it now does sensible things with the new options also in the updating and cleaning modes. Making `ncrpt` into a more practical archiving tool. TODO: before the next release, implement these new options also for `pack`.
 
+**1-April-24** - `ncrpt` can now globally ignore named directories with, e.g. `-i 'bin test backup'` and to globally exclude all files with listed extensions, e.g. `-e 'exe dat bak'`. Note that `-i` was previously used to turn off recursion. Recursion is now off by default and must be activated explicitly with option `-r` (usual conservative convention).
+ 
 **30-March-24** - Corrected some typos in `README.md`, updated `test.yml`, tested on `Rust 1.77.1`.
 
 **23-Oct-22** - Release 1.1.1 Housekeeping release, encapsulating the changes to date.
