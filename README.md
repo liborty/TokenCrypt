@@ -104,6 +104,8 @@ The options explained:
 - Option `-ur -e '...' -i '...' (updating only) will not update excluded file extensions and ignored directories and their old versions will remain.  
 - Options `-ucr -e '...' -i '...' (cleaning) will delete files/directories from the archive for two possible reasons: a) they had been deleted from INDIR or b) they had been specified on the exclude/ignore lists. After the cleaning, the remaining contents will be updated.
 
+As seen above, options can be run together, except following `-e` and `-i`, which must both be followed by a quoted, space separated list. Long lists of exceptions will cause some deterioration of speed.
+
 The tests for hexadecimal `-x` and base64 `-b` files should only be specified when the input directory likely contains such files. However, these tests are fast. They usually terminate after reading only the first few bytes. When these options are omitted by mistake, then everything will still work. However, the default compression of these types of files will take up more space than was strictly necessary.
 
 The three arguments are mandatory: the input directory, the keys directory and the encrypted directory. Both output directories (`keydir` and `outdir`) will mirror `indir` in their structure and file names; `keydir` will hold the keys and `outdir` will hold the encrypted files.
@@ -117,13 +119,7 @@ Once a directory has been compressed and encrypted, it is subsequently possible 
 
 An archive can additionally be cleaned up with `-uc`, to ensure that a new state of the input directory and its archives match. That is, files no longer existing in indir will be deleted from the archive (and marked with d:). When `-r` is added, whole directories may be deleted and marked with D:.
 
-Caution should be exercised when using the `-c` option. Any files that may have been inadvertently deleted from indir will be removed from the archive as well. For added safety, option `-c` is deliberately made explicit and separate from `-u`. Thus using `-u` alone is the *cautious updating mode*, which never deletes anything from the archive. However, it will still overwrite existing files with their new, possibly erroneous, contents. This can cause loss of previously useful content. Of course, this is true in general, whenever updating any files, by any means.
-
-As seen above, options can be run together, e.g.:
-
-    ncrpt -xbruc indir keydir outdir
-
-This will recursively update and clean the entire archive outdir, so that it is as if freshly created from the current state of indir (with only -xbr). However, with `-u` it is incremental, so it runs faster. This is convenient for regular backing up purposes.
+Caution should be exercised when using the `-c` option. Any files that may have been inadvertently deleted from indir will be removed from the archive as well. Option `-c` is explicit and separate from `-u` for added safety. Thus using `-u` alone is the *cautious updating mode*, which never deletes anything from the archive. However, it will still overwrite existing files with their new, possibly erroneous, contents. This can cause loss of previously useful content. Of course, this is true in general, whenever updating any files, by any means.
 
 There is a vulnerability inherent in `ncrpt` output directories. Specifically, specialist search engines sifting through the internet, matching up pairs of (keydir outdir) directories by their same structures, file names and sizes, could in theory pair them up, even if they were uploaded to two unrelated places. Using `pack` is therefore more secure for external storage.
 
@@ -206,20 +202,30 @@ Tests `ncrpt`/`dcrpt`, creating directories, checking that not a single byte was
 
 is just like `crptest`, except it tests `pack`/`unpack` (the archive files instead of the directories). The reconstructed files should be reported as being identical to the originals.
 
+## Examples
+
+    ncrpt -xbri 'bin' sourcedir keysdir outdir
+
+will test for hexadecimal and base64 files in sourcedir, recurse into all subdirectories except any named `bin`, efficiently compress and encrypt everything else, writing keys into keysdir and output archives into outdir.
+
+    ncrpt -xbruci 'data' sourcedir keysdir outdir
+
+will recursively update and clean the entire archive outdir, so that it is as if freshly created from the current state of sourcedir (with only -xbri). However, with `-u` it is incremental, so it runs faster. This is convenient for regular backing up purposes. 'bin' is no longer being ignored, so it will be added to the archive. Since `-c` is also given, any directories named 'data', that are now newly ignored, will be deleted from the archive.
+
 ## Exercise
 
 Suppose you maintain some git repository, say `mygitrepo`. Go one level up:  `cd ..`, and run:
 
-`ncrpt -xb mygitrepo mygitkeys gencrypted`  
+`ncrpt -xbr mygitrepo mygitkeys gencrypted`  
 Then, after some new trivial push from your repository, go back and run again:  
-`ncrpt -xbuc mygitrepo mygitkeys gencrypted`  
-This will update only the file(s) that have changed. What may come as a surprise is the number of files that were added/changed by git in `.git` directory.
+`ncrpt -xbruc mygitrepo mygitkeys gencrypted`  
+This will update only the file(s) that have changed. What may come as a surprise is the number of files that were added/changed by git within the `.git` directory.
 
 Note that TokenCrypt does not leave any such large hidden footprints on your filesystem.
 
 ## Releases Log (the latest first)
 
-**3-April-24** - improved `ncrpt` so that it now does sensible things with the new options also in the updating and cleaning modes. Making `ncrpt` into a more practical archiving tool. TODO: before the next release, implement these new options also for `pack`.
+**3-April-24** - `ncrpt` now does sensible things with the new options `-e -i` also in the updating and cleaning modes. Implemented these new options for `pack` as well, making `TokenCrypt` a more practical archiving tool.
 
 **1-April-24** - `ncrpt` can now globally ignore named directories with, e.g. `-i 'bin test backup'` and to globally exclude all files with listed extensions, e.g. `-e 'exe dat bak'`. Note that `-i` was previously used to turn off recursion. Recursion is now off by default and must be activated explicitly with option `-r` (usual conservative convention).
  

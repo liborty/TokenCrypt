@@ -7,40 +7,6 @@ PROGN=${0##*/}
 COMPRESSOR=lzma	# the default general compression program
 NOCOMPRESS=( 'jpg' 'jpeg' 'mp4' 'zip' '7z' 'lz' 'zst' 'gz' 'tgz' 'bz2' )
 
-# writes to global TEMPFILE
-function packdir {
-    cd "$1" || { # must be quoted or fails on windozy dirs with spaces!
-        printf "$PROGN packdir: failed to change to directory $1!\n" >&2
-        exit 2
-    }
-
-    # if recursing, process the subdirectories first (depth first descent)
-    [ $IGNORE ] || {
-        for D in */; do
-            [[ "$D" == '*/' ]] && break; # no more dirs
-            D=${D%/} # strip off the trailing slash
-            # D="${D//[[:blank:]]/}"; # remove windozy spaces
-            # if [[ "$D" =~ [[:blank:]] ]]; then 
-            printf "$D," >> "$INDEXFILE"  # write subdir name
-            packdir "$D" # recurse       
-        done
-    }
-     # mark the end of subdirectories (with ,,) for tree parsing by unpack
-    printf "," >> $INDEXFILE 
-	# process the files 
-	for FILE in *; do
-        [[ "$FILE" == '*' ]] && break; # no more 
-        [ -f "$FILE" ] || continue; # skip non files
-        # [ -n "$WINDOZE" ] && FILE="${FILE//[[:blank:]]/}"; # remove windozy spaces?
-        local FSIZE=`stat -c%s "$FILE"`
-        [ -z "$FSIZE" ] && continue; # clean up zero sized files
-        packfile "$FILE" "$FSIZE" # process this file
-	done
-    # mark the end of files and this dir (with ,,) for tree parsing by unpack
-    printf "," >> $INDEXFILE  
-    cd ..
-} # end of packdir
-
 # function to compress one file
 # takes one argument: FILENAME
 # writes into global TEMPFILE
@@ -50,6 +16,14 @@ function packfile {
 	local EX="${1##*.}" # this file's last extension
 	local CH='u' # default uncompressed marker
     local EX=${EX,,} # convert extension to lower case, to match capitals too
+
+   # if EX is on excluded list, return
+    [ -n "$EXCLUDE" ] && {
+        for EXT in "$EXCLUDE"; do
+            [ "$EX" = "$EXT" ] && return
+        done
+    }
+
 	# if EX is on NOCOMPRESS list, then skip compression 
     for KEEPEXT in "${NOCOMPRESS[@]}"; do
         if [ "$EX" = "$KEEPEXT" ]; then 
@@ -98,15 +72,57 @@ function packfile {
 	[ -e _"$FILENAME".cmp ] && rm _"$FILENAME".cmp; 
 } # end of packfile
 
+# writes to global TEMPFILE
+function packdir {
+
+    BN=`basename $1`
+    # do not process when INDIR is on IGNORE list
+    for D in "$IGNORE"; do
+        [ "$BN" = "$D" ] && return
+    done
+    
+    cd "$1" || { # must be quoted or fails on windozy dirs with spaces!
+        printf "$PROGN packdir: failed to change to directory $1!\n" >&2
+        exit 2
+    }
+
+    # if recursing, process the subdirectories first (depth first descent)
+    [ $RECURSE ] && {
+        for D in */; do
+            [[ "$D" == '*/' ]] && break; # no more dirs
+            D=${D%/} # strip off the trailing slash
+            # D="${D//[[:blank:]]/}"; # remove windozy spaces
+            # if [[ "$D" =~ [[:blank:]] ]]; then 
+            printf "$D," >> "$INDEXFILE"  # write subdir name
+            packdir "$D" # recurse       
+        done
+    }
+     # mark the end of subdirectories (with ,,) for tree parsing by unpack
+    printf "," >> $INDEXFILE 
+	# process the files 
+	for FILE in *; do
+        [[ "$FILE" == '*' ]] && break; # no more 
+        [ -f "$FILE" ] || continue; # skip non files
+        # [ -n "$WINDOZE" ] && FILE="${FILE//[[:blank:]]/}"; # remove windozy spaces?
+        local FSIZE=`stat -c%s "$FILE"`
+        [ -z "$FSIZE" ] && continue; # clean up zero sized files
+        packfile "$FILE" "$FSIZE" # process this file
+	done
+    # mark the end of files and this dir (with ,,) for tree parsing by unpack
+    printf "," >> $INDEXFILE  
+    cd ..
+} # end of packdir
+
+
 function usage { printf "Usage: $PROGN [-b][-h][-i][-q][-v][-x][-z] indir indexfile outfile keyfile\n" >&2; }
 
 function helpmsg {
 	usage
 	printf "\t%s\n" \
 		'-b | --b64 : test for base64 encoded files' \
-        '-e | --exclude : globally exclude named subdirectories' \
+        '-e | --exclude : (globally) listed file extensions' \
 		'-h | --help : print this text' \
-        '-i | --ignore : globally exclude listed extensions' \
+        '-i | --ignore : (globally) listed directories' \
 		'-q | --quiet : turn off the final summary' \
         '-r | --recurse : into subdirectories' \
         '-v | --verbose : detailed reporting' \
@@ -118,7 +134,7 @@ function helpmsg {
 # Main starts here ###########################################################
 
 # get options, including long options, extracted as arg to the last option '-'
-while getopts bhiqvxz-: OPT; do # do not forget to list new options here!
+while getopts be:hi:qrvxz-: OPT; do # do not forget to list new options here!
  if [ "$OPT" = "-" ]; then   # long option: reset OPT and OPTARG
     OPT="${OPTARG%%=*}"      # extract long option name
     OPTARG="${OPTARG#$OPT}"  # extract long option argument (here empty)
@@ -126,9 +142,11 @@ while getopts bhiqvxz-: OPT; do # do not forget to list new options here!
  fi
  case "$OPT" in
 	b | b64 ) B64TEST=0;;
+    e | exclude ) EXCLUDE=$OPTARG;;
 	h | help ) helpmsg;;
-    i | ignore ) IGNORE=0;;
+    i | ignore ) IGNORE=$OPTARG;;
 	q | quiet ) QUIET=0;;
+    r | recurse ) RECURSE=0;;
 	v | verbose ) VERBOSE=0;;
 	x | hex ) HEXTEST=0;;
   	z | zstd ) COMPRESSOR=zstd;; #alternative compressor and its extension
@@ -137,6 +155,17 @@ while getopts bhiqvxz-: OPT; do # do not forget to list new options here!
  esac
 done
 shift $((OPTIND-1)) # remove parsed options and args from $@ list
+
+[ $RECURSE ] && { 
+    printf "Recursing "
+    if [ -n "$IGNORE" ]; then
+        printf "and ignoring directories: $IGNORE\n"
+    else
+        printf "fully\n"
+    fi
+}
+[ -n "$EXCLUDE" ] && printf "Excluding extensions: $EXCLUDE\n"
+
 
 # Globally validate the program arguments
 [ "$#" -ne 4 ] && {

@@ -18,7 +18,6 @@ function processfile {
 	local OUTFILE="$3"
 	local EX="${1##*.}" # this file's last extension
 	local CH='u' # default uncompressed marker
-
 	local EX=${EX,,} # convert to lower case, to detect both cases
 
     # if EX is on excluded list, return
@@ -82,10 +81,13 @@ function processfile {
 # function to process a whole directory
 # takes three arguments: INDIR KEYDIR OUTDIR
 function processdir {
+
     # do not process when INDIR is on IGNORE list
+    BN=`basename $1` 
     for D in "$IGNORE"; do
-        [ "$1" = "$D" ] && return
+        [ "$BN" = "$D" ] && return
     done
+
 	# create the ouput directories
 	mkdir "$2" "$3" || {
 		printf "$PROGN quitting, failed to create output directories '$2' '$3'!\n" >&2
@@ -112,10 +114,13 @@ function processdir {
 # function to update a whole directory
 # takes three arguments: INDIR KEYDIR OUTDIR
 function updatedir {
+
+    BN=`basename $1`
     # do not process when INDIR is on IGNORE list
     for D in "$IGNORE"; do
-        [ "$1" = "$D" ] && return
+        [ "$BN" = "$D" ] && return
     done
+
 	[ -d "$2" ] || {
 		printf "$PROGN updatedir: key dir $2 is invalid\n" >&2
 		exit 2
@@ -168,6 +173,7 @@ function updatedir {
 # function to clean up a whole directory
 # takes three arguments: INDIR KEYDIR OUTDIR
 function cleandir {
+
     BN=`basename $3`
     for D in "$IGNORE"; do
         [ "$D" = "$BN" ] && { # outdir is on the ignore list
@@ -177,6 +183,7 @@ function cleandir {
             return
         }
     done
+
     [ -d "$1" ] || {
 		printf "$PROGN updatedir: input dir $1 is invalid\n" >&2
 		exit 2
@@ -239,7 +246,7 @@ function helpmsg {
 		'-c | --cleanup : the archive (do deletions)' \
         '-e | --exclude : (globally) listed file extensions' \
         '-h | --help : print this text' \
-        '-i | --ignore : (globally) named subdirectories' \
+        '-i | --ignore : (globally) listed directories' \
 		'-q | --quiet : turn off the final summary' \
         '-r | --recurse : into subdirectories' \
 		'-u | --update : the archive with changed content' \
