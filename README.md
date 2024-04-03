@@ -25,21 +25,23 @@ As a bare minimum, the `keyfile` (the last argument to `pack` and `unpack`), sho
 
 Important directories can be tested first with `packtest` before proceeding. Gigabytes may take some minutes to process, so just run the script in the background while you get on with other things. It is still faster than many other archiving and backup tools.
 
-For a complete peace of mind, save locally the source that was used for the successful `packtest`, in case anything happens to this repository in the future.
+For a complete peace of mind, save locally the source that was used for the successful `packtest`, in case anything happens to this repository in the future. See the last example below.
 
 ## Introduction
 
-It is not the objective of TokenCrypt to replace `git` and to keep the complete histories of everything, as that carries significant costs in complexity and storage. The quest for being totally foolproof is subject to the law of diminishing returns, as human foolishness generally knows no bounds. TokenCrypt is more akin to `borg`: an efficient archiver and backing up tool. The key difference, excuse the pun, lies in TokenCrypt deploying more secure encryption and somewhat better compression as well. In its update mode, it only maintains the current version of the archive. Historical checkpoints are up to the user to create and keep, as and when required.
+It is not the objective of TokenCrypt to replace `git` and to keep the complete histories of everything, as that carries significant costs in complexity and storage. The quest for being totally foolproof is subject to the law of diminishing returns, as human foolishness generally knows no bounds.
 
-Scripts `pack` and `ncrpt` read given input directory tree, containing any types of files. `ncrpt` creates two output directories, `pack` creates three flat archive files.
+TokenCrypt is more akin to `borg`: an efficient archiver and backing up tool. The key differences lie in TokenCrypt deploying more secure encryption and somewhat better compression as well. In its update mode, it only maintains the current version of the archive. Historical checkpoints are up to the user to create and to store, as and when required. TokenCrypt is thus much simpler, though as of release 1.2.0 it offers all that is necessary for convenient archiving (as well as the unbreakable encryption).
+
+Scripts `ncrpt` and `pack` read given input directory tree, containing any types of files. `ncrpt` creates two output directories, `pack` creates three flat archive files.
 
 Some already compressed files afford only minor further compression, if any. To save time, they are recognised simply by their well known extensions: `jpg, jpeg, mp4, zip, 7z, lz, zst, gz, tgz, bz2`, and their upper case versions. Files with these specific extensions are encrypted uncompressed.
 
-Given `-xb` options, `ncrpt` and `pack` scripts will recognise hexadecimal files and base64 files respectively and convert them to more compact binary data. For hexadecimal files, this results in 50% compression. They then individually select the best final compression method for each file and securely encrypt it.
+Given `-xb` options, `ncrpt` and `pack` scripts will recognise hexadecimal and base64 files respectively and convert them to more compact binary data. For hexadecimal files, this results in 50% first stage compression. Then the best final compression method is applied to each file individually, before it is finally securely encrypted.
 
-Note: internet security tokens usually consist of 32, 64 or more hexadecimal characters. They are increasingly used to facilitate secure access over the internet protocols to various Applications Programming Interfaces (APIs). Even git uses hexadecimal 'slugs'. Being plain text, they are easily transmitted but they should be stored securely, i.e. strongly encrypted. Base64 encoding into printable characters is also generally used to encode binary data, for similar reasons.
+Note: internet security tokens usually consist of 32, 64 or more hexadecimal characters. They are increasingly used to facilitate secure access over the internet protocols to various Applications Programming Interfaces (APIs). Even git uses hexadecimal 'slugs'. Being plain text, they are easily transmitted. They should be stored securely, i.e. strongly encrypted. Base64 encoding into printable characters is also generally used to encode binary data, for similar reasons.
 
-Hexadecimal security tokens, base64 files and all other types of files may sometimes occur in in the same directory. This is not the best practice but it does arise. It could involve much work trying to separate the files. `ncrpt` and `pack` cope with such mixed contents directories by applying individual data type recognition tests to each file. In this case, they do not rely on extension names, as that could lead to errors.
+Hexadecimal security tokens, base64 files and all other types of files may sometimes be all in the same directory. This is not the best practice but it does arise. It could involve much work trying to separate the files. `ncrpt` and `pack` cope with such mixed contents directories by applying individual data type recognition tests to each file. In this case, they do not rely on extension names, as that could lead to errors.
 
 ## Installation
 
@@ -83,7 +85,7 @@ There are four command line interface (CLI) bash scripts that do all the work an
 This script performs data type analysis, optimal compression selection, compression, key generation, key saving and encryption. Also recursive archiving and subsequent archive maintenance.
 
 Long options introduced by `--` are also recognised.  
-The options explained:
+The options are:
 
     -b --b64 test for base64 files, 
     -c --clean up existing archive and its keys,
@@ -101,12 +103,12 @@ The options explained:
 - Option `-c` only makes sense as `-uc` because a new archive needs no cleaning.  
 - Option `-i` only makes sense as `-ri` because without `-r` all subdirectories are ignored anyway by default. It requires a quoted list of space separated directory names.
 - Option `-e` requires quoted list of space separated extensions in lower case. Files with upper case extensions will also be recognised and ignored.  
-- Option `-ur -e '...' -i '...' (updating only) will not update excluded file extensions and ignored directories and their old versions will remain.  
-- Options `-ucr -e '...' -i '...' (cleaning) will delete files/directories from the archive for two possible reasons: a) they had been deleted from INDIR or b) they had been specified on the exclude/ignore lists. After the cleaning, the remaining contents will be updated.
+- Option `-ur -e '...' -i '...' (updating only) will not update files with excluded file extensions and ignored directories. Their old versions will remain.  
+- Options `-ucr -e '...' -i '...' (cleaning) will delete files/directories from the archive for two possible reasons: a) they had been deleted from indir or b) they have been added to the exclude/ignore lists. After the cleaning, the remaining contents will be updated.
 
-As seen above, options can be run together, except following `-e` and `-i`, which must both be followed by a quoted, space separated list. Long lists of exceptions will cause some deterioration of speed.
+As seen above, options can be run together, except `-e` and `-i`, which must both be followed by a quoted, space separated list. Long lists of exceptions will cause some deterioration of speed.
 
-The tests for hexadecimal `-x` and base64 `-b` files should only be specified when the input directory likely contains such files. However, these tests are fast. They usually terminate after reading only the first few bytes. When these options are omitted by mistake, then everything will still work. However, the default compression of these types of files will take up more space than was strictly necessary.
+The tests for hexadecimal `-x` and base64 `-b` files should only be specified when the input directory likely contains such files. However, these tests are fast. They usually terminate after reading only the first few bytes. When these options are omitted by mistake, then everything will still work. However, the compression of these types of files will take up more space than was strictly necessary.
 
 The three arguments are mandatory: the input directory, the keys directory and the encrypted directory. Both output directories (`keydir` and `outdir`) will mirror `indir` in their structure and file names; `keydir` will hold the keys and `outdir` will hold the encrypted files.
 
@@ -115,11 +117,11 @@ The summary at the end, such as the one shown in `test.log`, reports the sizes (
 Option `-q` (`--quiet`) cancels the final report.
 Option `-v` (`--verbose`) adds details of compressing each file. Selecting  both options `-vq`, contradictory as it may seem, turns on the individual file reports and turns off the final summary. The encryption itself is so unproblematic that it does not require any reports.
 
-Once a directory has been compressed and encrypted, it is subsequently possible to update the keys and outdir directories (the archives) with option `-u`. This will add any new files and recode updated ones. Added new files are marked with a: and more recent existing files are updated (marked with u:). The same actions will be applied to all subdirectories, unless option `-i` (ignore subdirectories) has been deployed. Capital letters A:,U: denote these two operations when applied to whole subdirectories.
+Once a directory has been compressed and encrypted, it is subsequently possible to update the keys and outdir directories (the archives) with option `-u`. This will add any new files and recode updated ones. Added new files are marked with `a:` Updated files are marked with `u:`. Capital letters A:,U: denote these two operations when applied to whole subdirectories.
 
-An archive can additionally be cleaned up with `-uc`, to ensure that a new state of the input directory and its archives match. That is, files no longer existing in indir will be deleted from the archive (and marked with d:). When `-r` is added, whole directories may be deleted and marked with D:.
+An archive can additionally be cleaned up with `-uc`, to ensure that a new state of the input directory and its archives match. That is, files no longer existing in indir will be deleted from the archive (and marked with d:). When `-r` is used, whole directories may be deleted and marked with D:.
 
-Caution should be exercised when using the `-c` option. Any files that may have been inadvertently deleted from indir will be removed from the archive as well. Option `-c` is explicit and separate from `-u` for added safety. Thus using `-u` alone is the *cautious updating mode*, which never deletes anything from the archive. However, it will still overwrite existing files with their new, possibly erroneous, contents. This can cause loss of previously useful content. Of course, this is true in general, whenever updating any files, by any means.
+Caution should be exercised when using the `-c` option. Any files that may have been inadvertently deleted from indir will be removed from the archive as well. Option `-c` is explicit and separate from `-u` for added safety. Thus using `-u` alone is the *cautious updating mode*, which never deletes anything from the archive. However, it will still overwrite existing files with their new, possibly erroneous, contents. This can cause loss of data. Of course, this is true in general, whenever updating any files, by any means.
 
 There is a vulnerability inherent in `ncrpt` output directories. Specifically, specialist search engines sifting through the internet, matching up pairs of (keydir outdir) directories by their same structures, file names and sizes, could in theory pair them up, even if they were uploaded to two unrelated places. Using `pack` is therefore more secure for external storage.
 
@@ -210,7 +212,12 @@ will test for hexadecimal and base64 files in sourcedir, recurse into all subdir
 
     ncrpt -xbruci 'data' sourcedir keysdir outdir
 
-will recursively update and clean the entire archive outdir, so that it is as if freshly created from the current state of sourcedir (with only -xbri). However, with `-u` it is incremental, so it runs faster. This is convenient for regular backing up purposes. 'bin' is no longer being ignored, so it will be added to the archive. Since `-c` is also given, any directories named 'data', that are now newly ignored, will be deleted from the archive.
+will recursively update and clean the entire archive outdir, so that it is as if freshly created from the current state of sourcedir (with only -xbri). However, adding `-u` makes it incremental, so it runs faster. This is convenient for regular backing up purposes. As 'bin' is no longer being ignored, it will be added to the archive (if it exists). Since `-c` has also been added, any directories on the ignore list ('data' now), will be deleted from the archive. As will be any other contents deleted from sourcedir in-between. 
+
+    pack -xbri '.git target' TokenCrypt TCidx TCkeys TCout 
+Recursing and ignoring directories: .git target  
+pack: compressing directory 'TokenCrypt'  
+pack: TokenCrypt 57013581 (100%) => TCout 12169058 (21%)
 
 ## Exercise
 
@@ -225,10 +232,10 @@ Note that TokenCrypt does not leave any such large hidden footprints on your fil
 
 ## Releases Log (the latest first)
 
-**3-April-24** - `ncrpt` now does sensible things with the new options `-e -i` also in the updating and cleaning modes. Implemented these new options for `pack` as well, making `TokenCrypt` a more practical archiving tool.
+**3-April-24** - Release 1.2.0: `ncrpt` now does sensible things with the new options `-e -i` also in the updating and cleaning modes. Implemented these new options for `pack` as well, making `TokenCrypt` overall more practical.
 
-**1-April-24** - `ncrpt` can now globally ignore named directories with, e.g. `-i 'bin test backup'` and to globally exclude all files with listed extensions, e.g. `-e 'exe dat bak'`. Note that `-i` was previously used to turn off recursion. Recursion is now off by default and must be activated explicitly with option `-r` (usual conservative convention).
- 
+**1-April-24** - `ncrpt` can now globally ignore named directories with, e.g. `-i 'bin test backup'` and to globally exclude all files with listed extensions, e.g. `-e 'exe dat bak'`. Note that `-i` was previously used to turn off recursion. Recursion is now off by default and must be activated explicitly with option `-r` (the usual conservative convention).
+
 **30-March-24** - Corrected some typos in `README.md`, updated `test.yml`, tested on `Rust 1.77.1`.
 
 **23-Oct-22** - Release 1.1.1 Housekeeping release, encapsulating the changes to date.
