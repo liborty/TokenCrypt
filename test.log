@@ -1,4 +1,4 @@
-crptest run on: 03.04.24 at 05:34:16 UTC
+crptest run on: 03.04.24 at 10:02:54 UTC
 
 Recursing fully
 ncrpt: encrypting dir 'testing', using 4 cores
@@ -11,7 +11,7 @@ dcrpt: _testingcrypt 148305 (85%) => _testingorg (100%)
 
 crptest diff: 'testing' and '_testingorg' are identical
 
-packtest run on: 03.04.24 at 05:34:16 UTC
+packtest run on: 03.04.24 at 10:02:54 UTC
 
 Recursing fully
 pack: compressing directory 'testing'
