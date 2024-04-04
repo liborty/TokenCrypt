@@ -1,4 +1,8 @@
-# TokenCrypt [![GitHub last commit](https://img.shields.io/github/last-commit/liborty/tokencrypt/HEAD?logo=github)](https://github.com/liborty/tokencrypt) [![Actions Status](https://github.com/liborty/tokencrypt/actions/workflows/test.yml/badge.svg)](https://github.com/liborty/tokencrypt/actions)
+# TokenCrypt
+
+[![GitHub last commit](https://img.shields.io/github/last-commit/liborty/tokencrypt/HEAD?logo=github)](https://github.com/liborty/tokencrypt)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/liborty/tokencrypt/total?logo=github)
+[![Actions Status](https://github.com/liborty/tokencrypt/actions/workflows/test.yml/badge.svg)](https://github.com/liborty/tokencrypt/actions)
 
 **Efficiently compress, securely encrypt and archive directories trees. High security combined with ease of use.**
 
